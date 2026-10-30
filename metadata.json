@@ -1,0 +1,8 @@
+{
+  "name": "AOS Tools - Free, Secure & Mobile-Friendly Online Tools",
+  "description": "Browser-side PDF tools, image processing utilities, Khata client ledger, PAN Master Hub, and 50 verified Indian government portal directory.",
+  "permissions": [],
+  "capabilities": [
+    "MAJOR_CAPABILITY_SERVER_SIDE_GEMINI_API"
+  ]
+}

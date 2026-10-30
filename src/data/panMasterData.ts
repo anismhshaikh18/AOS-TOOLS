@@ -1,0 +1,162 @@
+import { PanServiceGuide } from '../types';
+
+export const PAN_SERVICES: PanServiceGuide[] = [
+  {
+    id: 'pan-new',
+    title: 'New PAN Card (Form 49A / 49AA)',
+    type: 'New',
+    description: 'For Indian citizens, HUF, companies, and non-residents who have never been allotted a Permanent Account Number.',
+    eligibility: [
+      'Individuals who do not possess any PAN card.',
+      'Minors through representative assessees (parents/guardians).',
+      'Firms, LLPs, Companies, Trusts, and AOPs.',
+    ],
+    documentsRequired: {
+      poi: [
+        'Aadhaar Card issued by UIDAI (Recommended)',
+        'Elector Photo Identity Card (Voter ID)',
+        'Passport',
+        'Driving Licence',
+        'Ration card having photograph of the applicant',
+        'Arm’s license issued by government',
+        'Photo identity card issued by Central/State Govt/PSU',
+      ],
+      poa: [
+        'Aadhaar Card issued by UIDAI',
+        'Elector Photo Identity Card (Voter ID)',
+        'Passport or Driving Licence',
+        'Electricity / Water / Piped Gas bill (less than 3 months old)',
+        'Bank Account Statement / Passbook (less than 3 months old)',
+        'Credit Card statement (less than 3 months old)',
+        'Landline telephone or broadband bill (less than 3 months old)',
+        'Property tax assessment order or Domicile certificate',
+      ],
+      pod: [
+        'Aadhaar Card issued by UIDAI',
+        'Birth Certificate issued by Municipal Authority or Registrar',
+        'Matriculation certificate or 10th Marksheet of recognized Board',
+        'Passport',
+        'Driving Licence',
+        'Pension Payment Order (PPO)',
+        'Marriage certificate issued by Registrar of Marriages',
+      ],
+    },
+    proteanUrl: 'https://onlineservices.proteantech.in/paam/endUserRegisterContact.html',
+    utiitslUrl: 'https://www.pan.utiitsl.com/PAN/newA49A.html',
+    fees: 'Physical Card: ₹107 (incl. GST) for Indian communication address; ₹1,017 for foreign dispatch. e-PAN only: ₹66.',
+    steps: [
+      'Step 1: Choose mode — Paperless (e-KYC & e-Sign via Aadhaar OTP), DSC based, or Physical documents submission.',
+      'Step 2: Fill Personal Details (Full name exactly as per Proof of Identity, Father’s name, Date of Birth).',
+      'Step 3: Select Address for Communication (Residence or Office).',
+      'Step 4: Enter Area Code, AO Type, Range Code, and AO Number (searchable by city on the portal).',
+      'Step 5: Upload photo, signature, and identity proofs according to exact size guidelines.',
+      'Step 6: Pay processing fee via Net Banking, Debit/Credit Card, or UPI and save the 15-digit acknowledgment number.',
+    ],
+  },
+  {
+    id: 'pan-correction',
+    title: 'PAN Correction & Changes (CSF Form)',
+    type: 'Correction',
+    description: 'Update mismatched name spelling, father’s name, date of birth, address, or photograph/signature on existing PAN.',
+    eligibility: [
+      'Existing PAN cardholders with typographic or factual errors.',
+      'Individuals who changed their name post-marriage or gazette notification.',
+      'Applicants wanting to link or synchronize details with Aadhaar.',
+    ],
+    documentsRequired: {
+      poi: [
+        'Existing PAN Card copy or PAN allotment letter',
+        'Aadhaar Card (with updated details)',
+        'Passport or Voter Card',
+        'Gazette publication (mandatory for name change of individuals)',
+        'Marriage certificate / Wedding invitation card (for post-marriage surname change)',
+      ],
+      poa: [
+        'Aadhaar Card / Passport / Driving Licence',
+        'Updated utility bill or bank statement (< 3 months old)',
+      ],
+      pod: [
+        'Birth Certificate / 10th Certificate / Aadhaar / Passport',
+      ],
+    },
+    proteanUrl: 'https://onlineservices.proteantech.in/paam/endUserRegisterContact.html',
+    utiitslUrl: 'https://www.pan.utiitsl.com/PAN/csf.html',
+    fees: '₹107 for Indian dispatch address; ₹1,017 for overseas dispatch.',
+    steps: [
+      'Step 1: Select Application Type: "Changes or Correction in existing PAN Data / Reprint of PAN Card".',
+      'Step 2: Check the boxes corresponding to fields you wish to update (e.g. check "Name" box to correct spelling).',
+      'Step 3: Provide existing 10-digit PAN number.',
+      'Step 4: Enter correct updated details and upload supporting documents substantiating the change.',
+      'Step 5: Sign application using Aadhaar OTP e-Sign or physically dispatch signed acknowledgment form.',
+    ],
+  },
+  {
+    id: 'pan-reprint',
+    title: 'Reprint of Lost / Damaged PAN Card',
+    type: 'Reprint',
+    description: 'Order an exact physical reprint of your existing PAN card when no data change is needed.',
+    eligibility: [
+      'Cardholders whose PAN card was lost, damaged, stolen, or faded.',
+      'No change in name, date of birth, or father’s name required.',
+    ],
+    documentsRequired: {
+      poi: ['Existing 10-digit PAN Number', 'Aadhaar Number (for individuals)'],
+      poa: ['Address will be fetched automatically from Income Tax department database'],
+      pod: ['DOB as registered in existing record'],
+    },
+    proteanUrl: 'https://onlineservices.proteantech.in/paam/ReprintDownload.html',
+    utiitslUrl: 'https://www.pan.utiitsl.com/PAN/reprint.html',
+    fees: '₹50 (inclusive of taxes and speed post delivery across India).',
+    steps: [
+      'Step 1: Open the official Reprint portal (Protean or UTIITSL based on which entity originally issued your PAN).',
+      'Step 2: Enter 10-digit PAN, 12-digit Aadhaar number, Month and Year of Birth.',
+      'Step 3: Generate and enter OTP received on mobile number registered with Aadhaar / Income Tax department.',
+      'Step 4: Make ₹50 payment. Physical card will be dispatched to the address registered with the ITD database.',
+    ],
+  },
+  {
+    id: 'pan-track',
+    title: 'Track PAN Application Status',
+    type: 'Tracking',
+    description: 'Check the real-time processing, verification, and speed-post consignment tracking number.',
+    eligibility: ['Anyone who has submitted a PAN application through Protean or UTIITSL within the last 180 days.'],
+    documentsRequired: {
+      poi: ['15-digit Protean Acknowledgment Number OR 9/10-digit UTIITSL Application Coupon Number'],
+      poa: ['Not required for tracking'],
+      pod: ['Applicant Date of Birth (for UTIITSL verification)'],
+    },
+    proteanUrl: 'https://tin.tin.proteantech.in/pantan/StatusTrack.html',
+    utiitslUrl: 'https://www.trackpan.utiitsl.com/PANONLINE/trackApp',
+    fees: 'Free of cost.',
+    steps: [
+      'Step 1: Identify whether your receipt is from Protean (NSDL) or UTIITSL.',
+      'Step 2: For Protean: enter the 15-digit numeric acknowledgment number.',
+      'Step 3: For UTIITSL: enter the Application Coupon Number (begins with "U-") or 10-digit PAN and DOB.',
+      'Step 4: View status: "Under Process at NSDL/UTIITSL", "Allotted & e-PAN generated", or "Dispatched with Speed Post Airway Bill (AWB)".',
+    ],
+  },
+];
+
+export const PHOTO_SIGNATURE_SPECS = {
+  photo: {
+    dimensions: '3.5 cm (width) x 2.5 cm (height)',
+    pixels: 'approx. 275 x 354 pixels at 200 DPI',
+    dpi: '200 DPI (Dots Per Inch)',
+    maxFileSize: '50 KB',
+    format: 'JPEG / JPG',
+    background: 'Pure white or light off-white background; clear frontal face without shadows.',
+  },
+  signature: {
+    dimensions: '2.0 cm (height) x 4.5 cm (width)',
+    pixels: 'approx. 157 x 354 pixels at 200 DPI',
+    dpi: '200 DPI',
+    maxFileSize: '50 KB',
+    format: 'JPEG / JPG',
+    ink: 'Dark black ink pen on clean white sheet (avoid blue ink or faint ballpoint pens).',
+  },
+  supportingDocs: {
+    format: 'PDF',
+    maxFileSize: '300 KB per document (for online e-KYC/e-Sign uploads)',
+    dpi: '200 DPI greyscale / color',
+  },
+};
