@@ -84,28 +84,19 @@
     --color-brand-hover: #1e293b;
   }
 
-  /* Clean Prussian Navy page background centered on #052f52 */
+  /* Full-Website Crimson & Apple Serpent Theme in SVG Format */
   body {
-    background-color: #03182b;
-    background-image: 
-      radial-gradient(at 85% 12%, rgba(239, 68, 68, 0.15) 0px, transparent 40%),
-      radial-gradient(at 15% 25%, rgba(5, 47, 82, 0.8) 0px, transparent 55%),
-      radial-gradient(at 50% 85%, rgba(3, 24, 43, 0.95) 0px, transparent 70%);
+    background-color: #0b0102;
+    background-image: url('/assets/website-bg.svg');
+    background-size: cover;
+    background-position: center top;
     background-attachment: fixed;
+    background-repeat: no-repeat;
     color: #f8fafc;
     transition: background-color 0.25s ease, color 0.25s ease;
   }
 
-  /* Smooth light mode background */
-  html:not(.dark) body {
-    background-color: #f8fafc;
-    background-image: 
-      radial-gradient(at 85% 12%, rgba(254, 202, 202, 0.4) 0px, transparent 40%),
-      radial-gradient(at 15% 25%, rgba(224, 231, 255, 0.5) 0px, transparent 55%),
-      radial-gradient(at 50% 85%, rgba(241, 245, 249, 0.7) 0px, transparent 65%);
-    color: #0f172a;
-  }
-
+  /* Liquid Glass Dark Theme is permanent */
   code, kbd, samp, pre {
     font-family: 'JetBrains Mono', ui-monospace, SFMono-Regular, Menlo, Monaco, Consolas, monospace;
   }
@@ -119,155 +110,147 @@
   transition: transform 0.25s cubic-bezier(0.16, 1, 0.3, 1), 
               box-shadow 0.25s cubic-bezier(0.16, 1, 0.3, 1), 
               border-color 0.25s ease;
-  backdrop-filter: blur(16px);
-  -webkit-backdrop-filter: blur(16px);
+  backdrop-filter: blur(28px) saturate(200%);
+  -webkit-backdrop-filter: blur(28px) saturate(200%);
+  background: rgba(14, 2, 5, 0.44) !important;
+  border: 1px solid rgba(255, 255, 255, 0.15) !important;
+  box-shadow: 0 16px 44px -8px rgba(0, 0, 0, 0.65), inset 0 1px 1px 0 rgba(255, 255, 255, 0.22) !important;
+  color: #f8fafc !important;
 }
 
-/* --- LIGHT MODE HIGH-CONTRAST CARDS & CONTAINERS --- */
-:root:not(.dark) .theme-card,
-html:not(.dark) .theme-card {
-  background: #ffffff !important;
-  border: 1px solid #e2e8f0 !important;
-  box-shadow: 0 4px 18px -2px rgba(15, 23, 42, 0.05), 0 2px 6px -1px rgba(15, 23, 42, 0.03) !important;
-  color: #0f172a !important;
-}
-
-:root:not(.dark)[data-template="template-1"] .theme-card,
-html:not(.dark)[data-template="template-1"] .theme-card {
-  border-color: rgba(254, 202, 202, 0.95) !important;
-  box-shadow: 0 4px 20px -2px rgba(239, 68, 68, 0.07) !important;
-}
-:root:not(.dark)[data-template="template-1"] .theme-card:hover,
-html:not(.dark)[data-template="template-1"] .theme-card:hover {
-  border-color: #ef4444 !important;
-  box-shadow: 0 10px 25px -4px rgba(239, 68, 68, 0.16) !important;
+.theme-card:hover {
+  border-color: rgba(239, 68, 68, 0.75) !important;
+  box-shadow: 0 20px 50px -10px rgba(220, 38, 38, 0.4), inset 0 1px 2px 0 rgba(255, 255, 255, 0.32) !important;
   transform: translateY(-2px);
 }
 
-:root:not(.dark)[data-template="template-2"] .theme-card,
-html:not(.dark)[data-template="template-2"] .theme-card {
-  border-color: rgba(191, 219, 254, 0.95) !important;
-  box-shadow: 0 4px 20px -2px rgba(37, 99, 235, 0.07) !important;
+/* =========================================================================
+   LIQUID GLASS TRANSPARENT DESIGN SYSTEM
+   ========================================================================= */
+
+.liquid-glass {
+  background: rgba(14, 2, 5, 0.44) !important;
+  backdrop-filter: blur(28px) saturate(200%) !important;
+  -webkit-backdrop-filter: blur(28px) saturate(200%) !important;
+  border: 1px solid rgba(255, 255, 255, 0.15) !important;
+  box-shadow: 0 16px 44px -8px rgba(0, 0, 0, 0.65), inset 0 1px 1px 0 rgba(255, 255, 255, 0.22) !important;
 }
-:root:not(.dark)[data-template="template-2"] .theme-card:hover,
-html:not(.dark)[data-template="template-2"] .theme-card:hover {
-  border-color: #3b82f6 !important;
-  box-shadow: 0 10px 25px -4px rgba(37, 99, 235, 0.16) !important;
+
+.liquid-glass-sub {
+  background: rgba(255, 255, 255, 0.05) !important;
+  backdrop-filter: blur(20px) saturate(190%) !important;
+  -webkit-backdrop-filter: blur(20px) saturate(190%) !important;
+  border: 1px solid rgba(255, 255, 255, 0.12) !important;
+  box-shadow: 0 6px 24px -2px rgba(0, 0, 0, 0.35), inset 0 1px 0.5px 0 rgba(255, 255, 255, 0.18) !important;
+}
+
+.liquid-glass-hover {
+  transition: all 0.25s cubic-bezier(0.16, 1, 0.3, 1) !important;
+}
+
+.liquid-glass-hover:hover {
+  border-color: rgba(239, 68, 68, 0.75) !important;
+  box-shadow: 0 20px 50px -10px rgba(220, 38, 38, 0.4), inset 0 1px 2px 0 rgba(255, 255, 255, 0.32) !important;
   transform: translateY(-2px);
 }
 
-:root:not(.dark)[data-template="template-3"] .theme-card,
-html:not(.dark)[data-template="template-3"] .theme-card {
-  border-color: rgba(233, 213, 255, 0.95) !important;
-  box-shadow: 0 4px 20px -2px rgba(147, 51, 234, 0.07) !important;
-}
-:root:not(.dark)[data-template="template-3"] .theme-card:hover,
-html:not(.dark)[data-template="template-3"] .theme-card:hover {
-  border-color: #a855f7 !important;
-  box-shadow: 0 10px 25px -4px rgba(147, 51, 234, 0.16) !important;
-  transform: translateY(-2px);
-}
-
-:root:not(.dark)[data-template="template-4"] .theme-card,
-html:not(.dark)[data-template="template-4"] .theme-card {
-  border-color: #cbd5e1 !important;
-  box-shadow: 0 4px 20px -2px rgba(15, 23, 42, 0.05) !important;
-}
-:root:not(.dark)[data-template="template-4"] .theme-card:hover,
-html:not(.dark)[data-template="template-4"] .theme-card:hover {
-  border-color: #64748b !important;
-  box-shadow: 0 10px 25px -4px rgba(15, 23, 42, 0.12) !important;
-  transform: translateY(-2px);
-}
-
-/* Light Mode Guaranteed High-Contrast Typography */
-:root:not(.dark) .theme-card h3,
-html:not(.dark) .theme-card h3 {
-  color: #0f172a !important;
-}
-:root:not(.dark) .theme-card p,
-html:not(.dark) .theme-card p {
-  color: #334155 !important;
-}
-:root:not(.dark) .theme-card .text-slate-500,
-html:not(.dark) .theme-card .text-slate-500,
-:root:not(.dark) .theme-card .text-slate-600,
-html:not(.dark) .theme-card .text-slate-600 {
-  color: #475569 !important;
-}
-
-/* --- DARK MODE CARDS (Active when .dark class is on :root/html) --- */
-.dark .theme-card {
-  background: linear-gradient(180deg, rgba(7, 38, 66, 0.95) 0%, rgba(4, 25, 45, 0.98) 100%);
-  border: 1px solid rgba(13, 71, 117, 0.65);
-  box-shadow: 0 8px 32px -4px rgba(2, 18, 33, 0.7);
-  color: #f8fafc;
-}
-
+/* --- LIQUID GLASS TRANSPARENT CARDS (Active when .dark class is on :root/html) --- */
+.dark .theme-card,
 .dark:root[data-template="template-1"] .theme-card,
 .dark[data-template="template-1"] .theme-card,
-.dark :root[data-template="template-1"] .theme-card {
-  background: linear-gradient(180deg, rgba(7, 38, 66, 0.95) 0%, rgba(4, 25, 45, 0.98) 100%);
-  border: 1px solid rgba(13, 71, 117, 0.75);
-  box-shadow: 0 8px 32px -4px rgba(2, 18, 33, 0.75);
-  color: #f8fafc;
-}
-.dark:root[data-template="template-1"] .theme-card:hover,
-.dark[data-template="template-1"] .theme-card:hover,
-.dark :root[data-template="template-1"] .theme-card:hover {
-  border-color: rgba(239, 68, 68, 0.8) !important;
-  box-shadow: 0 14px 38px -5px rgba(239, 68, 68, 0.35) !important;
-  transform: translateY(-2px);
-}
-
+.dark :root[data-template="template-1"] .theme-card,
 .dark:root[data-template="template-2"] .theme-card,
 .dark[data-template="template-2"] .theme-card,
-.dark :root[data-template="template-2"] .theme-card {
-  background: linear-gradient(180deg, rgba(14, 24, 46, 0.92) 0%, rgba(8, 15, 30, 0.97) 100%);
-  border: 1px solid rgba(59, 130, 246, 0.38);
-  box-shadow: 0 8px 32px -4px rgba(0, 0, 0, 0.6);
-  color: #f8fafc;
-}
-.dark:root[data-template="template-2"] .theme-card:hover,
-.dark[data-template="template-2"] .theme-card:hover,
-.dark :root[data-template="template-2"] .theme-card:hover {
-  border-color: rgba(59, 130, 246, 0.8) !important;
-  box-shadow: 0 14px 38px -5px rgba(37, 99, 235, 0.4) !important;
-  transform: translateY(-2px);
-}
-
+.dark :root[data-template="template-2"] .theme-card,
 .dark:root[data-template="template-3"] .theme-card,
 .dark[data-template="template-3"] .theme-card,
 .dark :root[data-template="template-3"] .theme-card,
-.dark .theme-card {
-  background: linear-gradient(180deg, rgba(24, 13, 44, 0.9) 0%, rgba(13, 6, 26, 0.97) 100%);
-  border: 1px solid rgba(168, 85, 247, 0.35);
-  box-shadow: 0 8px 32px -4px rgba(0, 0, 0, 0.6);
-  color: #f8fafc;
-}
-.dark:root[data-template="template-3"] .theme-card:hover,
-.dark[data-template="template-3"] .theme-card:hover,
-.dark :root[data-template="template-3"] .theme-card:hover,
-.dark .theme-card:hover {
-  border-color: rgba(168, 85, 247, 0.85) !important;
-  box-shadow: 0 14px 38px -5px rgba(168, 85, 247, 0.42) !important;
-  transform: translateY(-2px);
-}
-
 .dark:root[data-template="template-4"] .theme-card,
 .dark[data-template="template-4"] .theme-card,
 .dark :root[data-template="template-4"] .theme-card {
-  background: linear-gradient(180deg, rgba(20, 24, 34, 0.92) 0%, rgba(12, 15, 22, 0.97) 100%);
-  border: 1px solid rgba(148, 163, 184, 0.28);
-  box-shadow: 0 8px 32px -4px rgba(0, 0, 0, 0.6);
+  background: rgba(14, 2, 5, 0.42) !important;
+  backdrop-filter: blur(24px) saturate(200%) !important;
+  -webkit-backdrop-filter: blur(24px) saturate(200%) !important;
+  border: 1px solid rgba(255, 255, 255, 0.14) !important;
+  box-shadow: 0 14px 40px -6px rgba(0, 0, 0, 0.6), inset 0 1px 1px 0 rgba(255, 255, 255, 0.22) !important;
   color: #f8fafc;
 }
+
+.dark .theme-card:hover,
+.dark:root[data-template="template-1"] .theme-card:hover,
+.dark[data-template="template-1"] .theme-card:hover,
+.dark :root[data-template="template-1"] .theme-card:hover,
+.dark:root[data-template="template-2"] .theme-card:hover,
+.dark[data-template="template-2"] .theme-card:hover,
+.dark :root[data-template="template-2"] .theme-card:hover,
+.dark:root[data-template="template-3"] .theme-card:hover,
+.dark[data-template="template-3"] .theme-card:hover,
+.dark :root[data-template="template-3"] .theme-card:hover,
 .dark:root[data-template="template-4"] .theme-card:hover,
 .dark[data-template="template-4"] .theme-card:hover,
 .dark :root[data-template="template-4"] .theme-card:hover {
-  border-color: rgba(226, 232, 240, 0.65) !important;
-  box-shadow: 0 14px 38px -5px rgba(255, 255, 255, 0.15) !important;
+  border-color: rgba(239, 68, 68, 0.75) !important;
+  box-shadow: 0 20px 50px -8px rgba(220, 38, 38, 0.38), inset 0 1px 2px 0 rgba(255, 255, 255, 0.32) !important;
   transform: translateY(-2px);
+}
+
+/* =========================================================================
+   UNIVERSAL LIQUID GLASS FOR ALL INNER TOOL PAGES & COMPONENTS
+   ========================================================================= */
+
+[class*="bg-[#072642]"],
+[class*="dark:bg-[#072642]"],
+.dark .bg-slate-900,
+.dark .bg-slate-950 {
+  background: rgba(14, 2, 5, 0.44) !important;
+  backdrop-filter: blur(28px) saturate(200%) !important;
+  -webkit-backdrop-filter: blur(28px) saturate(200%) !important;
+  border-color: rgba(255, 255, 255, 0.15) !important;
+  box-shadow: 0 16px 44px -8px rgba(0, 0, 0, 0.65), inset 0 1px 1px 0 rgba(255, 255, 255, 0.22) !important;
+}
+
+[class*="bg-[#03182b]"],
+[class*="dark:bg-[#03182b]"],
+.dark .bg-slate-800,
+.dark .bg-slate-800\/40,
+.dark .bg-slate-800\/50,
+.dark .bg-slate-800\/60,
+.dark .bg-slate-800\/80,
+.dark .bg-slate-950\/50,
+.dark .bg-slate-950\/60,
+.dark .bg-white {
+  background: rgba(255, 255, 255, 0.05) !important;
+  backdrop-filter: blur(20px) saturate(190%) !important;
+  -webkit-backdrop-filter: blur(20px) saturate(190%) !important;
+  border-color: rgba(255, 255, 255, 0.12) !important;
+}
+
+[class*="border-[#0d4775]"],
+.dark .border-slate-100,
+.dark .border-slate-200,
+.dark .border-slate-300,
+.dark .border-slate-700,
+.dark .border-slate-800 {
+  border-color: rgba(255, 255, 255, 0.12) !important;
+}
+
+.dark .divide-slate-100 > * + *,
+.dark .divide-slate-200 > * + *,
+.dark .divide-slate-800 > * + * {
+  border-color: rgba(255, 255, 255, 0.08) !important;
+}
+
+.dark table thead tr {
+  background: rgba(255, 255, 255, 0.04) !important;
+  border-bottom: 1px solid rgba(255, 255, 255, 0.1) !important;
+}
+
+.dark table tbody tr {
+  border-bottom: 1px solid rgba(255, 255, 255, 0.06) !important;
+}
+
+.dark table tbody tr:hover {
+  background: rgba(255, 255, 255, 0.04) !important;
 }
 
 /* =========================================================================

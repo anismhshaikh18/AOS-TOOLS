@@ -21,8 +21,8 @@ import { AosLogoSvg } from './AosLogoSvg';
 interface HeaderProps {
   activeTab: string;
   setActiveTab: (tab: string) => void;
-  isDark: boolean;
-  onToggleTheme: () => void;
+  isDark?: boolean;
+  onToggleTheme?: () => void;
   templateId: TemplateId;
   setTemplateId: (id: TemplateId) => void;
   lang: LanguageCode;
@@ -33,8 +33,6 @@ interface HeaderProps {
 export const Header: React.FC<HeaderProps> = ({
   activeTab,
   setActiveTab,
-  isDark,
-  onToggleTheme,
   lang,
   setLang,
   onOpenSearch,
@@ -71,7 +69,7 @@ export const Header: React.FC<HeaderProps> = ({
   ];
 
   return (
-    <header className="sticky top-0 z-40 w-full backdrop-blur-xl bg-[#03182b]/90 border-b border-[#0d4775]/60 transition-colors">
+    <header className="sticky top-0 z-40 w-full backdrop-blur-2xl bg-black/40 border-b border-white/10 transition-colors shadow-lg shadow-black/20">
       <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
         <div className="flex items-center justify-between h-16 sm:h-18">
           
@@ -96,7 +94,7 @@ export const Header: React.FC<HeaderProps> = ({
           </div>
 
           {/* Desktop Nav Pills (Matching Screenshot navigation!) */}
-          <nav className="hidden md:flex items-center gap-1.5 p-1 rounded-full bg-[#021526]/80 border border-[#0d4775]/50 shadow-inner">
+          <nav className="hidden md:flex items-center gap-1.5 p-1 rounded-full liquid-glass-sub">
             {primaryNavItems.map((item) => {
               const isSelected = activeTab === item.id;
               return (
@@ -121,10 +119,10 @@ export const Header: React.FC<HeaderProps> = ({
             <button
               onClick={onOpenSearch}
               aria-label="Search tools"
-              className="p-2 text-slate-300 hover:text-white bg-[#072642] hover:bg-[#0a355c] border border-[#0d4775] rounded-full transition-all cursor-pointer flex items-center gap-1.5 shadow-sm"
+              className="p-2 text-slate-300 hover:text-white liquid-glass-sub rounded-full transition-all cursor-pointer flex items-center gap-1.5 shadow-sm hover:border-red-500/50"
             >
               <Search className="w-4 h-4" />
-              <kbd className="hidden lg:inline text-[10px] font-mono px-1.5 py-0.2 bg-[#021526] rounded text-slate-400">
+              <kbd className="hidden lg:inline text-[10px] font-mono px-1.5 py-0.2 bg-black/40 rounded text-slate-400">
                 /
               </kbd>
             </button>
@@ -134,7 +132,7 @@ export const Header: React.FC<HeaderProps> = ({
               <button
                 onClick={() => setIsLangOpen(!isLangOpen)}
                 aria-label="Select language"
-                className="px-2.5 py-1.5 text-xs font-semibold text-slate-300 hover:text-white bg-[#072642] hover:bg-[#0a355c] border border-[#0d4775] rounded-full transition-all cursor-pointer flex items-center gap-1.5 shadow-sm"
+                className="px-2.5 py-1.5 text-xs font-semibold text-slate-300 hover:text-white liquid-glass-sub rounded-full transition-all cursor-pointer flex items-center gap-1.5 shadow-sm hover:border-red-500/50"
               >
                 <Globe className="w-3.5 h-3.5 text-slate-300" />
                 <span className="hidden sm:inline text-[11px] font-medium">
@@ -147,7 +145,7 @@ export const Header: React.FC<HeaderProps> = ({
               </button>
 
               {isLangOpen && (
-                <div className="absolute right-0 mt-2 w-44 bg-[#072642] border border-[#0d4775] rounded-2xl shadow-2xl p-1.5 z-50 animate-in fade-in zoom-in-95 duration-150 backdrop-blur-2xl">
+                <div className="absolute right-0 mt-2 w-44 liquid-glass rounded-2xl shadow-2xl p-1.5 z-50 animate-in fade-in zoom-in-95 duration-150">
                   <div className="px-2.5 py-1 text-[10px] font-bold uppercase tracking-wider text-slate-400 border-b border-white/10 mb-1">
                     Language
                   </div>
@@ -175,24 +173,10 @@ export const Header: React.FC<HeaderProps> = ({
               )}
             </div>
 
-            {/* Dark / Light Mode Toggle Pill Button */}
-            <button
-              onClick={onToggleTheme}
-              aria-label="Toggle Theme"
-              className="p-2 text-slate-300 hover:text-white bg-[#072642] hover:bg-[#0a355c] border border-[#0d4775] rounded-full transition-all cursor-pointer shadow-sm active:scale-95"
-              title={isDark ? 'Switch to Light Mode' : 'Switch to Dark Mode'}
-            >
-              {isDark ? (
-                <Sun className="w-4 h-4 text-amber-400" />
-              ) : (
-                <Moon className="w-4 h-4 text-blue-400" />
-              )}
-            </button>
-
             {/* Mobile Hamburger Button */}
             <button
               onClick={() => setIsMobileMenuOpen(!isMobileMenuOpen)}
-              className="md:hidden p-2 text-slate-300 hover:text-white bg-[#072642] border border-[#0d4775] rounded-full cursor-pointer"
+              className="md:hidden p-2 text-slate-300 hover:text-white liquid-glass-sub rounded-full cursor-pointer hover:border-red-500/50"
             >
               {isMobileMenuOpen ? <X className="w-5 h-5" /> : <Menu className="w-5 h-5" />}
             </button>
@@ -202,7 +186,7 @@ export const Header: React.FC<HeaderProps> = ({
 
         {/* Mobile Dropdown Menu */}
         {isMobileMenuOpen && (
-          <div className="md:hidden py-4 border-t border-[#0d4775] space-y-2 animate-in fade-in duration-150">
+          <div className="md:hidden py-4 border-t border-white/10 space-y-2 animate-in fade-in duration-150">
             <div className="grid grid-cols-2 gap-2">
               {primaryNavItems.map((item) => (
                 <button
@@ -213,8 +197,8 @@ export const Header: React.FC<HeaderProps> = ({
                   }}
                   className={`p-2.5 rounded-xl text-xs font-bold text-center transition-all ${
                     activeTab === item.id
-                      ? 'bg-red-600 text-white'
-                      : 'bg-[#072642] text-slate-200 hover:bg-[#093256]'
+                      ? 'bg-red-600 text-white shadow-md'
+                      : 'liquid-glass-sub text-slate-200 hover:border-red-500/40'
                   }`}
                 >
                   {item.label}

@@ -10,8 +10,8 @@ export const AboutView: React.FC<AboutViewProps> = ({ onExploreTools }) => {
   return (
     <div className="space-y-8 w-full max-w-4xl mx-auto pb-16 animate-in fade-in duration-200">
       {/* Top Banner / Heading */}
-      <div className="relative overflow-hidden rounded-3xl bg-gradient-to-r from-[#052f52] via-[#073963] to-[#0a4677] border border-[#0e4f85]/50 p-6 sm:p-10 shadow-2xl">
-        <div className="absolute -right-10 -top-10 w-64 h-64 bg-red-600/10 rounded-full blur-3xl pointer-events-none" />
+      <div className="relative overflow-hidden rounded-3xl liquid-glass p-6 sm:p-10 shadow-2xl">
+        <div className="absolute -right-10 -top-10 w-64 h-64 bg-red-600/15 rounded-full blur-3xl pointer-events-none" />
         <div className="flex flex-col md:flex-row md:items-center justify-between gap-6 relative z-10">
           <div className="space-y-2">
             <div className="flex items-center gap-3">
@@ -27,9 +27,9 @@ export const AboutView: React.FC<AboutViewProps> = ({ onExploreTools }) => {
             </p>
           </div>
 
-          {/* Laptop Preview Graphic (matching screenshot) */}
+          {/* Laptop Preview Graphic */}
           <div className="relative shrink-0 flex items-center justify-center">
-            <div className="w-48 sm:w-56 h-32 bg-[#021526] border-2 border-slate-700 rounded-xl p-2.5 shadow-2xl flex flex-col justify-between relative overflow-hidden group hover:border-red-500/50 transition-colors">
+            <div className="w-48 sm:w-56 h-32 liquid-glass-sub rounded-xl p-2.5 shadow-2xl flex flex-col justify-between relative overflow-hidden group hover:border-red-500/50 transition-colors">
               <div className="w-full flex items-center justify-between pb-1 border-b border-white/10">
                 <div className="flex gap-1">
                   <span className="w-1.5 h-1.5 rounded-full bg-red-500" />
@@ -56,9 +56,9 @@ export const AboutView: React.FC<AboutViewProps> = ({ onExploreTools }) => {
       {/* Main Content Cards */}
       <div className="space-y-6">
         {/* Card 1: Our Mission */}
-        <div className="p-6 sm:p-8 rounded-2xl bg-[#072642] dark:bg-[#072642] border border-[#0d4775] shadow-lg space-y-3">
+        <div className="p-6 sm:p-8 rounded-2xl liquid-glass liquid-glass-hover shadow-lg space-y-3">
           <div className="flex items-center gap-3">
-            <div className="w-9 h-9 rounded-xl bg-red-500/10 border border-red-500/20 text-red-400 flex items-center justify-center shrink-0">
+            <div className="w-9 h-9 rounded-xl bg-red-500/20 border border-red-500/30 text-red-400 flex items-center justify-center shrink-0">
               <Target className="w-5 h-5" />
             </div>
             <h2 className="text-lg sm:text-xl font-bold text-white tracking-tight">
@@ -71,9 +71,9 @@ export const AboutView: React.FC<AboutViewProps> = ({ onExploreTools }) => {
         </div>
 
         {/* Card 2: Why Choose Us? */}
-        <div className="p-6 sm:p-8 rounded-2xl bg-[#072642] dark:bg-[#072642] border border-[#0d4775] shadow-lg space-y-4">
+        <div className="p-6 sm:p-8 rounded-2xl liquid-glass liquid-glass-hover shadow-lg space-y-4">
           <div className="flex items-center gap-3">
-            <div className="w-9 h-9 rounded-xl bg-red-500/10 border border-red-500/20 text-red-400 flex items-center justify-center shrink-0">
+            <div className="w-9 h-9 rounded-xl bg-red-500/20 border border-red-500/30 text-red-400 flex items-center justify-center shrink-0">
               <Heart className="w-5 h-5" />
             </div>
             <h2 className="text-lg sm:text-xl font-bold text-white tracking-tight">
@@ -117,7 +117,7 @@ export const AboutView: React.FC<AboutViewProps> = ({ onExploreTools }) => {
         </div>
 
         {/* Card 3: Our Promise */}
-        <div className="p-6 sm:p-8 rounded-2xl bg-[#072642] dark:bg-[#072642] border border-[#0d4775] shadow-lg space-y-4">
+        <div className="p-6 sm:p-8 rounded-2xl liquid-glass liquid-glass-hover shadow-lg space-y-4">
           <div className="flex items-center gap-3">
             <div className="w-9 h-9 rounded-xl bg-red-600 text-white flex items-center justify-center shrink-0 shadow-md">
               <ShieldCheck className="w-5 h-5" />

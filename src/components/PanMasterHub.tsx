@@ -118,25 +118,26 @@ export const PanMasterHub: React.FC<PanMasterHubProps> = ({
     <div className="space-y-6">
       
       {/* Hub Hero Banner */}
-      <div className="p-6 bg-gradient-to-r from-blue-900 to-indigo-950 text-white rounded-2xl shadow-sm">
-        <div className="max-w-3xl">
-          <div className="flex items-center gap-2 text-xs font-semibold uppercase tracking-wider text-blue-300 mb-2">
+      <div className="p-6 liquid-glass text-white rounded-2xl shadow-xl relative overflow-hidden border border-white/15">
+        <div className="absolute -right-8 -top-8 w-60 h-60 bg-red-600/15 rounded-full blur-3xl pointer-events-none" />
+        <div className="max-w-3xl relative z-10">
+          <div className="flex items-center gap-2 text-xs font-semibold uppercase tracking-wider text-red-400 mb-2">
             <Building2 className="w-4 h-4" />
             <span>Official UTIITSL & Protean (NSDL) Guidance</span>
           </div>
-          <h1 className="text-xl sm:text-2xl font-bold tracking-tight">
+          <h1 className="text-xl sm:text-2xl font-bold tracking-tight text-white">
             PAN Card Master Hub & Compliance Center
           </h1>
-          <p className="text-xs sm:text-sm text-blue-200 mt-2 leading-relaxed">
+          <p className="text-xs sm:text-sm text-slate-300 mt-2 leading-relaxed">
             Complete step-by-step documentation rules, dedicated &lt;300 KB PDF compressor for supporting proofs, photo/signature biometric specifications, and verified official portals.
           </p>
 
-          <div className="mt-4 flex flex-wrap items-center gap-3 text-xs text-blue-100">
-            <div className="flex items-center gap-1.5 bg-blue-800/60 px-3 py-1.5 rounded-lg border border-blue-700/50">
+          <div className="mt-4 flex flex-wrap items-center gap-3 text-xs text-slate-200">
+            <div className="flex items-center gap-1.5 liquid-glass-sub px-3 py-1.5 rounded-lg border border-white/10">
               <ShieldCheck className="w-4 h-4 text-emerald-400 shrink-0" />
               <span>Zero Data Collection Policy</span>
             </div>
-            <div className="flex items-center gap-1.5 bg-blue-800/60 px-3 py-1.5 rounded-lg border border-blue-700/50">
+            <div className="flex items-center gap-1.5 liquid-glass-sub px-3 py-1.5 rounded-lg border border-white/10">
               <CheckCircle2 className="w-4 h-4 text-emerald-400 shrink-0" />
               <span>Verified Portals Only</span>
             </div>
@@ -145,71 +146,71 @@ export const PanMasterHub: React.FC<PanMasterHubProps> = ({
       </div>
 
       {/* Mandatory Security & Fraud Disclaimer Banner */}
-      <div className="p-4 bg-amber-50 dark:bg-amber-950/40 border border-amber-200 dark:border-amber-900/50 rounded-xl text-xs text-amber-900 dark:text-amber-200 flex items-start gap-3">
-        <AlertTriangle className="w-5 h-5 text-amber-600 dark:text-amber-400 shrink-0 mt-0.5" />
+      <div className="p-4 liquid-glass-sub border border-amber-500/30 rounded-xl text-xs text-amber-200 flex items-start gap-3">
+        <AlertTriangle className="w-5 h-5 text-amber-400 shrink-0 mt-0.5" />
         <div className="space-y-1">
-          <span className="font-bold">Official Statutory Security Notice:</span>
-          <p className="leading-relaxed">
+          <span className="font-bold text-amber-300">Official Statutory Security Notice:</span>
+          <p className="leading-relaxed text-slate-300">
             AOS Tools is an informational and document preparation utility. We never solicit or collect your 10-digit PAN number, 12-digit Aadhaar number, passwords, or OTPs. Official PAN cards are exclusively issued by the Income Tax Department through its authorized service partners (Protean eGov Technologies Limited and UTIITSL). Never enter confidential OTPs on any third-party website.
           </p>
         </div>
       </div>
 
       {/* Navigation Tabs (Guides / Compressor <300KB / Specs / Checklists / Fees) */}
-      <div className="flex items-center gap-2 border-b border-slate-200 dark:border-slate-800 pb-3 overflow-x-auto scrollbar-none">
+      <div className="flex items-center gap-2 border-b border-white/10 pb-3 overflow-x-auto scrollbar-none">
         <button
           onClick={() => setActiveTab('guides')}
-          className={`whitespace-nowrap px-4 py-2 text-xs font-semibold rounded-lg transition-colors cursor-pointer ${
+          className={`whitespace-nowrap px-4 py-2 text-xs font-semibold rounded-lg transition-all cursor-pointer ${
             activeTab === 'guides'
-              ? 'bg-blue-600 text-white shadow-xs'
-              : 'text-slate-600 dark:text-slate-400 hover:bg-slate-100 dark:hover:bg-slate-800'
+              ? 'bg-red-600 text-white shadow-md'
+              : 'liquid-glass-sub text-slate-300 hover:text-white hover:border-red-500/40'
           }`}
         >
           Service Step-by-Step Guides
         </button>
         <button
           onClick={() => setActiveTab('compressor')}
-          className={`whitespace-nowrap px-4 py-2 text-xs font-semibold rounded-lg transition-colors cursor-pointer flex items-center gap-1.5 ${
+          className={`whitespace-nowrap px-4 py-2 text-xs font-semibold rounded-lg transition-all cursor-pointer flex items-center gap-1.5 ${
             activeTab === 'compressor'
-              ? 'bg-blue-600 text-white shadow-xs'
-              : 'text-slate-600 dark:text-slate-400 hover:bg-slate-100 dark:hover:bg-slate-800'
+              ? 'bg-red-600 text-white shadow-md'
+              : 'liquid-glass-sub text-slate-300 hover:text-white hover:border-red-500/40'
           }`}
         >
           <Minimize2 className="w-3.5 h-3.5" />
           <span>PAN PDF Compressor (&lt;300 KB)</span>
-          <span className="ml-1 text-[10px] font-mono px-1.5 py-0.2 bg-emerald-500 text-white rounded">
+          <span className="ml-1 text-[10px] font-mono px-1.5 py-0.2 bg-emerald-500/80 text-white rounded">
             Govt Spec
           </span>
         </button>
         <button
           onClick={() => setActiveTab('specs')}
-          className={`whitespace-nowrap px-4 py-2 text-xs font-semibold rounded-lg transition-colors cursor-pointer ${
+          className={`whitespace-nowrap px-4 py-2 text-xs font-semibold rounded-lg transition-all cursor-pointer ${
             activeTab === 'specs'
-              ? 'bg-blue-600 text-white shadow-xs'
-              : 'text-slate-600 dark:text-slate-400 hover:bg-slate-100 dark:hover:bg-slate-800'
+              ? 'bg-red-600 text-white shadow-md'
+              : 'liquid-glass-sub text-slate-300 hover:text-white hover:border-red-500/40'
           }`}
         >
-          Photo & Signature Specifications
+          Photo &amp; Signature Specifications
         </button>
         <button
           onClick={() => setActiveTab('checklists')}
-          className={`whitespace-nowrap px-4 py-2 text-xs font-semibold rounded-lg transition-colors cursor-pointer ${
+          className={`whitespace-nowrap px-4 py-2 text-xs font-semibold rounded-lg transition-all cursor-pointer ${
             activeTab === 'checklists'
-              ? 'bg-blue-600 text-white shadow-xs'
-              : 'text-slate-600 dark:text-slate-400 hover:bg-slate-100 dark:hover:bg-slate-800'
+              ? 'bg-red-600 text-white shadow-md'
+              : 'liquid-glass-sub text-slate-300 hover:text-white hover:border-red-500/40'
           }`}
         >
           Document Checklist (POI / POA / POD)
         </button>
         <button
           onClick={() => setActiveTab('fees')}
-          className={`whitespace-nowrap px-4 py-2 text-xs font-semibold rounded-lg transition-colors cursor-pointer ${
+          className={`whitespace-nowrap px-4 py-2 text-xs font-semibold rounded-lg transition-all cursor-pointer ${
             activeTab === 'fees'
-              ? 'bg-blue-600 text-white shadow-xs'
-              : 'text-slate-600 dark:text-slate-400 hover:bg-slate-100 dark:hover:bg-slate-800'
+              ? 'bg-red-600 text-white shadow-md'
+              : 'liquid-glass-sub text-slate-300 hover:text-white hover:border-red-500/40'
           }`}
         >
-          Fee Schedule & Timelines
+          Fee Schedule &amp; Timelines
         </button>
       </div>
 

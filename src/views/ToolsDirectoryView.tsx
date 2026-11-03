@@ -235,7 +235,7 @@ export const ToolsDirectoryView: React.FC<ToolsDirectoryViewProps> = ({
               value={searchQuery}
               onChange={(e) => setSearchQuery(e.target.value)}
               placeholder="Search tools (e.g. passport, id card, pdf, resize, signature)..."
-              className="w-full pl-11 pr-4 py-3 rounded-full bg-[#03182b] border border-[#0d4775] text-xs text-white placeholder-slate-400 focus:outline-none focus:ring-2 focus:ring-red-500/40 shadow-inner"
+              className="w-full pl-11 pr-4 py-3 rounded-full liquid-glass-sub text-xs text-white placeholder-slate-400 focus:outline-none focus:ring-2 focus:ring-red-500/50 shadow-inner"
             />
           </div>
         </div>
@@ -261,7 +261,7 @@ export const ToolsDirectoryView: React.FC<ToolsDirectoryViewProps> = ({
                 onClick={cat.action}
                 role="button"
                 tabIndex={0}
-                className="p-4 rounded-2xl bg-[#072642] dark:bg-[#072642] border border-[#0d4775] hover:border-red-500/50 hover:bg-[#093256] transition-all cursor-pointer flex items-center justify-between group shadow-md"
+                className="p-4 rounded-2xl liquid-glass liquid-glass-hover transition-all cursor-pointer flex items-center justify-between group"
               >
                 <div className="flex items-center gap-3.5">
                   <div
@@ -307,8 +307,8 @@ export const ToolsDirectoryView: React.FC<ToolsDirectoryViewProps> = ({
                   onClick={() => setSelectedFilter(tab)}
                   className={`px-3.5 py-1.5 rounded-full text-xs font-semibold whitespace-nowrap transition-all cursor-pointer ${
                     isSelected
-                      ? 'bg-red-600 text-white shadow-md shadow-red-600/30'
-                      : 'bg-[#072642] border border-[#0d4775] text-slate-300 hover:text-white hover:bg-[#093256]'
+                      ? 'bg-red-600 text-white shadow-lg shadow-red-600/30'
+                      : 'liquid-glass-sub text-slate-300 hover:text-white hover:border-red-500/40'
                   }`}
                 >
                   {tab}
@@ -323,11 +323,11 @@ export const ToolsDirectoryView: React.FC<ToolsDirectoryViewProps> = ({
           {filteredTools.map((tool) => (
             <div
               key={tool.id}
-              className="p-5 rounded-2xl bg-[#072642] dark:bg-[#072642] border border-[#0d4775] hover:border-red-500/40 transition-all flex flex-col justify-between shadow-md group"
+              className="p-5 rounded-2xl liquid-glass liquid-glass-hover transition-all flex flex-col justify-between group"
             >
               <div>
                 <div className="flex items-start justify-between gap-3 mb-3">
-                  <div className="w-10 h-10 rounded-xl bg-[#03182b] border border-[#0d4775] flex items-center justify-center text-red-400 shrink-0 group-hover:scale-105 transition-transform">
+                  <div className="w-10 h-10 rounded-xl liquid-glass-sub flex items-center justify-center text-red-400 shrink-0 group-hover:scale-105 transition-transform">
                     <DynamicIcon name={tool.iconName} className="w-5 h-5" />
                   </div>
                   {tool.badge && (
@@ -347,7 +347,7 @@ export const ToolsDirectoryView: React.FC<ToolsDirectoryViewProps> = ({
 
               <button
                 onClick={() => onSelectTool(tool)}
-                className="w-full py-2.5 px-4 rounded-xl bg-[#03182b] border border-[#0d4775] hover:border-red-500/60 hover:bg-red-600 hover:text-white text-xs font-bold text-slate-200 transition-all flex items-center justify-center gap-1.5 cursor-pointer shadow-xs"
+                className="w-full py-2.5 px-4 rounded-xl liquid-glass-sub hover:border-red-500/60 hover:bg-red-600 hover:text-white text-xs font-bold text-slate-200 transition-all flex items-center justify-center gap-1.5 cursor-pointer"
               >
                 <span>Open Studio</span>
                 <ArrowRight className="w-3.5 h-3.5" />

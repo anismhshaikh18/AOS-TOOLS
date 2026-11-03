@@ -842,7 +842,7 @@ export const SmartIdCardStudioPage: React.FC<SmartIdCardStudioPageProps> = ({ on
       <div className="flex items-center justify-between gap-4">
         <button
           onClick={onBack}
-          className="inline-flex items-center gap-1.5 px-3.5 py-1.5 rounded-full bg-[#072642] hover:bg-[#0a355c] border border-[#0d4775] text-slate-300 hover:text-white text-xs font-semibold transition-all cursor-pointer shadow-sm active:scale-95"
+          className="inline-flex items-center gap-1.5 px-3.5 py-1.5 rounded-full liquid-glass-sub hover:border-red-500/50 text-slate-300 hover:text-white text-xs font-semibold transition-all cursor-pointer shadow-sm active:scale-95"
         >
           <ArrowLeft className="w-3.5 h-3.5" />
           <span>Back to Tools</span>
@@ -857,7 +857,7 @@ export const SmartIdCardStudioPage: React.FC<SmartIdCardStudioPageProps> = ({ on
       </div>
 
       {/* Main Studio Banner Card (Matching Screenshot exactly) */}
-      <div className="p-4 sm:p-5 rounded-2xl bg-[#072642] border border-[#0d4775] shadow-xl flex flex-col md:flex-row md:items-center justify-between gap-4">
+      <div className="p-4 sm:p-5 rounded-2xl liquid-glass shadow-xl flex flex-col md:flex-row md:items-center justify-between gap-4">
         <div className="flex items-center gap-3.5">
           <div className="w-11 h-11 rounded-xl bg-blue-600 flex items-center justify-center text-white shadow-lg shadow-blue-600/30 shrink-0">
             <CreditCard className="w-6 h-6 stroke-[2.2]" />
@@ -901,7 +901,7 @@ export const SmartIdCardStudioPage: React.FC<SmartIdCardStudioPageProps> = ({ on
           SECTION 1: LIVE CR80 CARD PREVIEW (FRONT & BACK)
           (Matching Screenshot 2 exactly)
           ========================================================================= */}
-      <div className="rounded-2xl bg-[#072642] border border-[#0d4775] p-5 shadow-xl space-y-4">
+      <div className="rounded-2xl liquid-glass p-5 shadow-xl space-y-4">
         <div className="flex items-center justify-between border-b border-white/10 pb-3">
           <div className="flex items-center gap-2">
             <Eye className="w-4 h-4 text-blue-400" />
@@ -913,14 +913,14 @@ export const SmartIdCardStudioPage: React.FC<SmartIdCardStudioPageProps> = ({ on
           <div className="flex items-center gap-2">
             <button
               onClick={handleDownloadFrontJpg}
-              className="px-3 py-1.5 rounded-lg bg-[#03182b] hover:bg-[#052642] border border-[#0d4775] text-slate-300 hover:text-white text-xs font-semibold flex items-center gap-1.5 transition-all cursor-pointer"
+              className="px-3 py-1.5 rounded-lg liquid-glass-sub hover:border-red-500/50 text-slate-300 hover:text-white text-xs font-semibold flex items-center gap-1.5 transition-all cursor-pointer"
             >
               <Download className="w-3.5 h-3.5" />
               <span>Front JPG</span>
             </button>
             <button
               onClick={handleDownloadBackJpg}
-              className="px-3 py-1.5 rounded-lg bg-[#03182b] hover:bg-[#052642] border border-[#0d4775] text-slate-300 hover:text-white text-xs font-semibold flex items-center gap-1.5 transition-all cursor-pointer"
+              className="px-3 py-1.5 rounded-lg liquid-glass-sub hover:border-red-500/50 text-slate-300 hover:text-white text-xs font-semibold flex items-center gap-1.5 transition-all cursor-pointer"
             >
               <Download className="w-3.5 h-3.5" />
               <span>Back JPG</span>
@@ -938,7 +938,7 @@ export const SmartIdCardStudioPage: React.FC<SmartIdCardStudioPageProps> = ({ on
                 300 DPI
               </span>
             </div>
-            <div className="p-3 bg-[#03182b] rounded-2xl border border-[#0d4775] flex items-center justify-center overflow-hidden">
+            <div className="p-3 liquid-glass-sub rounded-2xl border border-white/10 flex items-center justify-center overflow-hidden">
               <canvas
                 ref={frontCanvasRef}
                 className="w-full aspect-[1012/638] rounded-xl shadow-2xl border border-slate-700 bg-white object-contain"
@@ -954,7 +954,7 @@ export const SmartIdCardStudioPage: React.FC<SmartIdCardStudioPageProps> = ({ on
                 Live QR &amp; Address
               </span>
             </div>
-            <div className="p-3 bg-[#03182b] rounded-2xl border border-[#0d4775] flex items-center justify-center overflow-hidden">
+            <div className="p-3 liquid-glass-sub rounded-2xl border border-white/10 flex items-center justify-center overflow-hidden">
               <canvas
                 ref={backCanvasRef}
                 className="w-full aspect-[1012/638] rounded-xl shadow-2xl border border-slate-700 bg-white object-contain"
@@ -986,7 +986,7 @@ export const SmartIdCardStudioPage: React.FC<SmartIdCardStudioPageProps> = ({ on
               className={`px-4 py-2.5 rounded-xl font-bold text-xs sm:text-sm flex items-center gap-2 whitespace-nowrap transition-all cursor-pointer ${
                 isActive
                   ? 'bg-blue-600 text-white shadow-lg shadow-blue-600/40'
-                  : 'bg-[#072642] text-slate-300 hover:text-white border border-[#0d4775]'
+                  : 'liquid-glass-sub text-slate-300 hover:text-white hover:border-red-500/40'
               }`}
             >
               <Icon className="w-4 h-4" />
@@ -1000,7 +1000,7 @@ export const SmartIdCardStudioPage: React.FC<SmartIdCardStudioPageProps> = ({ on
           TAB 1: FRONT FIELDS (Matching Screenshot exactly)
           ========================================================================= */}
       {activeTab === 'front' && (
-        <div className="rounded-2xl bg-[#072642] border border-[#0d4775] p-5 shadow-xl space-y-5 animate-in fade-in duration-150">
+        <div className="rounded-2xl liquid-glass p-5 shadow-xl space-y-5 animate-in fade-in duration-150">
           <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
             <div>
               <label className="block text-[11px] font-bold text-slate-300 uppercase mb-1.5">

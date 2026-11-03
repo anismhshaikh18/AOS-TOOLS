@@ -21,6 +21,7 @@ import { PDF_TOOLS } from './data/pdfTools';
 import { IMAGE_TOOLS } from './data/imageTools';
 import { SPECIAL_TOOLS } from './data/specialTools';
 import { LanguageCode, TemplateId } from './utils/translations';
+import { SiteBackgroundSvg } from './components/SiteBackgroundSvg';
 
 export default function App() {
   const [activeTab, setActiveTab] = useState<string>('home');
@@ -55,32 +56,12 @@ export default function App() {
     }
   });
 
-  // Smooth Dark / Light Mode state
-  const [isDark, setIsDark] = useState<boolean>(() => {
-    try {
-      const saved = localStorage.getItem('aos_theme');
-      if (saved) return saved === 'dark';
-      return true; // Default dark appearance
-    } catch {
-      return true;
-    }
-  });
-
+  // Dark liquid glass theme is permanently enabled
   useEffect(() => {
-    if (isDark) {
-      document.documentElement.classList.add('dark');
-      document.body.classList.add('dark');
-      localStorage.setItem('aos_theme', 'dark');
-    } else {
-      document.documentElement.classList.remove('dark');
-      document.body.classList.remove('dark');
-      localStorage.setItem('aos_theme', 'light');
-    }
-  }, [isDark]);
-
-  const toggleTheme = () => {
-    setIsDark((prev) => !prev);
-  };
+    document.documentElement.classList.add('dark');
+    document.body.classList.add('dark');
+    localStorage.setItem('aos_theme', 'dark');
+  }, []);
 
   useEffect(() => {
     document.documentElement.setAttribute('data-template', templateId);
@@ -171,14 +152,14 @@ export default function App() {
   };
 
   return (
-    <div className="min-h-screen flex flex-col bg-transparent text-slate-900 dark:text-slate-100 transition-colors duration-200 w-full max-w-full overflow-x-hidden">
+    <div className="min-h-screen flex flex-col bg-transparent text-slate-900 dark:text-slate-100 transition-colors duration-200 w-full max-w-full overflow-x-hidden relative">
+      {/* Full-Website SVG Background (Hand, Apple & Serpent Artwork) */}
+      <SiteBackgroundSvg />
       
       {/* Responsive Header */}
       <Header
         activeTab={activeTab}
         setActiveTab={handleNavigateTab}
-        isDark={isDark}
-        onToggleTheme={toggleTheme}
         templateId={templateId}
         setTemplateId={setTemplateId}
         lang={lang}

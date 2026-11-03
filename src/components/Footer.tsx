@@ -1,5 +1,5 @@
 import React from 'react';
-import { Printer, Youtube, Facebook, Send, ExternalLink, ShieldCheck } from 'lucide-react';
+import { ShieldCheck } from 'lucide-react';
 import { AosLogoSvg } from './AosLogoSvg';
 
 interface FooterProps {
@@ -14,7 +14,7 @@ export const Footer: React.FC<FooterProps> = ({
   setActiveTab,
 }) => {
   return (
-    <footer className="mt-20 border-t border-[#0d4775]/60 bg-[#021526]/95 backdrop-blur-xl py-8 text-slate-400 transition-colors">
+    <footer className="mt-20 border-t border-white/10 liquid-glass py-8 text-slate-300 transition-colors">
       <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 space-y-6">
         <div className="flex flex-col sm:flex-row items-center justify-between gap-4">
           {/* Logo */}
@@ -38,50 +38,11 @@ export const Footer: React.FC<FooterProps> = ({
             © {new Date().getFullYear()} AOS TOOLS. All rights reserved.
           </p>
 
-          {/* Social Icons & Partner Link matching screenshot */}
-          <div className="flex items-center gap-2.5">
-            <a
-              href="https://anis-online-services.pages.dev/"
-              target="_blank"
-              rel="noopener noreferrer"
-              aria-label="Verified Partner"
-              title="Anis Online Services Verified Partner"
-              className="w-8 h-8 rounded-full bg-[#072642] border border-[#0d4775] text-red-400 hover:text-white hover:bg-red-600 transition-colors flex items-center justify-center"
-            >
-              <ExternalLink className="w-3.5 h-3.5" />
-            </a>
-            <a
-              href="https://youtube.com"
-              target="_blank"
-              rel="noopener noreferrer"
-              aria-label="YouTube"
-              className="w-8 h-8 rounded-full bg-[#072642] border border-[#0d4775] text-slate-300 hover:text-white hover:bg-red-600 transition-colors flex items-center justify-center"
-            >
-              <Youtube className="w-3.5 h-3.5" />
-            </a>
-            <a
-              href="https://facebook.com"
-              target="_blank"
-              rel="noopener noreferrer"
-              aria-label="Facebook"
-              className="w-8 h-8 rounded-full bg-[#072642] border border-[#0d4775] text-slate-300 hover:text-white hover:bg-blue-600 transition-colors flex items-center justify-center"
-            >
-              <Facebook className="w-3.5 h-3.5" />
-            </a>
-            <a
-              href="https://telegram.org"
-              target="_blank"
-              rel="noopener noreferrer"
-              aria-label="Telegram"
-              className="w-8 h-8 rounded-full bg-[#072642] border border-[#0d4775] text-slate-300 hover:text-white hover:bg-sky-500 transition-colors flex items-center justify-center"
-            >
-              <Send className="w-3.5 h-3.5" />
-            </a>
-          </div>
+
         </div>
 
         {/* Secondary Navigation Links */}
-        <div className="pt-4 border-t border-[#0d4775]/40 flex flex-wrap items-center justify-center sm:justify-start gap-4 sm:gap-6 text-xs text-slate-400">
+        <div className="pt-4 border-t border-white/10 flex flex-wrap items-center justify-center sm:justify-start gap-4 sm:gap-6 text-xs text-slate-400">
           <button
             onClick={() => setActiveTab('home')}
             className="hover:text-white transition-colors cursor-pointer"

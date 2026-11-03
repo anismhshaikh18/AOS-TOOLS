@@ -1065,7 +1065,7 @@ export const ToolRunnerModal: React.FC<ToolRunnerModalProps> = ({
       <div className="flex items-center justify-between gap-4">
         <button
           onClick={onClose}
-          className="inline-flex items-center gap-1.5 px-3.5 py-1.5 rounded-full bg-[#072642] hover:bg-[#0a355c] border border-[#0d4775] text-slate-300 hover:text-white text-xs font-semibold transition-all cursor-pointer shadow-sm active:scale-95"
+          className="inline-flex items-center gap-1.5 px-3.5 py-1.5 rounded-full liquid-glass-sub hover:border-red-500/50 text-slate-300 hover:text-white text-xs font-semibold transition-all cursor-pointer shadow-sm active:scale-95"
         >
           <ArrowLeft className="w-3.5 h-3.5" />
           <span>Back to Tools</span>
@@ -1078,10 +1078,10 @@ export const ToolRunnerModal: React.FC<ToolRunnerModalProps> = ({
       </div>
 
       {/* Main Full-Page Tool Card */}
-      <div className="relative w-full bg-[#072642] border border-[#0d4775] rounded-3xl shadow-2xl overflow-hidden">
+      <div className="relative w-full liquid-glass rounded-3xl shadow-2xl overflow-hidden">
         
         {/* Tool Page Header */}
-        <div className="flex items-center justify-between px-6 py-5 border-b border-[#0d4775] bg-[#03182b]/90">
+        <div className="flex items-center justify-between px-6 py-5 border-b border-white/10 liquid-glass-sub">
           <div className="flex items-center gap-3.5">
             <div className="w-11 h-11 rounded-2xl bg-red-600 text-white flex items-center justify-center shadow-lg shadow-red-600/30 shrink-0">
               <DynamicIcon name={tool.iconName} className="w-5 h-5 stroke-[2.5]" />
@@ -1104,7 +1104,7 @@ export const ToolRunnerModal: React.FC<ToolRunnerModalProps> = ({
           </div>
           <button
             onClick={onClose}
-            className="p-2 text-slate-400 hover:text-white rounded-xl bg-[#03182b] hover:bg-[#052642] border border-[#0d4775] transition-colors cursor-pointer"
+            className="p-2 text-slate-400 hover:text-white rounded-xl liquid-glass-sub hover:border-red-500/50 transition-colors cursor-pointer"
             aria-label="Close Tool"
           >
             <X className="w-5 h-5" />
@@ -1115,8 +1115,8 @@ export const ToolRunnerModal: React.FC<ToolRunnerModalProps> = ({
         <div className="p-6 sm:p-8 space-y-6">
           
           {/* Tool Description Header */}
-          <div className="text-xs text-slate-600 dark:text-slate-300 leading-relaxed bg-slate-50 dark:bg-slate-800/40 p-3.5 rounded-xl border border-slate-200/80 dark:border-slate-800">
-            <p className="font-medium text-slate-900 dark:text-slate-200">
+          <div className="text-xs text-slate-200 leading-relaxed liquid-glass-sub p-3.5 rounded-xl border border-white/10">
+            <p className="font-medium text-slate-200">
               {tool.shortDesc}
             </p>
           </div>
@@ -3909,11 +3909,11 @@ export const ToolRunnerModal: React.FC<ToolRunnerModalProps> = ({
         )}
 
         {/* Page Footer */}
-        <div className="px-6 py-4 border-t border-[#0d4775] bg-[#03182b]/90 flex flex-col sm:flex-row justify-between items-center gap-3 text-xs text-slate-400">
+        <div className="px-6 py-4 border-t border-white/10 liquid-glass-sub flex flex-col sm:flex-row justify-between items-center gap-3 text-xs text-slate-400">
           <span>AOS Tools · In-Browser Zero Knowledge Processing</span>
           <button
             onClick={onClose}
-            className="px-4 py-2 font-bold text-slate-200 hover:text-white bg-[#072642] hover:bg-[#0a355c] border border-[#0d4775] rounded-xl transition-all cursor-pointer shadow-sm active:scale-95"
+            className="px-4 py-2 font-bold text-slate-200 hover:text-white liquid-glass-sub hover:border-red-500/50 rounded-xl transition-all cursor-pointer shadow-sm active:scale-95"
           >
             Done &amp; Return
           </button>

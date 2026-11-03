@@ -5,8 +5,8 @@ export const PrivacyView: React.FC = () => {
   return (
     <div className="space-y-8 w-full max-w-4xl mx-auto pb-16 animate-in fade-in duration-200">
       {/* Top Banner / Heading */}
-      <div className="relative overflow-hidden rounded-3xl bg-gradient-to-r from-[#052f52] via-[#073963] to-[#0a4677] border border-[#0e4f85]/50 p-6 sm:p-10 shadow-2xl">
-        <div className="absolute -right-10 -top-10 w-64 h-64 bg-red-600/10 rounded-full blur-3xl pointer-events-none" />
+      <div className="relative overflow-hidden rounded-3xl liquid-glass p-6 sm:p-10 shadow-2xl">
+        <div className="absolute -right-10 -top-10 w-64 h-64 bg-red-600/15 rounded-full blur-3xl pointer-events-none" />
         <div className="flex flex-col md:flex-row md:items-center justify-between gap-6 relative z-10">
           <div className="space-y-2">
             <div className="flex items-center gap-3">
@@ -24,7 +24,7 @@ export const PrivacyView: React.FC = () => {
 
           {/* Red Neon Lock Badge Graphic */}
           <div className="relative shrink-0 flex items-center justify-center">
-            <div className="relative w-24 h-24 sm:w-28 sm:h-28 rounded-2xl border-2 border-red-500/80 bg-red-950/20 shadow-[0_0_30px_rgba(239,68,68,0.3)] flex items-center justify-center">
+            <div className="relative w-24 h-24 sm:w-28 sm:h-28 rounded-2xl border-2 border-red-500/80 liquid-glass-sub shadow-[0_0_30px_rgba(239,68,68,0.3)] flex items-center justify-center">
               <div className="absolute -top-2 -right-2 w-6 h-6 rounded-full bg-red-600 flex items-center justify-center text-white shadow-md">
                 <Check className="w-3.5 h-3.5 stroke-[3]" />
               </div>
@@ -35,7 +35,7 @@ export const PrivacyView: React.FC = () => {
       </div>
 
       {/* 4 Numbered Steps Card */}
-      <div className="p-6 sm:p-8 rounded-2xl bg-[#072642] dark:bg-[#072642] border border-[#0d4775] shadow-lg space-y-6">
+      <div className="p-6 sm:p-8 rounded-2xl liquid-glass liquid-glass-hover shadow-lg space-y-6">
         {/* Step 1 */}
         <div className="flex items-start gap-4">
           <div className="w-7 h-7 rounded-full bg-red-600 text-white font-bold text-xs flex items-center justify-center shrink-0 mt-0.5 shadow-md shadow-red-600/20">
@@ -98,7 +98,7 @@ export const PrivacyView: React.FC = () => {
       </div>
 
       {/* Bottom Respect Your Privacy Card */}
-      <div className="p-6 sm:p-8 rounded-2xl bg-[#072642] dark:bg-[#072642] border border-[#0d4775] shadow-lg space-y-4">
+      <div className="p-6 sm:p-8 rounded-2xl liquid-glass liquid-glass-hover shadow-lg space-y-4">
         <div className="flex items-center gap-3">
           <div className="w-9 h-9 rounded-xl bg-red-600 text-white flex items-center justify-center shrink-0 shadow-md">
             <Shield className="w-5 h-5" />
@@ -129,7 +129,7 @@ export const PrivacyView: React.FC = () => {
         </div>
 
         <div className="pt-3">
-          <div className="p-3 bg-[#031c33] border border-[#0a385f] rounded-xl flex items-center gap-2.5 text-xs text-slate-300">
+          <div className="p-3 liquid-glass-sub rounded-xl flex items-center gap-2.5 text-xs text-slate-300">
             <div className="w-2 h-2 rounded-full bg-emerald-400 animate-pulse shrink-0" />
             <span>Client-side WebAssembly & HTML5 Canvas processing verified.</span>
           </div>
