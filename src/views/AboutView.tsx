@@ -1,5 +1,6 @@
 import React from 'react';
 import { Info, Target, Heart, CheckCircle2, ShieldCheck, Laptop } from 'lucide-react';
+import { AosLogoSvg } from '../components/AosLogoSvg';
 
 interface AboutViewProps {
   onExploreTools: () => void;
@@ -39,11 +40,7 @@ export const AboutView: React.FC<AboutViewProps> = ({ onExploreTools }) => {
               </div>
               <div className="flex flex-col items-center justify-center py-2 text-center">
                 <div className="w-7 h-7 rounded-full overflow-hidden bg-white ring-2 ring-[#0d4775] flex items-center justify-center shadow-md mb-1 p-0.5">
-                  <img
-                    src="/assets/aistudio/AOS_Logo_783714c3.png"
-                    alt="AOS Logo"
-                    className="w-full h-full object-contain rounded-full"
-                  />
+                  <AosLogoSvg className="w-full h-full object-contain" />
                 </div>
                 <span className="text-[11px] font-bold text-white tracking-tight">AOS TOOLS</span>
                 <span className="text-[8px] text-red-400 font-semibold">100% Free Tools</span>

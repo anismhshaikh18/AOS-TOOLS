@@ -2,6 +2,16 @@ import { ToolItem } from '../types';
 
 export const SPECIAL_TOOLS: ToolItem[] = [
   {
+    id: 'smart-id-card-studio',
+    name: 'Smart ID Card Studio',
+    shortDesc: 'CR80 standard (85.6 × 54 mm) customizable Front & Back ID card designer with Live QR Code & Signature.',
+    category: 'special',
+    iconName: 'CreditCard',
+    status: 'fully-supported',
+    badge: 'CR80 PRO',
+    isPopular: true,
+  },
+  {
     id: 'barcode-generator',
     name: 'Barcode Generator',
     shortDesc: 'Generate Code-128, EAN-13, UPC, and Code-39 standard barcodes with instant SVG/PNG export.',
@@ -94,7 +104,7 @@ export const SPECIAL_TOOLS: ToolItem[] = [
   },
   {
     id: 'khata-diary',
-    name: 'Real Client Ledger Diary (Khata)',
+    name: 'Client Khata Ledger Diary',
     shortDesc: 'Complete client ledger diary with token numbers, government fee tracking, work charges, and status.',
     category: 'special',
     iconName: 'BookMarked',

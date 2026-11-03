@@ -1,5 +1,6 @@
 import React from 'react';
 import { Printer, Youtube, Facebook, Send, ExternalLink, ShieldCheck } from 'lucide-react';
+import { AosLogoSvg } from './AosLogoSvg';
 
 interface FooterProps {
   onOpenPrivacy: () => void;
@@ -24,12 +25,7 @@ export const Footer: React.FC<FooterProps> = ({
             className="flex items-center gap-2 cursor-pointer select-none group"
           >
             <div className="w-8 h-8 rounded-full overflow-hidden bg-white ring-2 ring-[#0d4775] flex items-center justify-center shadow-md shrink-0 p-0.5 group-hover:scale-105 transition-transform">
-              <img
-                src="/assets/aistudio/AOS_Logo_783714c3.png"
-                alt="AOS Logo"
-                className="w-full h-full object-contain rounded-full"
-                loading="lazy"
-              />
+              <AosLogoSvg className="w-full h-full object-contain" />
             </div>
             <div className="flex items-baseline font-black tracking-tight text-sm">
               <span className="text-white">AOS</span>

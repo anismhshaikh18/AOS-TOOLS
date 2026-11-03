@@ -16,6 +16,8 @@ import {
   TRANSLATIONS,
 } from '../utils/translations';
 
+import { AosLogoSvg } from './AosLogoSvg';
+
 interface HeaderProps {
   activeTab: string;
   setActiveTab: (tab: string) => void;
@@ -81,12 +83,7 @@ export const Header: React.FC<HeaderProps> = ({
             className="flex items-center gap-2.5 cursor-pointer group select-none shrink-0"
           >
             <div className="w-9 h-9 sm:w-10 sm:h-10 rounded-full overflow-hidden bg-white ring-2 ring-[#0d4775] hover:ring-red-500 flex items-center justify-center shadow-lg shadow-black/40 group-hover:scale-105 transition-all p-0.5 shrink-0">
-              <img
-                src="/assets/aistudio/AOS_Logo_783714c3.png"
-                alt="AOS Logo"
-                className="w-full h-full object-contain rounded-full"
-                loading="eager"
-              />
+              <AosLogoSvg className="w-full h-full object-contain" />
             </div>
             <div className="flex items-baseline tracking-tight">
               <span className="text-lg sm:text-xl font-black text-white">

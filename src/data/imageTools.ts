@@ -110,6 +110,16 @@ export const IMAGE_TOOLS: ToolItem[] = [
     acceptedFormats: 'image/*',
   },
   {
+    id: 'smart-id-card-studio',
+    name: 'Smart ID Card Studio',
+    shortDesc: 'CR80 standard (85.6 × 54 mm) customizable Front & Back ID card designer with Live QR Code & Signature.',
+    category: 'image',
+    iconName: 'CreditCard',
+    status: 'fully-supported',
+    badge: 'CR80 PRO',
+    isPopular: true,
+  },
+  {
     id: 'image-quality-enhancer',
     name: 'Image Quality Enhancer',
     shortDesc: 'Fine-tune brightness, contrast, color saturation, and apply unsharp mask sharpness filters.',

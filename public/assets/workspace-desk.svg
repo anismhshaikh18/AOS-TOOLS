@@ -1,0 +1,130 @@
+<svg viewBox="0 0 900 1200" fill="none" xmlns="http://www.w3.org/2000/svg">
+  <defs>
+    <linearGradient id="deskGrad" x1="0" y1="0" x2="900" y2="1200" gradientUnits="userSpaceOnUse">
+      <stop offset="0%" stop-color="#0B233A"/>
+      <stop offset="40%" stop-color="#051D33"/>
+      <stop offset="100%" stop-color="#020E1A"/>
+    </linearGradient>
+    <radialGradient id="deskSpotlight" cx="450" cy="500" r="600" gradientUnits="userSpaceOnUse">
+      <stop offset="0%" stop-color="#0E3D66" stop-opacity="0.5"/>
+      <stop offset="50%" stop-color="#072642" stop-opacity="0.2"/>
+      <stop offset="100%" stop-color="#000000" stop-opacity="0"/>
+    </radialGradient>
+    <linearGradient id="paperGrad" x1="0" y1="0" x2="0" y2="1">
+      <stop offset="0%" stop-color="#FFFFFF"/>
+      <stop offset="100%" stop-color="#F8FAFC"/>
+    </linearGradient>
+    <linearGradient id="goldWire" x1="0" y1="0" x2="1" y2="1">
+      <stop offset="0%" stop-color="#F59E0B"/>
+      <stop offset="50%" stop-color="#FDE68A"/>
+      <stop offset="100%" stop-color="#B45309"/>
+    </linearGradient>
+    <radialGradient id="coffeeGrad" cx="50%" cy="50%" r="50%">
+      <stop offset="0%" stop-color="#2E1C14"/>
+      <stop offset="70%" stop-color="#170D08"/>
+      <stop offset="100%" stop-color="#0A0503"/>
+    </radialGradient>
+    <linearGradient id="laptopMetal" x1="0" y1="0" x2="1" y2="1">
+      <stop offset="0%" stop-color="#E2E8F0"/>
+      <stop offset="50%" stop-color="#CBD5E1"/>
+      <stop offset="100%" stop-color="#94A3B8"/>
+    </linearGradient>
+    <filter id="softShadow" x="-20%" y="-20%" width="140%" height="140%">
+      <feDropShadow dx="0" dy="18" stdDeviation="22" flood-color="#000000" flood-opacity="0.55"/>
+    </filter>
+  </defs>
+
+  <rect width="900" height="1200" rx="32" fill="url(#deskGrad)"/>
+  <rect width="900" height="1200" rx="32" fill="url(#deskSpotlight)"/>
+
+  <!-- Coffee Cup -->
+  <g>
+    <ellipse cx="440" cy="180" rx="90" ry="85" fill="#031526" opacity="0.6"/>
+    <circle cx="435" cy="175" r="75" fill="#FFFFFF"/>
+    <path d="M 505 150 C 535 155 540 195 505 200" stroke="#FFFFFF" stroke-width="16" stroke-linecap="round" fill="none"/>
+    <circle cx="435" cy="175" r="62" fill="#E2E8F0"/>
+    <circle cx="435" cy="175" r="58" fill="url(#coffeeGrad)"/>
+    <ellipse cx="420" cy="160" rx="28" ry="12" fill="#FFFFFF" opacity="0.22"/>
+  </g>
+
+  <!-- Pen -->
+  <g transform="rotate(22 550 420)">
+    <rect x="548" y="240" width="16" height="280" rx="8" fill="#000000" opacity="0.4"/>
+    <rect x="542" y="235" width="16" height="280" rx="8" fill="#0F172A"/>
+    <rect x="548" y="245" width="4" height="90" rx="2" fill="#E2E8F0"/>
+    <rect x="542" y="340" width="16" height="4" fill="#F59E0B"/>
+    <path d="M 542 515 L 550 545 L 558 515 Z" fill="#94A3B8"/>
+  </g>
+
+  <!-- Laptop -->
+  <g>
+    <rect x="680" y="70" width="300" height="660" rx="24" fill="url(#laptopMetal)"/>
+    <rect x="710" y="110" width="240" height="380" rx="14" fill="#0F172A"/>
+    <rect x="740" y="520" width="180" height="170" rx="10" fill="#94A3B8" stroke="#64748B" stroke-width="1"/>
+  </g>
+
+  <!-- Notebook with AOS Tools info -->
+  <g filter="url(#softShadow)">
+    <rect x="60" y="340" width="460" height="580" rx="18" fill="#020813"/>
+    <rect x="68" y="348" width="444" height="564" rx="14" fill="url(#paperGrad)"/>
+    <line x1="290" y1="348" x2="290" y2="912" stroke="#E2E8F0" stroke-width="2"/>
+
+    <!-- Left page content -->
+    <g transform="translate(100, 375)">
+      <rect x="0" y="0" width="165" height="24" rx="6" fill="#052F52"/>
+      <text x="82" y="16" fill="#FFFFFF" font-size="10" font-weight="900" letter-spacing="1" text-anchor="middle">AOS TOOLS · SUITE</text>
+      <text x="0" y="44" fill="#0F172A" font-size="13" font-weight="800">SYSTEM MANIFEST</text>
+      <text x="0" y="58" fill="#64748B" font-size="9" font-weight="600">Verified Client-Side Architecture</text>
+      <line x1="0" y1="70" x2="175" y2="70" stroke="#E2E8F0" stroke-width="1"/>
+
+      <rect x="0" y="82" width="10" height="10" rx="2" fill="#DC2626"/>
+      <text x="16" y="91" fill="#0F172A" font-size="9.5" font-weight="700">100% Free &amp; Private</text>
+      <text x="16" y="103" fill="#64748B" font-size="8">Zero uploads · WebAssembly</text>
+
+      <rect x="0" y="120" width="10" height="10" rx="2" fill="#2563eb"/>
+      <text x="16" y="129" fill="#0F172A" font-size="9.5" font-weight="700">Passport Photo Studio</text>
+      <text x="16" y="141" fill="#64748B" font-size="8">35×45mm · SSC/UPSC Ready</text>
+
+      <rect x="0" y="158" width="10" height="10" rx="2" fill="#059669"/>
+      <text x="16" y="167" fill="#0F172A" font-size="9.5" font-weight="700">Smart ID Card Studio</text>
+      <text x="16" y="179" fill="#64748B" font-size="8">CR80 Front/Back + QR Code</text>
+
+      <rect x="0" y="196" width="10" height="10" rx="2" fill="#7C3AED"/>
+      <text x="16" y="205" fill="#0F172A" font-size="9.5" font-weight="700">19 PDF + 12 Image Tools</text>
+      <text x="16" y="217" fill="#64748B" font-size="8">Merge, Lock, Exact &lt;50KB</text>
+
+      <rect x="0" y="234" width="10" height="10" rx="2" fill="#D97706"/>
+      <text x="16" y="243" fill="#0F172A" font-size="9.5" font-weight="700">Client Khata Diary</text>
+      <text x="16" y="255" fill="#64748B" font-size="8">Token Registry &amp; Ledger</text>
+    </g>
+
+    <!-- Right page content -->
+    <g transform="translate(305, 375)">
+      <text x="0" y="16" fill="#0F172A" font-size="12" font-weight="900" letter-spacing="1">ANIS ONLINE SERVICES</text>
+      <text x="0" y="32" fill="#DC2626" font-size="9" font-weight="800">OFFICIAL PARTNER</text>
+      <line x1="0" y1="44" x2="190" y2="44" stroke="#CBD5E1" stroke-width="1.5"/>
+
+      <text x="0" y="70" fill="#0F172A" font-size="10" font-weight="700">✔ Aadhaar &amp; e-KYC Support</text>
+      <text x="0" y="98" fill="#0F172A" font-size="10" font-weight="700">✔ PAN Card Center (UTI/NSDL)</text>
+      <text x="0" y="126" fill="#0F172A" font-size="10" font-weight="700">✔ Online Govt Affidavits</text>
+      <text x="0" y="154" fill="#0F172A" font-size="10" font-weight="700">✔ 50+ Govt Portals Access</text>
+
+      <rect x="0" y="200" width="185" height="42" rx="8" fill="#052F52"/>
+      <text x="14" y="222" fill="#FFFFFF" font-size="9" font-weight="800">anis-online-services.pages.dev</text>
+      <text x="14" y="234" fill="#67E8F9" font-size="8">Direct Verified Link ↗</text>
+    </g>
+  </g>
+
+  <!-- Smartphone -->
+  <g transform="rotate(-6 620 950)">
+    <rect x="520" y="780" width="220" height="380" rx="34" fill="#0A0F1D" stroke="#334155" stroke-width="4"/>
+    <rect x="595" y="792" width="70" height="14" rx="7" fill="#000000"/>
+    <rect x="528" y="812" width="204" height="332" rx="24" fill="#03182B"/>
+    <g transform="translate(540, 830)">
+      <text x="0" y="10" fill="#FFFFFF" font-size="10" font-weight="700">AOS Mobile</text>
+      <text x="175" y="10" fill="#34D399" font-size="9" font-weight="800">100%</text>
+      <rect x="0" y="24" width="180" height="90" rx="10" fill="#072642" stroke="#0D4775" stroke-width="1"/>
+      <path d="M 15 85 L 45 60 L 75 75 L 105 45 L 135 65 L 165 40" stroke="#22D3EE" stroke-width="2.5" stroke-linecap="round" fill="none"/>
+    </g>
+  </g>
+</svg>

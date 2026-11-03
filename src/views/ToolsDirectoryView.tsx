@@ -122,7 +122,7 @@ export const ToolsDirectoryView: React.FC<ToolsDirectoryViewProps> = ({
       ...IMAGE_TOOLS.filter(
         (t) => !['passport-photo-sheet', 'photo-signature-resize'].includes(t.id)
       ),
-      ...SPECIAL_TOOLS.filter((t) => !['barcode-generator'].includes(t.id)),
+      ...SPECIAL_TOOLS.filter((t) => !['barcode-generator', 'khata-diary'].includes(t.id)),
     ];
   }, []);
 

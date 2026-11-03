@@ -9,6 +9,7 @@ import { PdfToolsView } from './views/PdfToolsView';
 import { ImageToolsView } from './views/ImageToolsView';
 import { SpecialToolsView } from './views/SpecialToolsView';
 import { PassportPhotoStudioPage } from './views/PassportPhotoStudioPage';
+import { SmartIdCardStudioPage } from './views/SmartIdCardStudioPage';
 import { KhataDiary } from './components/KhataDiary';
 import { PanMasterHub } from './components/PanMasterHub';
 import { GovernmentPortals } from './components/GovernmentPortals';
@@ -190,6 +191,8 @@ export default function App() {
         {selectedTool ? (
           (selectedTool.id === 'passport-photo-studio' || selectedTool.id === 'passport-photo-sheet') ? (
             <PassportPhotoStudioPage onBack={handleCloseTool} />
+          ) : (selectedTool.id === 'smart-id-card-studio' || selectedTool.id === 'id-card-maker') ? (
+            <SmartIdCardStudioPage onBack={handleCloseTool} />
           ) : (
             <ToolRunnerModal
               tool={selectedTool}

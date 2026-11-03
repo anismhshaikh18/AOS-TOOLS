@@ -9,15 +9,16 @@ import {
   Download,
   Scissors,
   RotateCcw,
-  CheckCircle2,
   ChevronDown,
   ChevronUp,
   ArrowLeft,
-  Sparkles,
   ZoomIn,
-  Move,
-  Maximize2,
   FileDown,
+  Square,
+  Sparkles,
+  Type,
+  CornerDownRight,
+  Palette,
 } from 'lucide-react';
 import { PDFDocument } from 'pdf-lib';
 import { getStockDemoPortraitDataUrl } from '../utils/stockPassportPhoto';
@@ -27,6 +28,8 @@ interface PassportPhotoStudioPageProps {
 }
 
 type SheetPresetId = '4x6-8' | '4x6-6' | 'a4-30' | 'a4-36' | 'single';
+type CutGuideStyle = 'dotted' | 'crop-marks' | 'solid' | 'none';
+type BorderThickness = 'none' | 'thin' | 'standard' | 'bold';
 
 interface SheetPresetConfig {
   id: SheetPresetId;
@@ -68,12 +71,29 @@ export const PassportPhotoStudioPage: React.FC<PassportPhotoStudioPageProps> = (
   const [selectedPreset, setSelectedPreset] = useState<SheetPresetId>('4x6-8');
   const [totalCopies, setTotalCopies] = useState<number>(8);
 
-  // Advanced Settings
+  // Advanced Border & Cutting Settings (Replaces background tint with professional studio features)
   const [isAccordionOpen, setIsAccordionOpen] = useState<boolean>(false);
-  const [bgColor, setBgColor] = useState<string>('original'); // 'original' | '#FFFFFF' | '#93C5FD' | '#F8FAFC' | '#E2E8F0'
-  const [withBorder, setWithBorder] = useState<boolean>(true);
-  const [dottedCutLines, setDottedCutLines] = useState<boolean>(true);
+  const [borderThickness, setBorderThickness] = useState<BorderThickness>('standard');
+  const [borderColor, setBorderColor] = useState<string>('#000000');
+  const [cornerStyle, setCornerStyle] = useState<'sharp' | 'rounded'>('sharp');
+
+  // Cutting & Alignment Settings
+  const [cutGuideStyle, setCutGuideStyle] = useState<CutGuideStyle>('dotted');
+  const [cutGuideColor, setCutGuideColor] = useState<string>('#94A3B8');
+  const [showScissorIcons, setShowScissorIcons] = useState<boolean>(true);
   const [cellGap, setCellGap] = useState<number>(2); // mm gap
+  const [sheetMargin, setSheetMargin] = useState<number>(8); // mm outer margin
+
+  // Candidate Name & Date Stamp (Govt Exam Requirement: SSC/UPSC)
+  const [withNameDate, setWithNameDate] = useState<boolean>(false);
+  const [candidateName, setCandidateName] = useState<string>('ANIS SHAIKH');
+  const [dopText, setDopText] = useState<string>(() => {
+    const d = new Date();
+    const day = String(d.getDate()).padStart(2, '0');
+    const month = String(d.getMonth() + 1).padStart(2, '0');
+    const year = d.getFullYear();
+    return `DOP: ${day}/${month}/${year}`;
+  });
 
   // Canvas Refs
   const previewCanvasRef = useRef<HTMLCanvasElement>(null);
@@ -127,6 +147,16 @@ export const PassportPhotoStudioPage: React.FC<PassportPhotoStudioPageProps> = (
     setPanY(0);
   };
 
+  // Helper: Get border pixel width
+  const getBorderPx = (thickness: BorderThickness): number => {
+    switch (thickness) {
+      case 'none': return 0;
+      case 'thin': return 1.2; // ~0.5pt
+      case 'standard': return 2.2; // ~1.0pt
+      case 'bold': return 4.0; // ~2.0pt
+    }
+  };
+
   // Render Cropped Preview (Single 35x45 mm photo at 413x531 px)
   const renderSinglePhoto = useCallback((
     targetCtx: CanvasRenderingContext2D,
@@ -136,17 +166,21 @@ export const PassportPhotoStudioPage: React.FC<PassportPhotoStudioPageProps> = (
   ) => {
     targetCtx.save();
 
-    // 1. Fill background if specified
-    if (bgColor !== 'original') {
-      targetCtx.fillStyle = bgColor;
-      targetCtx.fillRect(0, 0, w, h);
-    }
+    // 1. Clear background to clean white
+    targetCtx.fillStyle = '#FFFFFF';
+    targetCtx.fillRect(0, 0, w, h);
 
-    // 2. Compute Cover Crop with Zoom & Pan
-    const srcW = img.naturalWidth;
-    const srcH = img.naturalHeight;
+    // 2. Compute usable photo height:
+    // When Name & Date (DOB/DOP) is enabled, dedicate compact bottom strip (~56px) for the name plate
+    // and frame the entire portrait above it so NOT a single pixel of the face, neck, or body is cut off!
+    const stripH = withNameDate ? 56 : 0;
+    const photoH = h - stripH; // Upper area for full portrait
+
+    // 3. Compute Cover Crop with Zoom & Pan for the exact photo area
+    const srcW = img.naturalWidth || 413;
+    const srcH = img.naturalHeight || 531;
     const srcRatio = srcW / srcH;
-    const dstRatio = w / h;
+    const dstRatio = w / photoH;
 
     let baseCropW = srcW;
     let baseCropH = srcH;
@@ -160,30 +194,106 @@ export const PassportPhotoStudioPage: React.FC<PassportPhotoStudioPageProps> = (
     const cropW = baseCropW / zoom;
     const cropH = baseCropH / zoom;
 
+    // In portraits, default focus is slightly higher (0.43 of height)
+    // so forehead, hair, chin, neck and chest remain completely inside the frame!
+    const defaultYRatio = withNameDate ? 0.43 : 0.48;
     const centerX = srcW / 2 + (panX / 100) * (srcW / 4);
-    const centerY = srcH / 2 + (panY / 100) * (srcH / 4);
+    const centerY = srcH * defaultYRatio + (panY / 100) * (srcH / 4);
 
     let sx = centerX - cropW / 2;
     let sy = centerY - cropH / 2;
 
     // Boundary clamp
-    sx = Math.max(0, Math.min(srcW - cropW, sx));
-    sy = Math.max(0, Math.min(srcH - cropH, sy));
+    sx = Math.max(0, Math.min(Math.max(0, srcW - cropW), sx));
+    sy = Math.max(0, Math.min(Math.max(0, srcH - cropH), sy));
 
-    // 3. Filters
+    // 4. Rounded corner clip if selected
+    if (cornerStyle === 'rounded') {
+      const radius = 16;
+      targetCtx.beginPath();
+      targetCtx.moveTo(radius, 0);
+      targetCtx.lineTo(w - radius, 0);
+      targetCtx.quadraticCurveTo(w, 0, w, radius);
+      targetCtx.lineTo(w, h - radius);
+      targetCtx.quadraticCurveTo(w, h, w - radius, h);
+      targetCtx.lineTo(radius, h);
+      targetCtx.quadraticCurveTo(0, h, 0, h - radius);
+      targetCtx.lineTo(0, radius);
+      targetCtx.quadraticCurveTo(0, 0, radius, 0);
+      targetCtx.closePath();
+      targetCtx.clip();
+    }
+
+    // 5. Draw image with filters strictly into the photo area (0 to photoH)
     targetCtx.filter = `brightness(${brightness}%) contrast(${contrast}%) saturate(${saturation}%)`;
-    targetCtx.drawImage(img, sx, sy, cropW, cropH, 0, 0, w, h);
+    targetCtx.drawImage(img, sx, sy, cropW, cropH, 0, 0, w, photoH);
     targetCtx.filter = 'none';
 
-    // 4. Border
-    if (withBorder) {
-      targetCtx.strokeStyle = '#1e293b';
-      targetCtx.lineWidth = 1.5;
-      targetCtx.strokeRect(0, 0, w, h);
+    // 6. Name & Date Stamp (Govt Exam Requirement) in the bottom dedicated area
+    if (withNameDate) {
+      targetCtx.fillStyle = '#FFFFFF';
+      targetCtx.fillRect(0, photoH, w, stripH);
+
+      // Subtle separator line
+      targetCtx.strokeStyle = '#CBD5E1';
+      targetCtx.lineWidth = 1;
+      targetCtx.beginPath();
+      targetCtx.moveTo(0, photoH);
+      targetCtx.lineTo(w, photoH);
+      targetCtx.stroke();
+
+      targetCtx.fillStyle = '#000000';
+      targetCtx.textAlign = 'center';
+      targetCtx.textBaseline = 'middle';
+
+      // Candidate Name
+      targetCtx.font = 'bold 14px -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, sans-serif';
+      targetCtx.fillText(candidateName.trim().toUpperCase(), w / 2, photoH + stripH * 0.36);
+
+      // Date of Photo / Date of Birth (DOP / DOB)
+      targetCtx.font = 'bold 11px -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, sans-serif';
+      targetCtx.fillText(dopText.trim(), w / 2, photoH + stripH * 0.74);
+    }
+
+    // 5. Border
+    const borderPx = getBorderPx(borderThickness);
+    if (borderPx > 0) {
+      targetCtx.strokeStyle = borderColor;
+      targetCtx.lineWidth = borderPx;
+      if (cornerStyle === 'rounded') {
+        const radius = 16;
+        targetCtx.beginPath();
+        targetCtx.moveTo(radius, 0);
+        targetCtx.lineTo(w - radius, 0);
+        targetCtx.quadraticCurveTo(w, 0, w, radius);
+        targetCtx.lineTo(w, h - radius);
+        targetCtx.quadraticCurveTo(w, h, w - radius, h);
+        targetCtx.lineTo(radius, h);
+        targetCtx.quadraticCurveTo(0, h, 0, h - radius);
+        targetCtx.lineTo(0, radius);
+        targetCtx.quadraticCurveTo(0, 0, radius, 0);
+        targetCtx.closePath();
+        targetCtx.stroke();
+      } else {
+        targetCtx.strokeRect(borderPx / 2, borderPx / 2, w - borderPx, h - borderPx);
+      }
     }
 
     targetCtx.restore();
-  }, [bgColor, zoom, panX, panY, brightness, contrast, saturation, withBorder]);
+  }, [
+    zoom,
+    panX,
+    panY,
+    brightness,
+    contrast,
+    saturation,
+    borderThickness,
+    borderColor,
+    cornerStyle,
+    withNameDate,
+    candidateName,
+    dopText,
+  ]);
 
   // Update Single Preview Canvas
   useEffect(() => {
@@ -227,11 +337,11 @@ export const PassportPhotoStudioPage: React.FC<PassportPhotoStudioPageProps> = (
       sheetCanvas.width = sheetW;
       sheetCanvas.height = sheetH;
 
-      // 1. Fill Crisp White Sheet
+      // 1. Fill Crisp Pure White Print Sheet
       ctx.fillStyle = '#FFFFFF';
       ctx.fillRect(0, 0, sheetW, sheetH);
 
-      // Single photo dimensions on sheet: 35x45 mm @ 300 DPI (~413 x 531 px)
+      // Single photo dimensions: 35x45 mm @ 300 DPI (~413 x 531 px)
       const photoW = 413;
       const photoH = 531;
 
@@ -241,59 +351,153 @@ export const PassportPhotoStudioPage: React.FC<PassportPhotoStudioPageProps> = (
       const maxSlots = cols * rows;
       const copiesToDraw = Math.min(totalCopies, maxSlots);
 
-      // Calculate margins to center the grid
-      const gapPx = (cellGap / 25.4) * 300; // mm to px at 300 DPI
-      const totalGridW = cols * photoW + (cols - 1) * gapPx;
-      const totalGridH = rows * photoH + (rows - 1) * gapPx;
+      // Calculate gaps in px at 300 DPI (1 inch = 25.4 mm)
+      const gapPx = (cellGap / 25.4) * 300;
 
-      const startX = (sheetW - totalGridW) / 2;
-      const startY = (sheetH - totalGridH) / 2 - 25; // slight top offset to leave room for footer
+      // Helper function to draw a single photo slot and its cutting guides
+      const drawPhotoSlot = (x: number, y: number, r: number, c: number) => {
+        // Draw photo onto sheet
+        const photoCanvas = document.createElement('canvas');
+        photoCanvas.width = photoW;
+        photoCanvas.height = photoH;
+        const pCtx = photoCanvas.getContext('2d');
+        if (pCtx) {
+          renderSinglePhoto(pCtx, photoW, photoH, img);
+          ctx.drawImage(photoCanvas, x, y);
+        }
 
-      // Render copies
-      let drawnCount = 0;
-      for (let r = 0; r < rows && drawnCount < copiesToDraw; r++) {
-        for (let c = 0; c < cols && drawnCount < copiesToDraw; c++) {
-          const x = startX + c * (photoW + gapPx);
-          const y = startY + r * (photoH + gapPx);
+        // Cutting Guides
+        if (cutGuideStyle === 'dotted') {
+          ctx.save();
+          ctx.strokeStyle = cutGuideColor;
+          ctx.lineWidth = 1.5;
+          ctx.setLineDash([8, 6]);
+          ctx.strokeRect(x - gapPx / 2, y - gapPx / 2, photoW + gapPx, photoH + gapPx);
+          ctx.restore();
+        } else if (cutGuideStyle === 'solid') {
+          ctx.save();
+          ctx.strokeStyle = cutGuideColor;
+          ctx.lineWidth = 1.0;
+          ctx.strokeRect(x - gapPx / 2, y - gapPx / 2, photoW + gapPx, photoH + gapPx);
+          ctx.restore();
+        } else if (cutGuideStyle === 'crop-marks') {
+          // Pro Corner L-Crop Marks
+          const markLen = 18;
+          ctx.save();
+          ctx.strokeStyle = cutGuideColor;
+          ctx.lineWidth = 1.5;
 
-          // Draw photo into offscreen canvas then onto sheet
-          const photoCanvas = document.createElement('canvas');
-          photoCanvas.width = photoW;
-          photoCanvas.height = photoH;
-          const pCtx = photoCanvas.getContext('2d');
-          if (pCtx) {
-            renderSinglePhoto(pCtx, photoW, photoH, img);
-            ctx.drawImage(photoCanvas, x, y);
+          // Top-left corner
+          ctx.beginPath();
+          ctx.moveTo(x - 2, y - markLen);
+          ctx.lineTo(x - 2, y - 2);
+          ctx.lineTo(x - markLen, y - 2);
+          ctx.stroke();
+
+          // Top-right corner
+          ctx.beginPath();
+          ctx.moveTo(x + photoW + 2, y - markLen);
+          ctx.lineTo(x + photoW + 2, y - 2);
+          ctx.lineTo(x + photoW + markLen, y - 2);
+          ctx.stroke();
+
+          // Bottom-left corner
+          ctx.beginPath();
+          ctx.moveTo(x - 2, y + photoH + markLen);
+          ctx.lineTo(x - 2, y + photoH + 2);
+          ctx.lineTo(x - markLen, y + photoH + 2);
+          ctx.stroke();
+
+          // Bottom-right corner
+          ctx.beginPath();
+          ctx.moveTo(x + photoW + 2, y + photoH + markLen);
+          ctx.lineTo(x + photoW + 2, y + photoH + 2);
+          ctx.lineTo(x + photoW + markLen, y + photoH + 2);
+          ctx.stroke();
+
+          ctx.restore();
+        }
+
+        // Optional Scissor Icons on edge
+        if (showScissorIcons && cutGuideStyle !== 'none') {
+          ctx.save();
+          ctx.fillStyle = cutGuideColor;
+          ctx.font = '14px system-ui, sans-serif';
+          ctx.textAlign = 'center';
+          ctx.textBaseline = 'middle';
+          if (r === 0) {
+            ctx.fillText('✂', x + photoW / 2, y - gapPx / 2 - 8);
           }
-
-          // Dotted Cut Lines around photo cell
-          if (dottedCutLines) {
-            ctx.save();
-            ctx.strokeStyle = '#94A3B8';
-            ctx.lineWidth = 1.5;
-            ctx.setLineDash([6, 6]);
-            // Draw cut guidelines slightly outside the photo
-            ctx.strokeRect(x - gapPx / 2, y - gapPx / 2, photoW + gapPx, photoH + gapPx);
-            ctx.restore();
+          if (c === 0) {
+            ctx.fillText('✂', x - gapPx / 2 - 12, y + photoH / 2);
           }
+          ctx.restore();
+        }
+      };
 
-          drawnCount++;
+      // RENDER LOGIC:
+      // When 1 copy is requested (or Single preset), place DEAD CENTER on sheet
+      if (copiesToDraw === 1 || selectedPreset === 'single') {
+        const x = Math.round((sheetW - photoW) / 2);
+        const y = Math.round((sheetH - photoH) / 2 - 25);
+        drawPhotoSlot(x, y, 0, 0);
+      } else {
+        // Multi-photo layout: dynamically center rows and columns
+        let effectiveCols = Math.min(cols, copiesToDraw);
+        let effectiveRows = Math.ceil(copiesToDraw / effectiveCols);
+
+        // Optimal balanced grid on 4x6 paper
+        if (copiesToDraw === 4 && cols >= 2) {
+          effectiveCols = 2;
+          effectiveRows = 2;
+        } else if (copiesToDraw === 6 && cols === 4) {
+          effectiveCols = 3;
+          effectiveRows = 2;
+        }
+
+        const totalGridW = effectiveCols * photoW + (effectiveCols - 1) * gapPx;
+        const totalGridH = effectiveRows * photoH + (effectiveRows - 1) * gapPx;
+        const startY = Math.round((sheetH - totalGridH) / 2 - 25);
+
+        let drawnCount = 0;
+        for (let r = 0; r < effectiveRows && drawnCount < copiesToDraw; r++) {
+          const remaining = copiesToDraw - drawnCount;
+          const photosInThisRow = Math.min(effectiveCols, remaining);
+          const rowW = photosInThisRow * photoW + (photosInThisRow - 1) * gapPx;
+          const rowStartX = Math.round((sheetW - rowW) / 2);
+
+          for (let c = 0; c < photosInThisRow && drawnCount < copiesToDraw; c++) {
+            const x = Math.round(rowStartX + c * (photoW + gapPx));
+            const y = Math.round(startY + r * (photoH + gapPx));
+            drawPhotoSlot(x, y, r, c);
+            drawnCount++;
+          }
         }
       }
 
-      // Footer branding stamp (matching screenshot: AOS PRINTER STUDIO • 35x45 mm • 8 Copies)
+      // Footer branding stamp: Updated to "AOS Passport Photo Studio"
       ctx.fillStyle = '#0F172A';
       ctx.font = 'bold 22px system-ui, -apple-system, sans-serif';
       ctx.textAlign = 'center';
-      const footerY = sheetH - 45;
+      const footerY = sheetH - 42;
       ctx.fillText(
-        `AOS PRINTER STUDIO   •   35×45 mm   •   ${copiesToDraw} Copies`,
+        `AOS Passport Photo Studio   •   35×45 mm   •   ${copiesToDraw} Copies`,
         sheetW / 2,
         footerY
       );
     };
     img.src = photoSrc;
-  }, [photoSrc, selectedPreset, totalCopies, cellGap, dottedCutLines, renderSinglePhoto]);
+  }, [
+    photoSrc,
+    selectedPreset,
+    totalCopies,
+    cellGap,
+    sheetMargin,
+    cutGuideStyle,
+    cutGuideColor,
+    showScissorIcons,
+    renderSinglePhoto,
+  ]);
 
   // Actions: Direct Print Sheet
   const handleDirectPrint = () => {
@@ -314,7 +518,7 @@ export const PassportPhotoStudioPage: React.FC<PassportPhotoStudioPageProps> = (
       <!DOCTYPE html>
       <html>
         <head>
-          <title>AOS Printer Studio - Passport Sheet</title>
+          <title>AOS Passport Photo Studio - Print Sheet</title>
           <style>
             @page {
               size: ${paperSizeCss};
@@ -378,7 +582,7 @@ export const PassportPhotoStudioPage: React.FC<PassportPhotoStudioPageProps> = (
 
       const link = document.createElement('a');
       link.href = url;
-      link.download = `AOS_Passport_Print_Sheet_${totalCopies}Photos_${activeConf.paper}.pdf`;
+      link.download = `AOS_Passport_Photo_Studio_${totalCopies}Photos_${activeConf.paper}.pdf`;
       link.click();
       URL.revokeObjectURL(url);
     } catch (err) {
@@ -393,7 +597,7 @@ export const PassportPhotoStudioPage: React.FC<PassportPhotoStudioPageProps> = (
     const url = canvas.toDataURL('image/jpeg', 0.98);
     const link = document.createElement('a');
     link.href = url;
-    link.download = `AOS_Passport_Sheet_${totalCopies}Photos.jpg`;
+    link.download = `AOS_Passport_Photo_Studio_${totalCopies}Photos.jpg`;
     link.click();
   };
 
@@ -455,7 +659,7 @@ export const PassportPhotoStudioPage: React.FC<PassportPhotoStudioPageProps> = (
           </div>
         </div>
 
-        <div className="flex items-center gap-3 shrink-0">
+        <div className="flex items-center gap-2.5 shrink-0 flex-wrap sm:flex-nowrap">
           <input
             type="file"
             ref={fileInputRef}
@@ -470,8 +674,24 @@ export const PassportPhotoStudioPage: React.FC<PassportPhotoStudioPageProps> = (
             <Upload className="w-4 h-4" />
             <span>Upload Photo</span>
           </button>
+          {!isStockModel && (
+            <button
+              onClick={() => {
+                setPhotoSrc(getStockDemoPortraitDataUrl());
+                setIsStockModel(true);
+                setZoom(1.0);
+                setPanX(0);
+                setPanY(0);
+              }}
+              className="px-3 py-2 rounded-xl bg-[#03182b] hover:bg-[#072642] border border-[#0d4775] text-slate-300 hover:text-white text-xs font-semibold flex items-center gap-1.5 transition-all cursor-pointer active:scale-95"
+              title="Reset to official sample portrait"
+            >
+              <RotateCcw className="w-3.5 h-3.5 text-blue-400" />
+              <span>Use Sample</span>
+            </button>
+          )}
           <span className="text-[11px] font-mono text-slate-400 hidden sm:inline">
-            {isStockModel ? 'Stock Model Loaded' : 'Custom Photo Loaded'}
+            {isStockModel ? 'Sample Portrait Loaded' : 'Custom Photo Loaded'}
           </span>
         </div>
       </div>
@@ -506,7 +726,7 @@ export const PassportPhotoStudioPage: React.FC<PassportPhotoStudioPageProps> = (
           <div className="relative group">
             <canvas
               ref={previewCanvasRef}
-              className="w-48 sm:w-56 aspect-[35/45] rounded-lg shadow-2xl object-contain border border-slate-700"
+              className="w-48 sm:w-56 aspect-[35/45] rounded-lg shadow-2xl object-contain border border-slate-700 bg-white"
             />
             
             {/* Adjust Crop Floating Pill Button */}
@@ -658,7 +878,7 @@ export const PassportPhotoStudioPage: React.FC<PassportPhotoStudioPageProps> = (
       </div>
 
       {/* =========================================================================
-          SECTION 3: PRINT SHEET LAYOUT (Matching Screenshot 1 & 2)
+          SECTION 3: PRINT SHEET LAYOUT & ADVANCED CUTTING SETTINGS
           ========================================================================= */}
       <div className="rounded-2xl bg-[#072642] border border-[#0d4775] p-5 shadow-xl space-y-4">
         <div className="flex items-center justify-between border-b border-white/10 pb-3">
@@ -721,7 +941,10 @@ export const PassportPhotoStudioPage: React.FC<PassportPhotoStudioPageProps> = (
           </div>
         </div>
 
-        {/* Accordion: Advanced Cutting & Border Settings */}
+        {/* =========================================================================
+            ACCORDION: ADVANCED CUTTING & BORDER SETTINGS
+            (BACKGROUND TINT REMOVED & PRO STUDIO SETTINGS ADDED)
+            ========================================================================= */}
         <div className="pt-2 border-t border-white/10">
           <button
             onClick={() => setIsAccordionOpen(!isAccordionOpen)}
@@ -735,80 +958,271 @@ export const PassportPhotoStudioPage: React.FC<PassportPhotoStudioPageProps> = (
           </button>
 
           {isAccordionOpen && (
-            <div className="mt-3 p-4 rounded-xl bg-[#03182b] border border-[#0d4775] space-y-4 animate-in fade-in duration-150">
-              {/* Background Color tint */}
-              <div>
-                <label className="block text-[11px] font-bold text-slate-300 uppercase tracking-wider mb-2">
-                  Studio Background Tint
+            <div className="mt-3 p-4 rounded-xl bg-[#03182b] border border-[#0d4775] space-y-5 animate-in fade-in duration-150">
+              
+              {/* 1. Photo Border Thickness & Style */}
+              <div className="space-y-2">
+                <label className="block text-[11px] font-bold text-slate-300 uppercase tracking-wider">
+                  Photo Border Thickness (Cutting Edge)
                 </label>
-                <div className="flex flex-wrap gap-2">
+                <div className="grid grid-cols-2 sm:grid-cols-4 gap-2">
                   {[
-                    { id: 'original', label: 'Original', color: 'transparent' },
-                    { id: '#FFFFFF', label: 'Crisp White', color: '#FFFFFF' },
-                    { id: '#93C5FD', label: 'Light Blue', color: '#93C5FD' },
-                    { id: '#F8FAFC', label: 'Off-White', color: '#F8FAFC' },
-                    { id: '#E2E8F0', label: 'Neutral Gray', color: '#E2E8F0' },
-                  ].map((bg) => (
+                    { id: 'none', label: 'No Border', sub: 'Frameless' },
+                    { id: 'thin', label: 'Hairline', sub: '0.5 pt Lab Cut' },
+                    { id: 'standard', label: 'Standard', sub: '1.0 pt Standard' },
+                    { id: 'bold', label: 'Bold Edge', sub: '2.0 pt High-Vis' },
+                  ].map((b) => (
                     <button
-                      key={bg.id}
-                      onClick={() => setBgColor(bg.id)}
-                      className={`px-3 py-1.5 rounded-lg text-xs font-semibold flex items-center gap-1.5 border transition-all cursor-pointer ${
-                        bgColor === bg.id
+                      key={b.id}
+                      onClick={() => setBorderThickness(b.id as BorderThickness)}
+                      className={`p-2.5 rounded-lg border text-left transition-all cursor-pointer ${
+                        borderThickness === b.id
                           ? 'border-red-500 bg-red-950/60 text-white shadow-sm'
                           : 'border-[#0d4775] bg-[#072642] text-slate-300 hover:text-white'
                       }`}
                     >
-                      {bg.color !== 'transparent' && (
-                        <span
-                          className="w-3 h-3 rounded-full border border-slate-400"
-                          style={{ backgroundColor: bg.color }}
-                        />
-                      )}
-                      <span>{bg.label}</span>
+                      <div className="text-xs font-bold">{b.label}</div>
+                      <div className="text-[10px] text-slate-400">{b.sub}</div>
                     </button>
                   ))}
                 </div>
               </div>
 
-              {/* Toggles */}
-              <div className="grid grid-cols-1 sm:grid-cols-2 gap-3 pt-1">
-                <label className="flex items-center gap-2.5 cursor-pointer text-xs font-medium text-slate-200">
-                  <input
-                    type="checkbox"
-                    checked={withBorder}
-                    onChange={(e) => setWithBorder(e.target.checked)}
-                    className="w-4 h-4 accent-red-600 rounded"
-                  />
-                  <span>Solid black border on each photo</span>
-                </label>
+              {/* 2. Border Color & Corner Style */}
+              {borderThickness !== 'none' && (
+                <div className="grid grid-cols-1 sm:grid-cols-2 gap-4 pt-1">
+                  <div>
+                    <label className="block text-[11px] font-bold text-slate-300 uppercase tracking-wider mb-2">
+                      Border Color
+                    </label>
+                    <div className="flex flex-wrap gap-2">
+                      {[
+                        { color: '#000000', label: 'Black' },
+                        { color: '#334155', label: 'Charcoal' },
+                        { color: '#94A3B8', label: 'Silver' },
+                        { color: '#FFFFFF', label: 'White Inset' },
+                      ].map((c) => (
+                        <button
+                          key={c.color}
+                          onClick={() => setBorderColor(c.color)}
+                          className={`px-3 py-1.5 rounded-lg text-xs font-semibold flex items-center gap-1.5 border transition-all cursor-pointer ${
+                            borderColor === c.color
+                              ? 'border-red-500 bg-red-950/60 text-white'
+                              : 'border-[#0d4775] bg-[#072642] text-slate-300'
+                          }`}
+                        >
+                          <span
+                            className="w-3 h-3 rounded-full border border-slate-500 shrink-0"
+                            style={{ backgroundColor: c.color }}
+                          />
+                          <span>{c.label}</span>
+                        </button>
+                      ))}
+                    </div>
+                  </div>
 
-                <label className="flex items-center gap-2.5 cursor-pointer text-xs font-medium text-slate-200">
-                  <input
-                    type="checkbox"
-                    checked={dottedCutLines}
-                    onChange={(e) => setDottedCutLines(e.target.checked)}
-                    className="w-4 h-4 accent-red-600 rounded"
-                  />
-                  <span>Dotted scissor cut guidelines</span>
-                </label>
-              </div>
-
-              {/* Gap margin */}
-              <div>
-                <div className="flex justify-between text-xs text-slate-300 mb-1">
-                  <span>Photo Separation Margin (Cut Gap)</span>
-                  <span className="font-mono text-red-400">{cellGap} mm</span>
+                  <div>
+                    <label className="block text-[11px] font-bold text-slate-300 uppercase tracking-wider mb-2">
+                      Corner Cut Style
+                    </label>
+                    <div className="grid grid-cols-2 gap-2">
+                      <button
+                        onClick={() => setCornerStyle('sharp')}
+                        className={`p-2 rounded-lg border text-xs font-bold transition-all cursor-pointer ${
+                          cornerStyle === 'sharp'
+                            ? 'border-red-500 bg-red-950/60 text-white'
+                            : 'border-[#0d4775] bg-[#072642] text-slate-300'
+                        }`}
+                      >
+                        Square (90° Standard)
+                      </button>
+                      <button
+                        onClick={() => setCornerStyle('rounded')}
+                        className={`p-2 rounded-lg border text-xs font-bold transition-all cursor-pointer ${
+                          cornerStyle === 'rounded'
+                            ? 'border-red-500 bg-red-950/60 text-white'
+                            : 'border-[#0d4775] bg-[#072642] text-slate-300'
+                        }`}
+                      >
+                        Smooth Rounded (2mm)
+                      </button>
+                    </div>
+                  </div>
                 </div>
-                <input
-                  type="range"
-                  min="0"
-                  max="5"
-                  step="0.5"
-                  value={cellGap}
-                  onChange={(e) => setCellGap(parseFloat(e.target.value))}
-                  className="w-full accent-red-600"
-                />
+              )}
+
+              {/* 3. Cutting Guide Style (Dotted, Crop Marks, Solid, None) */}
+              <div className="space-y-2 pt-1 border-t border-white/5">
+                <div className="flex items-center justify-between">
+                  <label className="block text-[11px] font-bold text-slate-300 uppercase tracking-wider">
+                    Cutting Guide Marks &amp; Lines
+                  </label>
+                  <label className="flex items-center gap-1.5 text-xs text-slate-300 cursor-pointer">
+                    <input
+                      type="checkbox"
+                      checked={showScissorIcons}
+                      onChange={(e) => setShowScissorIcons(e.target.checked)}
+                      className="w-3.5 h-3.5 accent-red-600 rounded"
+                    />
+                    <span>Show ✂ Scissors on Margins</span>
+                  </label>
+                </div>
+
+                <div className="grid grid-cols-2 sm:grid-cols-4 gap-2">
+                  {[
+                    { id: 'dotted', label: 'Dotted Grid', sub: 'Scissors Guide' },
+                    { id: 'crop-marks', label: 'Corner Marks', sub: 'L-Crop Marks' },
+                    { id: 'solid', label: 'Continuous Line', sub: 'Paper Trimmer' },
+                    { id: 'none', label: 'Clean Blank', sub: 'No Guide Lines' },
+                  ].map((g) => (
+                    <button
+                      key={g.id}
+                      onClick={() => setCutGuideStyle(g.id as CutGuideStyle)}
+                      className={`p-2.5 rounded-lg border text-left transition-all cursor-pointer ${
+                        cutGuideStyle === g.id
+                          ? 'border-red-500 bg-red-950/60 text-white shadow-sm'
+                          : 'border-[#0d4775] bg-[#072642] text-slate-300 hover:text-white'
+                      }`}
+                    >
+                      <div className="text-xs font-bold">{g.label}</div>
+                      <div className="text-[10px] text-slate-400">{g.sub}</div>
+                    </button>
+                  ))}
+                </div>
               </div>
+
+              {/* 4. Guide Line Color & Gap Spacing */}
+              {cutGuideStyle !== 'none' && (
+                <div className="grid grid-cols-1 sm:grid-cols-2 gap-4 pt-1">
+                  <div>
+                    <label className="block text-[11px] font-bold text-slate-300 uppercase tracking-wider mb-1.5">
+                      Guide Line Color
+                    </label>
+                    <div className="flex gap-2">
+                      {[
+                        { color: '#94A3B8', label: 'Soft Gray' },
+                        { color: '#475569', label: 'Dark Slate' },
+                        { color: '#EF4444', label: 'Red Laser' },
+                      ].map((c) => (
+                        <button
+                          key={c.color}
+                          onClick={() => setCutGuideColor(c.color)}
+                          className={`px-2.5 py-1 rounded-md text-xs font-medium border flex items-center gap-1.5 cursor-pointer ${
+                            cutGuideColor === c.color
+                              ? 'border-red-500 bg-red-950/60 text-white'
+                              : 'border-[#0d4775] bg-[#072642] text-slate-300'
+                          }`}
+                        >
+                          <span className="w-2.5 h-2.5 rounded-full" style={{ backgroundColor: c.color }} />
+                          <span>{c.label}</span>
+                        </button>
+                      ))}
+                    </div>
+                  </div>
+
+                  <div>
+                    <div className="flex justify-between text-xs text-slate-300 mb-1">
+                      <span>Inter-Photo Cutting Gap</span>
+                      <span className="font-mono text-red-400">{cellGap} mm</span>
+                    </div>
+                    <input
+                      type="range"
+                      min="0"
+                      max="6"
+                      step="0.5"
+                      value={cellGap}
+                      onChange={(e) => setCellGap(parseFloat(e.target.value))}
+                      className="w-full accent-red-600"
+                    />
+                  </div>
+                </div>
+              )}
+
+              {/* 5. Candidate Name & Date (DOP) Stamp - SSC / UPSC Govt Exam Requirement */}
+              <div className="p-3.5 rounded-xl bg-[#072642] border border-[#0d4775] space-y-3">
+                <div className="flex items-center justify-between">
+                  <label className="flex items-center gap-2 cursor-pointer text-xs font-bold text-white">
+                    <input
+                      type="checkbox"
+                      checked={withNameDate}
+                      onChange={(e) => setWithNameDate(e.target.checked)}
+                      className="w-4 h-4 accent-red-600 rounded"
+                    />
+                    <span>Print Candidate Name &amp; Date (DOP) on Photo</span>
+                  </label>
+                  <span className="text-[10px] font-mono text-amber-400 bg-amber-950/70 border border-amber-500/30 px-2 py-0.5 rounded">
+                    SSC / UPSC / Govt Exam
+                  </span>
+                </div>
+
+                {withNameDate && (
+                  <div className="space-y-3 pt-1 animate-in fade-in duration-150">
+                    <div className="grid grid-cols-1 sm:grid-cols-2 gap-3">
+                      <div>
+                        <label className="block text-[10px] font-bold text-slate-300 uppercase mb-1">
+                          Candidate Full Name
+                        </label>
+                        <input
+                          type="text"
+                          value={candidateName}
+                          onChange={(e) => setCandidateName(e.target.value)}
+                          placeholder="e.g. ANIS SHAIKH"
+                          className="w-full bg-[#03182b] border border-[#0d4775] text-white text-xs px-3 py-2 rounded-lg focus:outline-none focus:border-red-500 font-medium"
+                        />
+                      </div>
+                      <div>
+                        <label className="block text-[10px] font-bold text-slate-300 uppercase mb-1">
+                          Date of Photo (DOP / DOB)
+                        </label>
+                        <input
+                          type="text"
+                          value={dopText}
+                          onChange={(e) => setDopText(e.target.value)}
+                          placeholder="e.g. DOP: 03/11/2026"
+                          className="w-full bg-[#03182b] border border-[#0d4775] text-white text-xs px-3 py-2 rounded-lg focus:outline-none focus:border-red-500 font-medium"
+                        />
+                      </div>
+                    </div>
+
+                    {/* Quick Face & Frame Position Adjuster */}
+                    <div className="p-2.5 rounded-lg bg-[#03182b]/80 border border-[#0d4775]/70 flex flex-wrap items-center justify-between gap-2 text-xs">
+                      <span className="text-[11px] font-semibold text-slate-300 flex items-center gap-1.5">
+                        <Crop className="w-3.5 h-3.5 text-blue-400" />
+                        <span>Photo Framing (Upar / Neeche Position):</span>
+                        <span className="font-mono text-emerald-400 text-[10px]">{panY > 0 ? `+${panY}%` : `${panY}%`}</span>
+                      </span>
+
+                      <div className="flex items-center gap-1.5">
+                        <button
+                          type="button"
+                          onClick={() => setPanY((prev) => Math.max(-50, prev - 4))}
+                          className="px-2.5 py-1 rounded bg-[#072642] hover:bg-blue-600 border border-[#0d4775] text-white text-[11px] font-bold transition-all cursor-pointer"
+                          title="Shift photo upwards"
+                        >
+                          ▲ Nudge Up
+                        </button>
+                        <button
+                          type="button"
+                          onClick={() => setPanY((prev) => Math.min(50, prev + 4))}
+                          className="px-2.5 py-1 rounded bg-[#072642] hover:bg-blue-600 border border-[#0d4775] text-white text-[11px] font-bold transition-all cursor-pointer"
+                          title="Shift photo downwards"
+                        >
+                          ▼ Nudge Down
+                        </button>
+                        <button
+                          type="button"
+                          onClick={() => { setPanY(0); setPanX(0); setZoom(1.0); }}
+                          className="px-2 py-1 rounded bg-[#072642] hover:bg-slate-700 border border-[#0d4775] text-slate-300 hover:text-white text-[10px] font-semibold transition-all cursor-pointer"
+                          title="Reset to default center"
+                        >
+                          Reset
+                        </button>
+                      </div>
+                    </div>
+                  </div>
+                )}
+              </div>
+
             </div>
           )}
         </div>
@@ -825,10 +1239,10 @@ export const PassportPhotoStudioPage: React.FC<PassportPhotoStudioPageProps> = (
           </div>
 
           <div className="flex items-center gap-2">
-            {dottedCutLines && (
+            {cutGuideStyle !== 'none' && (
               <span className="text-[10px] font-mono text-red-300 bg-red-950/70 border border-red-500/30 px-2 py-0.5 rounded flex items-center gap-1">
                 <Scissors className="w-3 h-3 text-red-400" />
-                Dotted Cut Lines Active
+                {cutGuideStyle === 'crop-marks' ? 'Crop Marks Active' : 'Cut Guides Active'}
               </span>
             )}
             <span className="text-[10px] font-bold uppercase tracking-wider text-emerald-300 bg-emerald-950/80 border border-emerald-500/40 px-2 py-0.5 rounded">
@@ -845,7 +1259,7 @@ export const PassportPhotoStudioPage: React.FC<PassportPhotoStudioPageProps> = (
           />
         </div>
 
-        {/* Actions: Print & Download Buttons matching screenshot */}
+        {/* Actions: Print & Download Buttons */}
         <div className="space-y-2.5 pt-2">
           {/* Blue Primary Button: Direct Print Sheet */}
           <button
