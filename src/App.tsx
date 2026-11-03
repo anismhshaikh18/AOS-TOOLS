@@ -2,9 +2,13 @@ import React, { useState, useEffect } from 'react';
 import { Header } from './components/Header';
 import { Footer } from './components/Footer';
 import { HomeView } from './views/HomeView';
+import { ToolsDirectoryView } from './views/ToolsDirectoryView';
+import { AboutView } from './views/AboutView';
+import { PrivacyView } from './views/PrivacyView';
 import { PdfToolsView } from './views/PdfToolsView';
 import { ImageToolsView } from './views/ImageToolsView';
 import { SpecialToolsView } from './views/SpecialToolsView';
+import { PassportPhotoStudioPage } from './views/PassportPhotoStudioPage';
 import { KhataDiary } from './components/KhataDiary';
 import { PanMasterHub } from './components/PanMasterHub';
 import { GovernmentPortals } from './components/GovernmentPortals';
@@ -15,7 +19,7 @@ import { ToolItem } from './types';
 import { PDF_TOOLS } from './data/pdfTools';
 import { IMAGE_TOOLS } from './data/imageTools';
 import { SPECIAL_TOOLS } from './data/specialTools';
-import { LanguageCode, TemplateId, DESIGN_TEMPLATES } from './utils/translations';
+import { LanguageCode, TemplateId } from './utils/translations';
 
 export default function App() {
   const [activeTab, setActiveTab] = useState<string>('home');
@@ -24,20 +28,20 @@ export default function App() {
   const [isPrivacyOpen, setIsPrivacyOpen] = useState<boolean>(false);
   const [isFreePolicyOpen, setIsFreePolicyOpen] = useState<boolean>(false);
 
-  // 4 Design Templates: Template 1 (Red & Black), Template 2 (Blue & White), Template 3 (Purple), Template 4 (Minimal Slate)
+  // Template Id
   const [templateId, setTemplateId] = useState<TemplateId>(() => {
     try {
       const saved = localStorage.getItem('aos_template') as TemplateId;
       if (saved && ['template-1', 'template-2', 'template-3', 'template-4'].includes(saved)) {
         return saved;
       }
-      return 'template-3';
+      return 'template-1'; // Default matching screenshot theme with red accents
     } catch {
-      return 'template-3';
+      return 'template-1';
     }
   });
 
-  // Multi-Language state (6 languages: en, hi, ta, te, mr, hinglish)
+  // Multi-Language state
   const [lang, setLang] = useState<LanguageCode>(() => {
     try {
       const saved = localStorage.getItem('aos_lang') as LanguageCode;
@@ -86,11 +90,7 @@ export default function App() {
     localStorage.setItem('aos_lang', lang);
   }, [lang]);
 
-  const handleSelectTemplate = (id: TemplateId) => {
-    setTemplateId(id);
-  };
-
-  // Mobile browser back-button & history navigation handler (handles back-press without closing app)
+  // Mobile browser back-button & history navigation handler
   useEffect(() => {
     if (!window.history.state) {
       window.history.replaceState({ tab: 'home', toolId: null }, '');
@@ -127,6 +127,7 @@ export default function App() {
 
   const handleNavigateTab = (tab: string) => {
     setActiveTab(tab);
+    window.scrollTo({ top: 0, behavior: 'smooth' });
     window.history.pushState({ tab, toolId: null }, '');
   };
 
@@ -171,14 +172,14 @@ export default function App() {
   return (
     <div className="min-h-screen flex flex-col bg-transparent text-slate-900 dark:text-slate-100 transition-colors duration-200 w-full max-w-full overflow-x-hidden">
       
-      {/* Responsive Header with Template Switcher, Dark/Light Mode & Language Selector */}
+      {/* Responsive Header */}
       <Header
         activeTab={activeTab}
         setActiveTab={handleNavigateTab}
         isDark={isDark}
         onToggleTheme={toggleTheme}
         templateId={templateId}
-        setTemplateId={handleSelectTemplate}
+        setTemplateId={setTemplateId}
         lang={lang}
         setLang={setLang}
         onOpenSearch={() => setIsSearchOpen(true)}
@@ -186,55 +187,73 @@ export default function App() {
 
       {/* Main Container Viewport */}
       <main className="flex-1 max-w-7xl w-full mx-auto px-4 sm:px-6 lg:px-8 pt-6 sm:pt-8 min-w-0">
-        {activeTab === 'home' && (
-          <HomeView
-            onSelectTool={handleSelectTool}
-            setActiveTab={handleNavigateTab}
-            onOpenSearch={() => setIsSearchOpen(true)}
-            templateId={templateId}
-            lang={lang}
-          />
+        {selectedTool ? (
+          (selectedTool.id === 'passport-photo-studio' || selectedTool.id === 'passport-photo-sheet') ? (
+            <PassportPhotoStudioPage onBack={handleCloseTool} />
+          ) : (
+            <ToolRunnerModal
+              tool={selectedTool}
+              onClose={handleCloseTool}
+              onOpenKhataTab={() => {
+                handleCloseTool();
+                handleNavigateTab('khata');
+              }}
+            />
+          )
+        ) : (
+          <>
+            {activeTab === 'home' && (
+              <HomeView
+                onSelectTool={handleSelectTool}
+                setActiveTab={handleNavigateTab}
+                onOpenSearch={() => setIsSearchOpen(true)}
+                templateId={templateId}
+                lang={lang}
+              />
+            )}
+
+            {activeTab === 'tools' && (
+              <ToolsDirectoryView
+                onSelectTool={handleSelectTool}
+                setActiveTab={handleNavigateTab}
+              />
+            )}
+
+            {activeTab === 'about' && (
+              <AboutView onExploreTools={() => handleNavigateTab('tools')} />
+            )}
+
+            {activeTab === 'privacy' && <PrivacyView />}
+
+            {activeTab === 'pdf' && (
+              <PdfToolsView onSelectTool={handleSelectTool} lang={lang} />
+            )}
+
+            {activeTab === 'image' && (
+              <ImageToolsView onSelectTool={handleSelectTool} lang={lang} />
+            )}
+
+            {activeTab === 'special' && (
+              <SpecialToolsView onSelectTool={handleSelectTool} lang={lang} />
+            )}
+
+            {activeTab === 'khata' && <KhataDiary />}
+
+            {activeTab === 'pan' && (
+              <PanMasterHub onLaunchImageResize={handleLaunchPhotoResizer} />
+            )}
+
+            {activeTab === 'portals' && <GovernmentPortals />}
+          </>
         )}
-
-        {activeTab === 'pdf' && (
-          <PdfToolsView onSelectTool={handleSelectTool} lang={lang} />
-        )}
-
-        {activeTab === 'image' && (
-          <ImageToolsView onSelectTool={handleSelectTool} lang={lang} />
-        )}
-
-        {activeTab === 'special' && (
-          <SpecialToolsView onSelectTool={handleSelectTool} lang={lang} />
-        )}
-
-        {activeTab === 'khata' && <KhataDiary />}
-
-        {activeTab === 'pan' && (
-          <PanMasterHub onLaunchImageResize={handleLaunchPhotoResizer} />
-        )}
-
-        {activeTab === 'portals' && <GovernmentPortals />}
       </main>
 
-      {/* Clean Footer */}
+      {/* Clean Footer matching Screenshot */}
       <Footer
-        onOpenPrivacy={() => setIsPrivacyOpen(true)}
+        onOpenPrivacy={() => handleNavigateTab('privacy')}
         onOpenFreePolicy={() => setIsFreePolicyOpen(true)}
         setActiveTab={handleNavigateTab}
       />
-
-      {/* Execution Modal */}
-      {selectedTool && (
-        <ToolRunnerModal
-          tool={selectedTool}
-          onClose={handleCloseTool}
-          onOpenKhataTab={() => {
-            handleCloseTool();
-            handleNavigateTab('khata');
-          }}
-        />
-      )}
 
       {/* Search Palette Modal */}
       {isSearchOpen && (

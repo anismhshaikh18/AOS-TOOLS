@@ -1,8 +1,5 @@
 import React from 'react';
-import { ExternalLink } from 'lucide-react';
-import { PDF_TOOLS } from '../data/pdfTools';
-import { IMAGE_TOOLS } from '../data/imageTools';
-import { SPECIAL_TOOLS } from '../data/specialTools';
+import { Printer, Youtube, Facebook, Send, ExternalLink, ShieldCheck } from 'lucide-react';
 
 interface FooterProps {
   onOpenPrivacy: () => void;
@@ -16,149 +13,109 @@ export const Footer: React.FC<FooterProps> = ({
   setActiveTab,
 }) => {
   return (
-    <footer className="mt-20 border-t border-purple-200/70 dark:border-purple-500/25 bg-gradient-to-b from-white/90 via-purple-50/40 to-white/95 dark:from-[#0c051f]/95 dark:via-[#0e0524]/95 dark:to-[#080214]/98 text-slate-700 dark:text-white backdrop-blur-2xl py-12 transition-colors">
-      <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 space-y-8">
-        <div className="grid grid-cols-1 md:grid-cols-4 gap-8">
-          {/* Brand Col */}
-          <div className="space-y-3">
-            <div className="flex items-center gap-2">
-              <div className="w-8 h-8 rounded-xl bg-gradient-to-br from-purple-600 via-indigo-600 to-pink-500 flex items-center justify-center text-white font-black text-sm shadow-md">
-                A
-              </div>
-              <span className="font-extrabold text-base tracking-tight bg-gradient-to-r from-purple-700 via-indigo-600 to-pink-600 dark:from-purple-300 dark:via-pink-300 dark:to-indigo-300 bg-clip-text text-transparent">
-                AOS Tools
-              </span>
+    <footer className="mt-20 border-t border-[#0d4775]/60 bg-[#021526]/95 backdrop-blur-xl py-8 text-slate-400 transition-colors">
+      <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 space-y-6">
+        <div className="flex flex-col sm:flex-row items-center justify-between gap-4">
+          {/* Logo */}
+          <div
+            onClick={() => setActiveTab('home')}
+            role="button"
+            tabIndex={0}
+            className="flex items-center gap-2 cursor-pointer select-none group"
+          >
+            <div className="w-8 h-8 rounded-full overflow-hidden bg-white ring-2 ring-[#0d4775] flex items-center justify-center shadow-md shrink-0 p-0.5 group-hover:scale-105 transition-transform">
+              <img
+                src="/assets/aistudio/AOS_Logo_783714c3.png"
+                alt="AOS Logo"
+                className="w-full h-full object-contain rounded-full"
+                loading="lazy"
+              />
             </div>
-            <p className="text-xs text-slate-500 dark:text-purple-200/70 leading-relaxed">
-              100% Client-side utility suite for citizen services, documents, and business ledgers. Zero server uploads, absolute private security.
-            </p>
+            <div className="flex items-baseline font-black tracking-tight text-sm">
+              <span className="text-white">AOS</span>
+              <span className="text-red-500 ml-1">TOOLS</span>
+            </div>
           </div>
 
-          {/* Tool Suites */}
-          <div className="space-y-2.5">
-            <h4 className="text-xs font-bold uppercase tracking-wider text-purple-700 dark:text-purple-300">
-              Tool Suites
-            </h4>
-            <ul className="space-y-2 text-xs text-slate-600 dark:text-purple-200/80">
-              <li>
-                <button
-                  onClick={() => setActiveTab('pdf')}
-                  className="hover:text-purple-600 dark:hover:text-white transition-colors cursor-pointer text-left"
-                >
-                  {PDF_TOOLS.length} PDF Tools
-                </button>
-              </li>
-              <li>
-                <button
-                  onClick={() => setActiveTab('image')}
-                  className="hover:text-purple-600 dark:hover:text-white transition-colors cursor-pointer text-left"
-                >
-                  {IMAGE_TOOLS.length} Image Processors
-                </button>
-              </li>
-              <li>
-                <button
-                  onClick={() => setActiveTab('special')}
-                  className="hover:text-purple-600 dark:hover:text-white transition-colors cursor-pointer text-left"
-                >
-                  {SPECIAL_TOOLS.length} Special Utilities
-                </button>
-              </li>
-              <li>
-                <button
-                  onClick={() => setActiveTab('khata')}
-                  className="hover:text-purple-600 dark:hover:text-white transition-colors cursor-pointer text-left"
-                >
-                  Client Ledger Diary (Khata)
-                </button>
-              </li>
-            </ul>
-          </div>
+          {/* Copyright text matching screenshot */}
+          <p className="text-xs text-slate-400">
+            © {new Date().getFullYear()} AOS TOOLS. All rights reserved.
+          </p>
 
-          {/* Portals & Policies */}
-          <div className="space-y-2.5">
-            <h4 className="text-xs font-bold uppercase tracking-wider text-purple-700 dark:text-purple-300">
-              Portals & Services
-            </h4>
-            <ul className="space-y-2 text-xs text-slate-600 dark:text-purple-200/80">
-              <li>
-                <button
-                  onClick={() => setActiveTab('pan')}
-                  className="hover:text-purple-600 dark:hover:text-white transition-colors cursor-pointer text-left"
-                >
-                  PAN Master Hub (UTIITSL / Protean)
-                </button>
-              </li>
-              <li>
-                <button
-                  onClick={() => setActiveTab('portals')}
-                  className="hover:text-purple-600 dark:hover:text-white transition-colors cursor-pointer text-left"
-                >
-                  50 Verified Government Portals
-                </button>
-              </li>
-              <li>
-                <button
-                  onClick={onOpenFreePolicy}
-                  className="hover:text-purple-600 dark:hover:text-white transition-colors cursor-pointer text-left"
-                >
-                  Strict ₹0-Cost Policy
-                </button>
-              </li>
-              <li>
-                <button
-                  onClick={onOpenPrivacy}
-                  className="hover:text-purple-600 dark:hover:text-white transition-colors cursor-pointer text-left"
-                >
-                  Privacy & Data Security
-                </button>
-              </li>
-            </ul>
-          </div>
-
-          {/* Partner & Canva Site */}
-          <div className="space-y-2.5">
-            <h4 className="text-xs font-bold uppercase tracking-wider text-purple-700 dark:text-purple-300">
-              Official Partner
-            </h4>
-            <p className="text-xs text-slate-500 dark:text-purple-200/70 leading-relaxed">
-              Powered in collaboration with{' '}
-              <a
-                href="https://anisonlineservices.my.canva.site/"
-                target="_blank"
-                rel="noopener noreferrer"
-                className="font-semibold text-purple-600 dark:text-purple-300 hover:underline inline-flex items-center gap-1"
-              >
-                Anis Online Services <ExternalLink className="w-3 h-3 inline" />
-              </a>{' '}
-              for verified Aadhaar, PAN card, and administrative citizen documentation.
-            </p>
-            <p className="text-[11px] text-slate-400 dark:text-purple-400/60">
-              AOS Tools provides client-side zero-knowledge document processing.
-            </p>
+          {/* Social Icons & Partner Link matching screenshot */}
+          <div className="flex items-center gap-2.5">
+            <a
+              href="https://anis-online-services.pages.dev/"
+              target="_blank"
+              rel="noopener noreferrer"
+              aria-label="Verified Partner"
+              title="Anis Online Services Verified Partner"
+              className="w-8 h-8 rounded-full bg-[#072642] border border-[#0d4775] text-red-400 hover:text-white hover:bg-red-600 transition-colors flex items-center justify-center"
+            >
+              <ExternalLink className="w-3.5 h-3.5" />
+            </a>
+            <a
+              href="https://youtube.com"
+              target="_blank"
+              rel="noopener noreferrer"
+              aria-label="YouTube"
+              className="w-8 h-8 rounded-full bg-[#072642] border border-[#0d4775] text-slate-300 hover:text-white hover:bg-red-600 transition-colors flex items-center justify-center"
+            >
+              <Youtube className="w-3.5 h-3.5" />
+            </a>
+            <a
+              href="https://facebook.com"
+              target="_blank"
+              rel="noopener noreferrer"
+              aria-label="Facebook"
+              className="w-8 h-8 rounded-full bg-[#072642] border border-[#0d4775] text-slate-300 hover:text-white hover:bg-blue-600 transition-colors flex items-center justify-center"
+            >
+              <Facebook className="w-3.5 h-3.5" />
+            </a>
+            <a
+              href="https://telegram.org"
+              target="_blank"
+              rel="noopener noreferrer"
+              aria-label="Telegram"
+              className="w-8 h-8 rounded-full bg-[#072642] border border-[#0d4775] text-slate-300 hover:text-white hover:bg-sky-500 transition-colors flex items-center justify-center"
+            >
+              <Send className="w-3.5 h-3.5" />
+            </a>
           </div>
         </div>
 
-        {/* Bottom bar */}
-        <div className="pt-6 border-t border-purple-200/70 dark:border-purple-500/20 flex flex-col sm:flex-row items-center justify-between gap-4 text-xs text-slate-500 dark:text-purple-300/70">
-          <p>© {new Date().getFullYear()} AOS Tools. Open-source architecture for citizen empowerment.</p>
-          <div className="flex items-center gap-4">
-            <button
-              onClick={onOpenPrivacy}
-              className="hover:text-purple-700 dark:hover:text-white transition-colors cursor-pointer"
-            >
-              Privacy Policy
-            </button>
-            <span aria-hidden="true" className="text-purple-400 dark:text-purple-600">
-              ·
-            </span>
-            <button
-              onClick={onOpenFreePolicy}
-              className="hover:text-purple-700 dark:hover:text-white transition-colors cursor-pointer"
-            >
-              Zero-Cost Manifesto
-            </button>
-          </div>
+        {/* Secondary Navigation Links */}
+        <div className="pt-4 border-t border-[#0d4775]/40 flex flex-wrap items-center justify-center sm:justify-start gap-4 sm:gap-6 text-xs text-slate-400">
+          <button
+            onClick={() => setActiveTab('home')}
+            className="hover:text-white transition-colors cursor-pointer"
+          >
+            Home
+          </button>
+          <button
+            onClick={() => setActiveTab('tools')}
+            className="hover:text-white transition-colors cursor-pointer"
+          >
+            All Tools
+          </button>
+          <button
+            onClick={() => setActiveTab('about')}
+            className="hover:text-white transition-colors cursor-pointer"
+          >
+            About Us
+          </button>
+          <button
+            onClick={() => setActiveTab('privacy')}
+            className="hover:text-white transition-colors cursor-pointer"
+          >
+            Privacy Policy
+          </button>
+          <button
+            onClick={onOpenFreePolicy}
+            className="hover:text-white transition-colors cursor-pointer"
+          >
+            Strict ₹0-Cost Policy
+          </button>
         </div>
       </div>
     </footer>

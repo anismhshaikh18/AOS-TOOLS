@@ -84,13 +84,13 @@
     --color-brand-hover: #1e293b;
   }
 
-  /* Clean, neutral dark page background */
+  /* Clean Prussian Navy page background centered on #052f52 */
   body {
-    background-color: #0b071a;
+    background-color: #03182b;
     background-image: 
-      radial-gradient(at 15% 15%, rgba(139, 92, 246, 0.08) 0px, transparent 55%),
-      radial-gradient(at 85% 20%, rgba(99, 102, 241, 0.06) 0px, transparent 55%),
-      radial-gradient(at 50% 75%, rgba(15, 23, 42, 0.5) 0px, transparent 65%);
+      radial-gradient(at 85% 12%, rgba(239, 68, 68, 0.15) 0px, transparent 40%),
+      radial-gradient(at 15% 25%, rgba(5, 47, 82, 0.8) 0px, transparent 55%),
+      radial-gradient(at 50% 85%, rgba(3, 24, 43, 0.95) 0px, transparent 70%);
     background-attachment: fixed;
     color: #f8fafc;
     transition: background-color 0.25s ease, color 0.25s ease;
@@ -100,9 +100,9 @@
   html:not(.dark) body {
     background-color: #f8fafc;
     background-image: 
-      radial-gradient(at 15% 15%, rgba(224, 231, 255, 0.5) 0px, transparent 55%),
-      radial-gradient(at 85% 20%, rgba(243, 232, 255, 0.4) 0px, transparent 55%),
-      radial-gradient(at 50% 75%, rgba(241, 245, 249, 0.7) 0px, transparent 65%);
+      radial-gradient(at 85% 12%, rgba(254, 202, 202, 0.4) 0px, transparent 40%),
+      radial-gradient(at 15% 25%, rgba(224, 231, 255, 0.5) 0px, transparent 55%),
+      radial-gradient(at 50% 85%, rgba(241, 245, 249, 0.7) 0px, transparent 65%);
     color: #0f172a;
   }
 
@@ -198,22 +198,25 @@ html:not(.dark) .theme-card .text-slate-600 {
 
 /* --- DARK MODE CARDS (Active when .dark class is on :root/html) --- */
 .dark .theme-card {
+  background: linear-gradient(180deg, rgba(7, 38, 66, 0.95) 0%, rgba(4, 25, 45, 0.98) 100%);
+  border: 1px solid rgba(13, 71, 117, 0.65);
+  box-shadow: 0 8px 32px -4px rgba(2, 18, 33, 0.7);
   color: #f8fafc;
 }
 
 .dark:root[data-template="template-1"] .theme-card,
 .dark[data-template="template-1"] .theme-card,
 .dark :root[data-template="template-1"] .theme-card {
-  background: linear-gradient(180deg, rgba(24, 11, 14, 0.92) 0%, rgba(14, 6, 8, 0.97) 100%);
-  border: 1px solid rgba(239, 68, 68, 0.35);
-  box-shadow: 0 8px 32px -4px rgba(0, 0, 0, 0.6);
-  color: #f4f4f5;
+  background: linear-gradient(180deg, rgba(7, 38, 66, 0.95) 0%, rgba(4, 25, 45, 0.98) 100%);
+  border: 1px solid rgba(13, 71, 117, 0.75);
+  box-shadow: 0 8px 32px -4px rgba(2, 18, 33, 0.75);
+  color: #f8fafc;
 }
 .dark:root[data-template="template-1"] .theme-card:hover,
 .dark[data-template="template-1"] .theme-card:hover,
 .dark :root[data-template="template-1"] .theme-card:hover {
   border-color: rgba(239, 68, 68, 0.8) !important;
-  box-shadow: 0 14px 38px -5px rgba(239, 68, 68, 0.4) !important;
+  box-shadow: 0 14px 38px -5px rgba(239, 68, 68, 0.35) !important;
   transform: translateY(-2px);
 }
 
