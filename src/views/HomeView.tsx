@@ -20,7 +20,7 @@ import { ToolItem } from '../types';
 import { PDF_TOOLS } from '../data/pdfTools';
 import { IMAGE_TOOLS } from '../data/imageTools';
 import { SPECIAL_TOOLS } from '../data/specialTools';
-import { WorkspaceDeskSvg } from '../components/WorkspaceDeskSvg';
+import { PanMasterHeroCard } from '../components/PanMasterHeroCard';
 import {
   PassportIllustrationSvg,
   IdCardIllustrationSvg,
@@ -74,6 +74,15 @@ export const HomeView: React.FC<HomeViewProps> = ({
       onSelectTool(idTool);
     } else {
       setActiveTab('special');
+    }
+  };
+
+  const handleLaunchPhotoResizer = () => {
+    const photoTool = IMAGE_TOOLS.find((t) => t.id === 'photo-signature-resize');
+    if (photoTool) {
+      onSelectTool(photoTool);
+    } else {
+      setActiveTab('image');
     }
   };
 
@@ -230,35 +239,12 @@ export const HomeView: React.FC<HomeViewProps> = ({
 
           </div>
 
-          {/* Right Column: Custom Workspace Desk Flatlay SVG */}
+          {/* Right Column: PAN Master Hub Compliance & Quick Utilities */}
           <div className="lg:col-span-5 flex flex-col items-center justify-center">
-            <div className="w-full max-w-md lg:max-w-none rounded-3xl overflow-hidden border border-[#0e487a]/70 shadow-2xl bg-[#03182b]/90 p-2 sm:p-3 group hover:border-red-500/50 transition-all">
-              <div className="flex items-center justify-between px-3 py-1.5 border-b border-[#0d4775]/40 mb-2">
-                <div className="flex items-center gap-2">
-                  <AosLogoSvg className="w-4 h-4" />
-                  <span className="text-[11px] font-bold text-white tracking-wide">AOS WORKSPACE STATION</span>
-                </div>
-                <span className="text-[10px] px-2 py-0.5 rounded-full bg-red-950/80 text-red-300 border border-red-500/30 font-mono">
-                  SVG VECTOR
-                </span>
-              </div>
-
-              {/* The SVG Component with the open spiral notebook detailing AOS Tools */}
-              <div className="w-full relative overflow-hidden rounded-2xl shadow-inner">
-                <WorkspaceDeskSvg
-                  className="w-full h-auto max-h-[460px] object-cover transition-transform duration-300 group-hover:scale-[1.01]"
-                  onExploreTools={() => setActiveTab('tools')}
-                  onOpenPassport={handleLaunchPassport}
-                  onOpenIdStudio={handleLaunchIdStudio}
-                />
-              </div>
-
-              <div className="text-center pt-2 pb-1">
-                <p className="text-[11px] text-slate-300 font-medium">
-                  High-Precision Vector Illustration • Tap any tool in the notebook to launch
-                </p>
-              </div>
-            </div>
+            <PanMasterHeroCard
+              onOpenFullHub={() => setActiveTab('pan')}
+              onLaunchImageResize={handleLaunchPhotoResizer}
+            />
           </div>
 
         </div>
