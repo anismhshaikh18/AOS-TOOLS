@@ -118,27 +118,27 @@ export const PanMasterHub: React.FC<PanMasterHubProps> = ({
     <div className="space-y-6">
       
       {/* Hub Hero Banner */}
-      <div className="p-6 liquid-glass text-white rounded-2xl shadow-xl relative overflow-hidden border border-white/15">
-        <div className="absolute -right-8 -top-8 w-60 h-60 bg-red-600/15 rounded-full blur-3xl pointer-events-none" />
+      <div className="p-6 liquid-glass text-slate-900 dark:text-white rounded-2xl shadow-xl relative overflow-hidden border border-slate-200 dark:border-white/15">
+        <div className="absolute -right-8 -top-8 w-60 h-60 bg-[#0284c7]/15 rounded-full blur-3xl pointer-events-none" />
         <div className="max-w-3xl relative z-10">
-          <div className="flex items-center gap-2 text-xs font-semibold uppercase tracking-wider text-red-400 mb-2">
+          <div className="flex items-center gap-2 text-xs font-semibold uppercase tracking-wider text-[#0284c7] dark:text-sky-300 mb-2">
             <Building2 className="w-4 h-4" />
-            <span>Official UTIITSL & Protean (NSDL) Guidance</span>
+            <span>Official UTIITSL &amp; Protean (NSDL) Guidance</span>
           </div>
-          <h1 className="text-xl sm:text-2xl font-bold tracking-tight text-white">
-            PAN Card Master Hub & Compliance Center
+          <h1 className="text-xl sm:text-2xl font-bold tracking-tight text-slate-900 dark:text-white">
+            PAN Card Master Hub &amp; Compliance Center
           </h1>
-          <p className="text-xs sm:text-sm text-slate-300 mt-2 leading-relaxed">
+          <p className="text-xs sm:text-sm text-slate-600 dark:text-slate-300 mt-2 leading-relaxed">
             Complete step-by-step documentation rules, dedicated &lt;300 KB PDF compressor for supporting proofs, photo/signature biometric specifications, and verified official portals.
           </p>
 
-          <div className="mt-4 flex flex-wrap items-center gap-3 text-xs text-slate-200">
-            <div className="flex items-center gap-1.5 liquid-glass-sub px-3 py-1.5 rounded-lg border border-white/10">
-              <ShieldCheck className="w-4 h-4 text-emerald-400 shrink-0" />
+          <div className="mt-4 flex flex-wrap items-center gap-3 text-xs text-slate-700 dark:text-slate-200">
+            <div className="flex items-center gap-1.5 liquid-glass-sub px-3 py-1.5 rounded-lg border border-slate-200 dark:border-white/10">
+              <ShieldCheck className="w-4 h-4 text-emerald-600 dark:text-emerald-400 shrink-0" />
               <span>Zero Data Collection Policy</span>
             </div>
-            <div className="flex items-center gap-1.5 liquid-glass-sub px-3 py-1.5 rounded-lg border border-white/10">
-              <CheckCircle2 className="w-4 h-4 text-emerald-400 shrink-0" />
+            <div className="flex items-center gap-1.5 liquid-glass-sub px-3 py-1.5 rounded-lg border border-slate-200 dark:border-white/10">
+              <CheckCircle2 className="w-4 h-4 text-emerald-600 dark:text-emerald-400 shrink-0" />
               <span>Verified Portals Only</span>
             </div>
           </div>
@@ -146,24 +146,24 @@ export const PanMasterHub: React.FC<PanMasterHubProps> = ({
       </div>
 
       {/* Mandatory Security & Fraud Disclaimer Banner */}
-      <div className="p-4 liquid-glass-sub border border-amber-500/30 rounded-xl text-xs text-amber-200 flex items-start gap-3">
-        <AlertTriangle className="w-5 h-5 text-amber-400 shrink-0 mt-0.5" />
+      <div className="p-4 liquid-glass-sub border border-amber-500/30 rounded-xl text-xs text-amber-800 dark:text-amber-200 flex items-start gap-3">
+        <AlertTriangle className="w-5 h-5 text-amber-600 dark:text-amber-400 shrink-0 mt-0.5" />
         <div className="space-y-1">
-          <span className="font-bold text-amber-300">Official Statutory Security Notice:</span>
-          <p className="leading-relaxed text-slate-300">
+          <span className="font-bold text-amber-700 dark:text-amber-300">Official Statutory Security Notice:</span>
+          <p className="leading-relaxed text-slate-700 dark:text-slate-300">
             AOS Tools is an informational and document preparation utility. We never solicit or collect your 10-digit PAN number, 12-digit Aadhaar number, passwords, or OTPs. Official PAN cards are exclusively issued by the Income Tax Department through its authorized service partners (Protean eGov Technologies Limited and UTIITSL). Never enter confidential OTPs on any third-party website.
           </p>
         </div>
       </div>
 
       {/* Navigation Tabs (Guides / Compressor <300KB / Specs / Checklists / Fees) */}
-      <div className="flex items-center gap-2 border-b border-white/10 pb-3 overflow-x-auto scrollbar-none">
+      <div className="flex items-center gap-2 border-b border-slate-200 dark:border-white/10 pb-3 overflow-x-auto scrollbar-none">
         <button
           onClick={() => setActiveTab('guides')}
           className={`whitespace-nowrap px-4 py-2 text-xs font-semibold rounded-lg transition-all cursor-pointer ${
             activeTab === 'guides'
-              ? 'bg-red-600 text-white shadow-md'
-              : 'liquid-glass-sub text-slate-300 hover:text-white hover:border-red-500/40'
+              ? 'bg-[#0284c7] text-white shadow-md shadow-[#0284c7]/30'
+              : 'liquid-glass-sub text-slate-700 dark:text-slate-300 hover:text-slate-900 dark:hover:text-white hover:border-[#0284c7]/40'
           }`}
         >
           Service Step-by-Step Guides
@@ -172,8 +172,8 @@ export const PanMasterHub: React.FC<PanMasterHubProps> = ({
           onClick={() => setActiveTab('compressor')}
           className={`whitespace-nowrap px-4 py-2 text-xs font-semibold rounded-lg transition-all cursor-pointer flex items-center gap-1.5 ${
             activeTab === 'compressor'
-              ? 'bg-red-600 text-white shadow-md'
-              : 'liquid-glass-sub text-slate-300 hover:text-white hover:border-red-500/40'
+              ? 'bg-[#0284c7] text-white shadow-md shadow-[#0284c7]/30'
+              : 'liquid-glass-sub text-slate-700 dark:text-slate-300 hover:text-slate-900 dark:hover:text-white hover:border-[#0284c7]/40'
           }`}
         >
           <Minimize2 className="w-3.5 h-3.5" />
@@ -186,8 +186,8 @@ export const PanMasterHub: React.FC<PanMasterHubProps> = ({
           onClick={() => setActiveTab('specs')}
           className={`whitespace-nowrap px-4 py-2 text-xs font-semibold rounded-lg transition-all cursor-pointer ${
             activeTab === 'specs'
-              ? 'bg-red-600 text-white shadow-md'
-              : 'liquid-glass-sub text-slate-300 hover:text-white hover:border-red-500/40'
+              ? 'bg-[#0284c7] text-white shadow-md shadow-[#0284c7]/30'
+              : 'liquid-glass-sub text-slate-700 dark:text-slate-300 hover:text-slate-900 dark:hover:text-white hover:border-[#0284c7]/40'
           }`}
         >
           Photo &amp; Signature Specifications
@@ -196,8 +196,8 @@ export const PanMasterHub: React.FC<PanMasterHubProps> = ({
           onClick={() => setActiveTab('checklists')}
           className={`whitespace-nowrap px-4 py-2 text-xs font-semibold rounded-lg transition-all cursor-pointer ${
             activeTab === 'checklists'
-              ? 'bg-red-600 text-white shadow-md'
-              : 'liquid-glass-sub text-slate-300 hover:text-white hover:border-red-500/40'
+              ? 'bg-[#0284c7] text-white shadow-md shadow-[#0284c7]/30'
+              : 'liquid-glass-sub text-slate-700 dark:text-slate-300 hover:text-slate-900 dark:hover:text-white hover:border-[#0284c7]/40'
           }`}
         >
           Document Checklist (POI / POA / POD)
@@ -206,8 +206,8 @@ export const PanMasterHub: React.FC<PanMasterHubProps> = ({
           onClick={() => setActiveTab('fees')}
           className={`whitespace-nowrap px-4 py-2 text-xs font-semibold rounded-lg transition-all cursor-pointer ${
             activeTab === 'fees'
-              ? 'bg-red-600 text-white shadow-md'
-              : 'liquid-glass-sub text-slate-300 hover:text-white hover:border-red-500/40'
+              ? 'bg-[#0284c7] text-white shadow-md shadow-[#0284c7]/30'
+              : 'liquid-glass-sub text-slate-700 dark:text-slate-300 hover:text-slate-900 dark:hover:text-white hover:border-[#0284c7]/40'
           }`}
         >
           Fee Schedule &amp; Timelines

@@ -877,19 +877,19 @@ export const SmartIdCardStudioPage: React.FC<SmartIdCardStudioPageProps> = ({ on
           </div>
         </div>
 
-        {/* Action Buttons Top Right: Download PDF (Red) & Print Sheet (Blue) */}
+        {/* Action Buttons Top Right: Download PDF & Print Sheet */}
         <div className="flex items-center gap-2.5 shrink-0">
           <button
             onClick={handleDownloadPdf}
-            className="px-4 py-2.5 rounded-xl bg-red-600 hover:bg-red-500 text-white font-bold text-xs sm:text-sm flex items-center gap-2 shadow-lg shadow-red-600/30 transition-all cursor-pointer active:scale-95"
+            className="px-4 py-2.5 rounded-xl bg-[#072642] hover:bg-[#0d4775] text-white border border-[#38bdf8]/40 font-bold text-xs sm:text-sm flex items-center gap-2 shadow-lg transition-all cursor-pointer active:scale-95"
           >
-            <FileDown className="w-4 h-4" />
+            <FileDown className="w-4 h-4 text-sky-400" />
             <span>Download PDF</span>
           </button>
 
           <button
             onClick={handleDirectPrint}
-            className="px-4 py-2.5 rounded-xl bg-blue-600 hover:bg-blue-500 text-white font-bold text-xs sm:text-sm flex items-center gap-2 shadow-lg shadow-blue-600/30 transition-all cursor-pointer active:scale-95"
+            className="px-4 py-2.5 rounded-xl bg-[#0284c7] hover:bg-[#0369a1] text-white font-bold text-xs sm:text-sm flex items-center gap-2 shadow-lg shadow-[#0284c7]/30 transition-all cursor-pointer active:scale-95"
           >
             <Printer className="w-4 h-4 stroke-[2.5]" />
             <span>Print Sheet</span>

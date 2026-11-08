@@ -88,10 +88,10 @@ export const GovernmentPortals: React.FC = () => {
 
           <button
             onClick={() => setSortBy(sortBy === 'name' ? 'category' : 'name')}
-            className="flex items-center gap-1.5 px-3 py-1.5 text-xs font-medium text-slate-200 liquid-glass-sub rounded-lg hover:border-red-500/40 cursor-pointer transition-colors"
+            className="flex items-center gap-1.5 px-3 py-1.5 text-xs font-medium text-slate-700 dark:text-slate-200 liquid-glass-sub rounded-lg hover:border-[#0284c7]/40 cursor-pointer transition-colors border border-slate-200 dark:border-white/10"
             title="Toggle sort order"
           >
-            <ArrowUpDown className="w-3.5 h-3.5 text-red-400" />
+            <ArrowUpDown className="w-3.5 h-3.5 text-[#0284c7] dark:text-sky-400" />
             <span className="capitalize">{sortBy}</span>
           </button>
         </div>
@@ -102,39 +102,39 @@ export const GovernmentPortals: React.FC = () => {
         {filteredPortals.map((portal) => (
           <div
             key={portal.id}
-            className="group flex flex-col justify-between p-4 liquid-glass liquid-glass-hover rounded-xl hover:border-red-500/50 hover:shadow-lg transition-all text-left"
+            className="group flex flex-col justify-between p-4 liquid-glass liquid-glass-hover rounded-xl hover:border-[#0284c7]/50 hover:shadow-lg transition-all text-left"
           >
             <div>
-              <div className="flex items-center justify-between text-[11px] text-slate-400 mb-2 font-medium">
+              <div className="flex items-center justify-between text-[11px] text-slate-500 dark:text-slate-400 mb-2 font-medium">
                 <span>{portal.category}</span>
                 {portal.state && (
                   <>
                     <span aria-hidden="true">·</span>
-                    <span className="text-red-400 font-semibold">{portal.state}</span>
+                    <span className="text-[#0284c7] dark:text-sky-400 font-semibold">{portal.state}</span>
                   </>
                 )}
               </div>
-              <h3 className="text-sm font-bold text-white group-hover:text-red-400 transition-colors">
+              <h3 className="text-sm font-bold text-slate-900 dark:text-white group-hover:text-[#0284c7] dark:group-hover:text-sky-400 transition-colors">
                 {portal.name}
               </h3>
-              <span className="inline-block mt-0.5 text-[11px] font-mono text-slate-400">
+              <span className="inline-block mt-0.5 text-[11px] font-mono text-slate-500 dark:text-slate-400">
                 {portal.officialDomain}
               </span>
-              <p className="text-xs text-slate-300 mt-2 leading-relaxed">
+              <p className="text-xs text-slate-600 dark:text-slate-300 mt-2 leading-relaxed">
                 {portal.description}
               </p>
             </div>
 
-            <div className="pt-3 mt-4 border-t border-white/10 flex items-center justify-between">
-              <span className="text-[11px] text-emerald-400 flex items-center gap-1 font-medium">
-                <CheckCircle className="w-3 h-3 text-emerald-400" />
+            <div className="pt-3 mt-4 border-t border-slate-200 dark:border-white/10 flex items-center justify-between">
+              <span className="text-[11px] text-emerald-600 dark:text-emerald-400 flex items-center gap-1 font-medium">
+                <CheckCircle className="w-3 h-3 text-emerald-600 dark:text-emerald-400" />
                 Verified Portal
               </span>
               <a
                 href={portal.portalUrl}
                 target="_blank"
                 rel="noopener noreferrer"
-                className="inline-flex items-center gap-1.5 px-3 py-1.5 text-xs font-semibold text-white bg-red-600/80 hover:bg-red-600 rounded-lg transition-all cursor-pointer shadow-xs"
+                className="inline-flex items-center gap-1.5 px-3 py-1.5 text-xs font-semibold text-white bg-[#0284c7] hover:bg-[#0369a1] rounded-lg transition-all cursor-pointer shadow-xs shadow-[#0284c7]/25"
               >
                 <span>Open Portal</span>
                 <ExternalLink className="w-3.5 h-3.5" />

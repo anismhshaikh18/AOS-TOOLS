@@ -145,18 +145,32 @@ html:not(.dark) .theme-card h4,
 html:not(.dark) .liquid-glass h1,
 html:not(.dark) .liquid-glass h2,
 html:not(.dark) .liquid-glass h3,
-html:not(.dark) .liquid-glass h4 {
+html:not(.dark) .liquid-glass h4,
+html:not(.dark) .liquid-glass-sub h1,
+html:not(.dark) .liquid-glass-sub h2,
+html:not(.dark) .liquid-glass-sub h3,
+html:not(.dark) .liquid-glass-sub h4 {
   color: #0f172a !important;
 }
 
 html:not(.dark) .theme-card p,
-html:not(.dark) .liquid-glass p {
+html:not(.dark) .liquid-glass p,
+html:not(.dark) .liquid-glass-sub p {
   color: #334155 !important;
 }
 
-html:not(.dark) [class*="text-slate-300"],
+html:not(.dark) [class*="text-slate-100"],
+html:not(.dark) [class*="text-slate-200"],
+html:not(.dark) [class*="text-slate-300"] {
+  color: #334155 !important;
+}
+
 html:not(.dark) [class*="text-slate-400"] {
   color: #475569 !important;
+}
+
+html:not(.dark) label {
+  color: #1e293b !important;
 }
 
 html:not(.dark) input,
@@ -172,10 +186,18 @@ html:not(.dark) textarea::placeholder {
   color: #94a3b8 !important;
 }
 
-/* In light mode, ensure text-white in cards that are NOT colored buttons is dark */
-html:not(.dark) .liquid-glass .text-white:not(button *, a *, [class*="bg-"] *),
-html:not(.dark) .theme-card .text-white:not(button *, a *, [class*="bg-"] *) {
+/* In light mode, ensure text-white in cards that are NOT colored buttons is high-contrast dark text */
+html:not(.dark) .liquid-glass .text-white:not(button *, a *, [class*="bg-"] *, .theme-btn-primary *),
+html:not(.dark) .liquid-glass-sub .text-white:not(button *, a *, [class*="bg-"] *, .theme-btn-primary *),
+html:not(.dark) .theme-card .text-white:not(button *, a *, [class*="bg-"] *, .theme-btn-primary *) {
   color: #0f172a !important;
+}
+
+/* In light mode, adapt white border utility lines to crisp light borders */
+html:not(.dark) [class*="border-white/10"],
+html:not(.dark) [class*="border-white/15"],
+html:not(.dark) [class*="border-white/20"] {
+  border-color: #e2e8f0 !important;
 }
 
 /* =========================================================================

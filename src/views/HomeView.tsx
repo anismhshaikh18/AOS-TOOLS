@@ -103,19 +103,19 @@ export const HomeView: React.FC<HomeViewProps> = ({
         <div className="absolute top-0 right-1/4 w-96 h-96 bg-[#0284c7]/15 rounded-full blur-3xl pointer-events-none" />
         <div className="absolute bottom-0 left-10 w-80 h-80 bg-[#0d4775]/20 rounded-full blur-3xl pointer-events-none" />
 
-        <div className="grid grid-cols-1 lg:grid-cols-12 gap-8 items-center relative z-10">
+        <div className="grid grid-cols-1 lg:grid-cols-12 gap-8 items-stretch relative z-10">
           
           {/* Left Column: Headline, Search, Badges & Quick Launchers */}
-          <div className="lg:col-span-7 space-y-6">
+          <div className="lg:col-span-6 space-y-6 flex flex-col justify-between">
             
             {/* Top Pill */}
-            <div className="inline-flex items-center gap-2 px-3.5 py-1.5 rounded-full liquid-glass-sub text-[#0284c7] dark:text-sky-300 text-xs font-semibold tracking-wide border border-slate-200 dark:border-sky-500/30 shadow-xs">
+            <div className="inline-flex items-center gap-2 px-3.5 py-1.5 rounded-full liquid-glass-sub text-[#0284c7] dark:text-sky-300 text-xs font-semibold tracking-wide border border-slate-200 dark:border-sky-500/30 shadow-xs w-fit">
               <span className="w-2 h-2 rounded-full bg-[#0284c7] animate-pulse" />
               <span>{t.heroTag || 'Free • Private • Zero Uploads Browser Suite'}</span>
             </div>
 
             <div>
-              <h1 className="text-4xl sm:text-5xl lg:text-6xl font-black text-slate-900 dark:text-white tracking-tight leading-tight">
+              <h1 className="text-4xl sm:text-5xl lg:text-5xl font-black text-slate-900 dark:text-white tracking-tight leading-tight">
                 AOS <span className="text-[#0284c7]">TOOLS</span>
               </h1>
               <div className="text-xl sm:text-2xl font-bold text-slate-800 dark:text-sky-100 mt-2 tracking-tight">
@@ -239,9 +239,9 @@ export const HomeView: React.FC<HomeViewProps> = ({
 
           </div>
 
-          {/* Right Column: Hero Interactive PAN Master Preview Card */}
-          <div className="lg:col-span-5 flex justify-center">
-            <div className="w-full max-w-md">
+          {/* Right Column: Hero Interactive PAN Master Preview Card - Expanded & Balanced on Desktop */}
+          <div className="lg:col-span-6 flex flex-col justify-center w-full">
+            <div className="w-full">
               <PanMasterHeroCard
                 onOpenFullHub={() => setActiveTab('pan')}
                 onLaunchImageResize={() => {

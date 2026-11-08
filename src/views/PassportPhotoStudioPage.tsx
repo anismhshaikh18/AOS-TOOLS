@@ -712,30 +712,30 @@ export const PassportPhotoStudioPage: React.FC<PassportPhotoStudioPageProps> = (
           </div>
           <div className="flex items-center gap-1.5">
             <span className="w-2 h-2 rounded-full bg-emerald-400" />
-            <span className="text-xs font-bold text-slate-200">
+            <span className="text-xs font-bold text-slate-700 dark:text-slate-200">
               India Standard 35×45 mm
             </span>
-            <span className="text-[9px] font-black uppercase px-1.5 py-0.5 rounded bg-red-600 text-white ml-1">
+            <span className="text-[9px] font-black uppercase px-1.5 py-0.5 rounded bg-[#0284c7] text-white ml-1">
               STANDARD
             </span>
           </div>
         </div>
 
         {/* Center Cropped Photo Stage */}
-        <div className="relative w-full py-6 flex flex-col items-center justify-center liquid-glass-sub rounded-2xl border border-white/10 overflow-hidden">
+        <div className="relative w-full py-6 flex flex-col items-center justify-center liquid-glass-sub rounded-2xl border border-slate-200 dark:border-white/10 overflow-hidden">
           <div className="relative group">
             <canvas
               ref={previewCanvasRef}
-              className="w-48 sm:w-56 aspect-[35/45] rounded-lg shadow-2xl object-contain border border-slate-700 bg-white"
+              className="w-48 sm:w-56 aspect-[35/45] rounded-lg shadow-2xl object-contain border border-slate-300 dark:border-slate-700 bg-white"
             />
             
             {/* Adjust Crop Floating Pill Button */}
             <div className="absolute bottom-3 left-1/2 -translate-x-1/2">
               <button
                 onClick={() => setShowCropAdjuster(!showCropAdjuster)}
-                className="px-3.5 py-1.5 rounded-full liquid-glass hover:bg-red-600 border border-white/20 text-white text-xs font-bold flex items-center gap-1.5 shadow-lg transition-all cursor-pointer active:scale-95"
+                className="px-3.5 py-1.5 rounded-full liquid-glass hover:bg-[#0284c7] border border-slate-200 dark:border-white/20 text-slate-900 dark:text-white text-xs font-bold flex items-center gap-1.5 shadow-lg transition-all cursor-pointer active:scale-95"
               >
-                <Crop className="w-3.5 h-3.5 text-red-400 group-hover:text-white" />
+                <Crop className="w-3.5 h-3.5 text-[#0284c7] group-hover:text-white" />
                 <span>Adjust Crop</span>
               </button>
             </div>

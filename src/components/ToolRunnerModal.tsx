@@ -3909,11 +3909,11 @@ export const ToolRunnerModal: React.FC<ToolRunnerModalProps> = ({
         )}
 
         {/* Page Footer */}
-        <div className="px-6 py-4 border-t border-white/10 liquid-glass-sub flex flex-col sm:flex-row justify-between items-center gap-3 text-xs text-slate-400">
+        <div className="px-6 py-4 border-t border-slate-200 dark:border-white/10 liquid-glass-sub flex flex-col sm:flex-row justify-between items-center gap-3 text-xs text-slate-500 dark:text-slate-400">
           <span>AOS Tools · In-Browser Zero Knowledge Processing</span>
           <button
             onClick={onClose}
-            className="px-4 py-2 font-bold text-slate-200 hover:text-white liquid-glass-sub hover:border-red-500/50 rounded-xl transition-all cursor-pointer shadow-sm active:scale-95"
+            className="px-4 py-2 font-bold text-slate-700 dark:text-slate-200 hover:text-slate-900 dark:hover:text-white liquid-glass-sub hover:border-[#0284c7]/50 rounded-xl transition-all cursor-pointer shadow-sm active:scale-95"
           >
             Done &amp; Return
           </button>
