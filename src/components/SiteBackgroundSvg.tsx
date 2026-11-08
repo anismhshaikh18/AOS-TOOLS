@@ -2,10 +2,12 @@ import React from 'react';
 
 interface SiteBackgroundSvgProps {
   className?: string;
+  isDark?: boolean;
 }
 
 export const SiteBackgroundSvg: React.FC<SiteBackgroundSvgProps> = ({
   className = 'fixed inset-0 w-full h-full pointer-events-none -z-10',
+  isDark = true,
 }) => {
   return (
     <div className={className} aria-hidden="true">
@@ -14,69 +16,98 @@ export const SiteBackgroundSvg: React.FC<SiteBackgroundSvgProps> = ({
         fill="none"
         xmlns="http://www.w3.org/2000/svg"
         preserveAspectRatio="xMidYMid slice"
-        className="w-full h-full object-cover"
+        className="w-full h-full object-cover transition-opacity duration-300"
       >
         <defs>
-          {/* Deep Dark Crimson Ambient Gradient */}
-          <radialGradient id="siteBgGrad" cx="50%" cy="30%" r="90%">
-            <stop offset="0%" stopColor="#4A050A" />
-            <stop offset="35%" stopColor="#280307" />
-            <stop offset="70%" stopColor="#120103" />
-            <stop offset="100%" stopColor="#050001" />
+          {/* Anis Online Services Deep Navy Gradients */}
+          <linearGradient id="aosDarkBg" x1="0%" y1="0%" x2="100%" y2="100%">
+            <stop offset="0%" stopColor="#03182b" />
+            <stop offset="40%" stopColor="#072642" />
+            <stop offset="80%" stopColor="#0b233a" />
+            <stop offset="100%" stopColor="#020e1a" />
+          </linearGradient>
+
+          <linearGradient id="aosLightBg" x1="0%" y1="0%" x2="100%" y2="100%">
+            <stop offset="0%" stopColor="#f4f8fc" />
+            <stop offset="50%" stopColor="#ebf3fa" />
+            <stop offset="100%" stopColor="#e2eef8" />
+          </linearGradient>
+
+          {/* Sapphire & Cyan Ambient Spotlights */}
+          <radialGradient id="navyGlow1" cx="20%" cy="15%" r="45%">
+            <stop offset="0%" stopColor="#0d4775" stopOpacity="0.45" />
+            <stop offset="60%" stopColor="#072642" stopOpacity="0.15" />
+            <stop offset="100%" stopColor="#03182b" stopOpacity="0" />
           </radialGradient>
 
-          {/* Center Apple & Hand Spotlight */}
-          <radialGradient id="siteCenterGlow" cx="50%" cy="45%" r="55%">
-            <stop offset="0%" stopColor="#DC2626" stopOpacity="0.28" />
-            <stop offset="50%" stopColor="#7F1D1D" stopOpacity="0.12" />
-            <stop offset="100%" stopColor="#050001" stopOpacity="0" />
+          <radialGradient id="navyGlow2" cx="85%" cy="30%" r="50%">
+            <stop offset="0%" stopColor="#0284c7" stopOpacity="0.25" />
+            <stop offset="50%" stopColor="#0d4775" stopOpacity="0.1" />
+            <stop offset="100%" stopColor="#03182b" stopOpacity="0" />
           </radialGradient>
 
-          {/* Smooth Fade Edge Mask */}
-          <radialGradient id="siteFadeMask" cx="50%" cy="45%" r="48%">
-            <stop offset="0%" stopColor="#FFFFFF" stopOpacity="1" />
-            <stop offset="60%" stopColor="#FFFFFF" stopOpacity="0.85" />
-            <stop offset="85%" stopColor="#FFFFFF" stopOpacity="0.35" />
-            <stop offset="100%" stopColor="#FFFFFF" stopOpacity="0" />
+          <radialGradient id="navyGlow3" cx="50%" cy="85%" r="40%">
+            <stop offset="0%" stopColor="#1e40af" stopOpacity="0.2" />
+            <stop offset="100%" stopColor="#03182b" stopOpacity="0" />
           </radialGradient>
-          <mask id="siteArtworkMask">
-            <rect width="1920" height="1080" fill="url(#siteFadeMask)" />
-          </mask>
 
-          {/* Text-safe Vignette */}
-          <radialGradient id="siteVignette" cx="50%" cy="50%" r="70%">
-            <stop offset="45%" stopColor="#000000" stopOpacity="0" />
-            <stop offset="85%" stopColor="#050001" stopOpacity="0.7" />
-            <stop offset="100%" stopColor="#050001" stopOpacity="0.95" />
+          {/* Light Mode Glows */}
+          <radialGradient id="lightGlow1" cx="15%" cy="15%" r="40%">
+            <stop offset="0%" stopColor="#bae6fd" stopOpacity="0.6" />
+            <stop offset="100%" stopColor="#f4f8fc" stopOpacity="0" />
           </radialGradient>
+          <radialGradient id="lightGlow2" cx="85%" cy="25%" r="45%">
+            <stop offset="0%" stopColor="#bfdbfe" stopOpacity="0.5" />
+            <stop offset="100%" stopColor="#f4f8fc" stopOpacity="0" />
+          </radialGradient>
+
+          {/* Subtle Corporate Grid Pattern */}
+          <pattern id="aosGrid" width="48" height="48" patternUnits="userSpaceOnUse">
+            <path
+              d="M 48 0 L 0 0 0 48"
+              fill="none"
+              stroke={isDark ? 'rgba(56, 189, 248, 0.04)' : 'rgba(14, 116, 144, 0.05)'}
+              strokeWidth="1"
+            />
+            <circle
+              cx="0"
+              cy="0"
+              r="1"
+              fill={isDark ? 'rgba(56, 189, 248, 0.15)' : 'rgba(14, 116, 144, 0.12)'}
+            />
+          </pattern>
         </defs>
 
-        {/* 1. Base Crimson Canvas */}
-        <rect width="1920" height="1080" fill="url(#siteBgGrad)" />
+        {/* Base Canvas */}
+        <rect
+          width="1920"
+          height="1080"
+          fill={isDark ? 'url(#aosDarkBg)' : 'url(#aosLightBg)'}
+        />
 
-        {/* 2. Apple Spotlight Accent */}
-        <rect width="1920" height="1080" fill="url(#siteCenterGlow)" />
+        {/* Ambient Lights */}
+        {isDark ? (
+          <>
+            <rect width="1920" height="1080" fill="url(#navyGlow1)" />
+            <rect width="1920" height="1080" fill="url(#navyGlow2)" />
+            <rect width="1920" height="1080" fill="url(#navyGlow3)" />
+          </>
+        ) : (
+          <>
+            <rect width="1920" height="1080" fill="url(#lightGlow1)" />
+            <rect width="1920" height="1080" fill="url(#lightGlow2)" />
+          </>
+        )}
 
-        {/* 3. The Sculptural Hand with Red Apple & Coiled Serpent (from user upload) */}
-        <g mask="url(#siteArtworkMask)" opacity="0.36" style={{ mixBlendMode: 'screen' }}>
-          <image
-            href="/assets/aistudio/6b8f1aae66eb7c30810ff21448c005f9_668e13e2.jpg"
-            x="560"
-            y="-40"
-            width="800"
-            height="1160"
-            preserveAspectRatio="xMidYMid meet"
-          />
+        {/* Precision Corporate Digital Grid */}
+        <rect width="1920" height="1080" fill="url(#aosGrid)" />
+
+        {/* Elegant Geometric Architectural Flow Lines (Anis Online Services Corporate Identity) */}
+        <g opacity={isDark ? '0.18' : '0.12'} stroke={isDark ? '#38bdf8' : '#0284c7'} strokeWidth="1.5">
+          <path d="M-100 200 C 400 120, 800 350, 1300 180 C 1600 80, 1850 250, 2100 200" fill="none" />
+          <path d="M-100 450 C 450 380, 900 600, 1450 420 C 1750 320, 1950 480, 2100 450" fill="none" />
+          <path d="M-100 750 C 350 700, 750 900, 1250 780 C 1650 680, 1900 820, 2100 800" fill="none" strokeDasharray="6 6" />
         </g>
-
-        {/* 4. Left and Right Ambient Warmth */}
-        <g opacity="0.15">
-          <circle cx="240" cy="320" r="300" fill="#EF4444" filter="blur(60px)" />
-          <circle cx="1680" cy="380" r="320" fill="#B91C1C" filter="blur(60px)" />
-        </g>
-
-        {/* 5. Vignette Overlay for Ultra-Legible Content */}
-        <rect width="1920" height="1080" fill="url(#siteVignette)" />
       </svg>
     </div>
   );

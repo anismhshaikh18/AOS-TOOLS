@@ -4,302 +4,225 @@
 
 @layer base {
   /* =========================================================================
-     DEFAULT / TEMPLATE 3: Gradient Modern (Purple)
+     ANIS ONLINE SERVICES CORPORATE IDENTITY PALETTE (Deep Navy & Sapphire Blue)
+     https://anis-online-services.pages.dev/
      ========================================================================= */
   :root,
-  :root[data-template="template-3"] {
-    --accent-50: #faf5ff;
-    --accent-100: #f3e8ff;
-    --accent-200: #e9d5ff;
-    --accent-300: #d8b4fe;
-    --accent-400: #c084fc;
-    --accent-500: #a855f7;
-    --accent-600: #9333ea;
-    --accent-700: #7e22ce;
-    --accent-800: #6b21a8;
-    --accent-900: #581c87;
-    --accent-rgb: 147, 51, 234;
-    --accent-glow: rgba(168, 85, 247, 0.4);
-    --color-brand: #9333ea;
-    --color-brand-hover: #7e22ce;
-  }
-
-  /* =========================================================================
-     TEMPLATE 1: Dark Modern (Red & Black)
-     ========================================================================= */
-  :root[data-template="template-1"] {
-    --accent-50: #fef2f2;
-    --accent-100: #fee2e2;
-    --accent-200: #fecaca;
-    --accent-300: #fca5a5;
-    --accent-400: #f87171;
-    --accent-500: #ef4444;
-    --accent-600: #dc2626;
-    --accent-700: #b91c1c;
-    --accent-800: #991b1b;
-    --accent-900: #7f1d1d;
-    --accent-rgb: 239, 68, 68;
-    --accent-glow: rgba(239, 68, 68, 0.45);
-    --color-brand: #dc2626;
-    --color-brand-hover: #b91c1c;
-  }
-
-  /* =========================================================================
-     TEMPLATE 2: Light Clean (Blue & White)
-     ========================================================================= */
-  :root[data-template="template-2"] {
-    --accent-50: #eff6ff;
-    --accent-100: #dbeafe;
-    --accent-200: #bfdbfe;
-    --accent-300: #93c5fd;
-    --accent-400: #60a5fa;
-    --accent-500: #3b82f6;
-    --accent-600: #2563eb;
-    --accent-700: #1d4ed8;
-    --accent-800: #1e40af;
-    --accent-900: #1e3a8a;
-    --accent-rgb: 37, 99, 235;
-    --accent-glow: rgba(37, 99, 235, 0.35);
-    --color-brand: #2563eb;
-    --color-brand-hover: #1d4ed8;
-  }
-
-  /* =========================================================================
-     TEMPLATE 4: Minimal & Professional (Monochrome Slate)
-     ========================================================================= */
+  :root[data-template="template-1"],
+  :root[data-template="template-2"],
+  :root[data-template="template-3"],
   :root[data-template="template-4"] {
-    --accent-50: #f8fafc;
-    --accent-100: #f1f5f9;
-    --accent-200: #e2e8f0;
-    --accent-300: #cbd5e1;
-    --accent-400: #94a3b8;
-    --accent-500: #64748b;
-    --accent-600: #0f172a;
-    --accent-700: #020617;
-    --accent-800: #020617;
-    --accent-900: #000000;
-    --accent-rgb: 15, 23, 42;
-    --accent-glow: rgba(15, 23, 42, 0.25);
-    --color-brand: #0f172a;
-    --color-brand-hover: #1e293b;
+    --accent-50: #f0f8ff;
+    --accent-100: #e0f2fe;
+    --accent-200: #bae6fd;
+    --accent-300: #7dd3fc;
+    --accent-400: #38bdf8;
+    --accent-500: #0284c7;
+    --accent-600: #0369a1;
+    --accent-700: #0d4775;
+    --accent-800: #072642;
+    --accent-900: #03182b;
+    --accent-rgb: 2, 132, 199;
+    --accent-glow: rgba(2, 132, 199, 0.35);
+    --color-brand: #0284c7;
+    --color-brand-hover: #38bdf8;
   }
 
-  /* Full-Website Crimson & Apple Serpent Theme in SVG Format */
+  /* Base Body Styles */
   body {
-    background-color: #0b0102;
-    background-image: url('/assets/website-bg.svg');
-    background-size: cover;
-    background-position: center top;
-    background-attachment: fixed;
-    background-repeat: no-repeat;
+    background-color: #03182b;
     color: #f8fafc;
+    font-family: 'Plus Jakarta Sans', system-ui, -apple-system, sans-serif;
     transition: background-color 0.25s ease, color 0.25s ease;
   }
 
-  /* Liquid Glass Dark Theme is permanent */
+  html:not(.dark) body {
+    background-color: #f0f5fa;
+    color: #0f172a;
+  }
+
   code, kbd, samp, pre {
     font-family: 'JetBrains Mono', ui-monospace, SFMono-Regular, Menlo, Monaco, Consolas, monospace;
   }
 }
 
 /* =========================================================================
-   TEMPLATE CARD STYLING & GLASSMORPHISM
+   DARK MODE LIQUID GLASS & THEME CARDS (Anis Online Services Deep Navy)
    ========================================================================= */
 
-.theme-card {
+.dark .theme-card,
+.dark .liquid-glass {
   transition: transform 0.25s cubic-bezier(0.16, 1, 0.3, 1), 
               box-shadow 0.25s cubic-bezier(0.16, 1, 0.3, 1), 
               border-color 0.25s ease;
-  backdrop-filter: blur(28px) saturate(200%);
-  -webkit-backdrop-filter: blur(28px) saturate(200%);
-  background: rgba(14, 2, 5, 0.44) !important;
-  border: 1px solid rgba(255, 255, 255, 0.15) !important;
-  box-shadow: 0 16px 44px -8px rgba(0, 0, 0, 0.65), inset 0 1px 1px 0 rgba(255, 255, 255, 0.22) !important;
+  backdrop-filter: blur(24px) saturate(190%) !important;
+  -webkit-backdrop-filter: blur(24px) saturate(190%) !important;
+  background: rgba(7, 38, 66, 0.72) !important;
+  border: 1px solid rgba(56, 189, 248, 0.22) !important;
+  box-shadow: 0 16px 40px -8px rgba(0, 0, 0, 0.6), inset 0 1px 1px 0 rgba(255, 255, 255, 0.12) !important;
   color: #f8fafc !important;
 }
 
-.theme-card:hover {
-  border-color: rgba(239, 68, 68, 0.75) !important;
-  box-shadow: 0 20px 50px -10px rgba(220, 38, 38, 0.4), inset 0 1px 2px 0 rgba(255, 255, 255, 0.32) !important;
-  transform: translateY(-2px);
-}
-
-/* =========================================================================
-   LIQUID GLASS TRANSPARENT DESIGN SYSTEM
-   ========================================================================= */
-
-.liquid-glass {
-  background: rgba(14, 2, 5, 0.44) !important;
-  backdrop-filter: blur(28px) saturate(200%) !important;
-  -webkit-backdrop-filter: blur(28px) saturate(200%) !important;
-  border: 1px solid rgba(255, 255, 255, 0.15) !important;
-  box-shadow: 0 16px 44px -8px rgba(0, 0, 0, 0.65), inset 0 1px 1px 0 rgba(255, 255, 255, 0.22) !important;
-}
-
-.liquid-glass-sub {
-  background: rgba(255, 255, 255, 0.05) !important;
-  backdrop-filter: blur(20px) saturate(190%) !important;
-  -webkit-backdrop-filter: blur(20px) saturate(190%) !important;
-  border: 1px solid rgba(255, 255, 255, 0.12) !important;
-  box-shadow: 0 6px 24px -2px rgba(0, 0, 0, 0.35), inset 0 1px 0.5px 0 rgba(255, 255, 255, 0.18) !important;
-}
-
-.liquid-glass-hover {
-  transition: all 0.25s cubic-bezier(0.16, 1, 0.3, 1) !important;
-}
-
-.liquid-glass-hover:hover {
-  border-color: rgba(239, 68, 68, 0.75) !important;
-  box-shadow: 0 20px 50px -10px rgba(220, 38, 38, 0.4), inset 0 1px 2px 0 rgba(255, 255, 255, 0.32) !important;
-  transform: translateY(-2px);
-}
-
-/* --- LIQUID GLASS TRANSPARENT CARDS (Active when .dark class is on :root/html) --- */
-.dark .theme-card,
-.dark:root[data-template="template-1"] .theme-card,
-.dark[data-template="template-1"] .theme-card,
-.dark :root[data-template="template-1"] .theme-card,
-.dark:root[data-template="template-2"] .theme-card,
-.dark[data-template="template-2"] .theme-card,
-.dark :root[data-template="template-2"] .theme-card,
-.dark:root[data-template="template-3"] .theme-card,
-.dark[data-template="template-3"] .theme-card,
-.dark :root[data-template="template-3"] .theme-card,
-.dark:root[data-template="template-4"] .theme-card,
-.dark[data-template="template-4"] .theme-card,
-.dark :root[data-template="template-4"] .theme-card {
-  background: rgba(14, 2, 5, 0.42) !important;
-  backdrop-filter: blur(24px) saturate(200%) !important;
-  -webkit-backdrop-filter: blur(24px) saturate(200%) !important;
-  border: 1px solid rgba(255, 255, 255, 0.14) !important;
-  box-shadow: 0 14px 40px -6px rgba(0, 0, 0, 0.6), inset 0 1px 1px 0 rgba(255, 255, 255, 0.22) !important;
-  color: #f8fafc;
-}
-
 .dark .theme-card:hover,
-.dark:root[data-template="template-1"] .theme-card:hover,
-.dark[data-template="template-1"] .theme-card:hover,
-.dark :root[data-template="template-1"] .theme-card:hover,
-.dark:root[data-template="template-2"] .theme-card:hover,
-.dark[data-template="template-2"] .theme-card:hover,
-.dark :root[data-template="template-2"] .theme-card:hover,
-.dark:root[data-template="template-3"] .theme-card:hover,
-.dark[data-template="template-3"] .theme-card:hover,
-.dark :root[data-template="template-3"] .theme-card:hover,
-.dark:root[data-template="template-4"] .theme-card:hover,
-.dark[data-template="template-4"] .theme-card:hover,
-.dark :root[data-template="template-4"] .theme-card:hover {
-  border-color: rgba(239, 68, 68, 0.75) !important;
-  box-shadow: 0 20px 50px -8px rgba(220, 38, 38, 0.38), inset 0 1px 2px 0 rgba(255, 255, 255, 0.32) !important;
+.dark .liquid-glass:hover,
+.dark .liquid-glass-hover:hover {
+  border-color: #0284c7 !important;
+  box-shadow: 0 20px 48px -6px rgba(2, 132, 199, 0.35), inset 0 1px 2px 0 rgba(255, 255, 255, 0.2) !important;
   transform: translateY(-2px);
 }
 
-/* =========================================================================
-   UNIVERSAL LIQUID GLASS FOR ALL INNER TOOL PAGES & COMPONENTS
-   ========================================================================= */
+.dark .liquid-glass-sub {
+  background: rgba(13, 71, 117, 0.32) !important;
+  backdrop-filter: blur(18px) saturate(180%) !important;
+  -webkit-backdrop-filter: blur(18px) saturate(180%) !important;
+  border: 1px solid rgba(56, 189, 248, 0.16) !important;
+  box-shadow: 0 4px 20px -2px rgba(0, 0, 0, 0.3), inset 0 1px 0.5px 0 rgba(255, 255, 255, 0.1) !important;
+  color: #e2e8f0;
+}
 
-[class*="bg-[#072642]"],
-[class*="dark:bg-[#072642]"],
+/* Fallbacks for nested dark containers */
+.dark [class*="bg-[#072642]"],
+.dark [class*="dark:bg-[#072642]"],
 .dark .bg-slate-900,
 .dark .bg-slate-950 {
-  background: rgba(14, 2, 5, 0.44) !important;
-  backdrop-filter: blur(28px) saturate(200%) !important;
-  -webkit-backdrop-filter: blur(28px) saturate(200%) !important;
-  border-color: rgba(255, 255, 255, 0.15) !important;
-  box-shadow: 0 16px 44px -8px rgba(0, 0, 0, 0.65), inset 0 1px 1px 0 rgba(255, 255, 255, 0.22) !important;
+  background: rgba(7, 38, 66, 0.72) !important;
+  backdrop-filter: blur(24px) saturate(190%) !important;
+  -webkit-backdrop-filter: blur(24px) saturate(190%) !important;
+  border-color: rgba(56, 189, 248, 0.22) !important;
 }
 
-[class*="bg-[#03182b]"],
-[class*="dark:bg-[#03182b]"],
+.dark [class*="bg-[#03182b]"],
+.dark [class*="dark:bg-[#03182b]"],
 .dark .bg-slate-800,
 .dark .bg-slate-800\/40,
 .dark .bg-slate-800\/50,
 .dark .bg-slate-800\/60,
 .dark .bg-slate-800\/80,
 .dark .bg-slate-950\/50,
-.dark .bg-slate-950\/60,
-.dark .bg-white {
-  background: rgba(255, 255, 255, 0.05) !important;
-  backdrop-filter: blur(20px) saturate(190%) !important;
-  -webkit-backdrop-filter: blur(20px) saturate(190%) !important;
-  border-color: rgba(255, 255, 255, 0.12) !important;
-}
-
-[class*="border-[#0d4775]"],
-.dark .border-slate-100,
-.dark .border-slate-200,
-.dark .border-slate-300,
-.dark .border-slate-700,
-.dark .border-slate-800 {
-  border-color: rgba(255, 255, 255, 0.12) !important;
-}
-
-.dark .divide-slate-100 > * + *,
-.dark .divide-slate-200 > * + *,
-.dark .divide-slate-800 > * + * {
-  border-color: rgba(255, 255, 255, 0.08) !important;
-}
-
-.dark table thead tr {
-  background: rgba(255, 255, 255, 0.04) !important;
-  border-bottom: 1px solid rgba(255, 255, 255, 0.1) !important;
-}
-
-.dark table tbody tr {
-  border-bottom: 1px solid rgba(255, 255, 255, 0.06) !important;
-}
-
-.dark table tbody tr:hover {
-  background: rgba(255, 255, 255, 0.04) !important;
+.dark .bg-slate-950\/60 {
+  background: rgba(13, 71, 117, 0.32) !important;
+  border-color: rgba(56, 189, 248, 0.16) !important;
 }
 
 /* =========================================================================
-   PRIMARY BUTTONS
+   LIGHT THEME CRISP SOLID CONTRAST FIX
+   Ensures card backgrounds in light mode have clean solid contrast against
+   text-slate-900 so content never washes out or blends.
+   ========================================================================= */
+
+html:not(.dark) .theme-card,
+html:not(.dark) .liquid-glass {
+  background: #ffffff !important;
+  backdrop-filter: none !important;
+  -webkit-backdrop-filter: none !important;
+  border: 1px solid #cbd5e1 !important;
+  box-shadow: 0 4px 18px -2px rgba(7, 38, 66, 0.08), 0 1px 3px 0 rgba(0, 0, 0, 0.05) !important;
+  color: #0f172a !important;
+}
+
+html:not(.dark) .theme-card:hover,
+html:not(.dark) .liquid-glass:hover,
+html:not(.dark) .liquid-glass-hover:hover {
+  border-color: #0284c7 !important;
+  box-shadow: 0 12px 28px -4px rgba(2, 132, 199, 0.18), 0 4px 8px -2px rgba(0, 0, 0, 0.06) !important;
+  transform: translateY(-2px);
+}
+
+html:not(.dark) .liquid-glass-sub {
+  background: #f8fafc !important;
+  backdrop-filter: none !important;
+  -webkit-backdrop-filter: none !important;
+  border: 1px solid #e2e8f0 !important;
+  box-shadow: 0 1px 3px 0 rgba(0, 0, 0, 0.04) !important;
+  color: #1e293b !important;
+}
+
+/* High contrast text overrides for light mode */
+html:not(.dark) .theme-card h1,
+html:not(.dark) .theme-card h2,
+html:not(.dark) .theme-card h3,
+html:not(.dark) .theme-card h4,
+html:not(.dark) .liquid-glass h1,
+html:not(.dark) .liquid-glass h2,
+html:not(.dark) .liquid-glass h3,
+html:not(.dark) .liquid-glass h4 {
+  color: #0f172a !important;
+}
+
+html:not(.dark) .theme-card p,
+html:not(.dark) .liquid-glass p {
+  color: #334155 !important;
+}
+
+html:not(.dark) [class*="text-slate-300"],
+html:not(.dark) [class*="text-slate-400"] {
+  color: #475569 !important;
+}
+
+html:not(.dark) input,
+html:not(.dark) select,
+html:not(.dark) textarea {
+  background-color: #ffffff !important;
+  border-color: #cbd5e1 !important;
+  color: #0f172a !important;
+}
+
+html:not(.dark) input::placeholder,
+html:not(.dark) textarea::placeholder {
+  color: #94a3b8 !important;
+}
+
+/* In light mode, ensure text-white in cards that are NOT colored buttons is dark */
+html:not(.dark) .liquid-glass .text-white:not(button *, a *, [class*="bg-"] *),
+html:not(.dark) .theme-card .text-white:not(button *, a *, [class*="bg-"] *) {
+  color: #0f172a !important;
+}
+
+/* =========================================================================
+   TABLES & BORDERS
+   ========================================================================= */
+
+.dark table thead tr {
+  background: rgba(13, 71, 117, 0.4) !important;
+  border-bottom: 1px solid rgba(56, 189, 248, 0.2) !important;
+}
+
+.dark table tbody tr {
+  border-bottom: 1px solid rgba(56, 189, 248, 0.1) !important;
+}
+
+.dark table tbody tr:hover {
+  background: rgba(2, 132, 199, 0.12) !important;
+}
+
+html:not(.dark) table thead tr {
+  background: #f1f5f9 !important;
+  border-bottom: 1px solid #cbd5e1 !important;
+}
+
+html:not(.dark) table tbody tr {
+  border-bottom: 1px solid #e2e8f0 !important;
+}
+
+html:not(.dark) table tbody tr:hover {
+  background: #f8fafc !important;
+}
+
+/* =========================================================================
+   PRIMARY BUTTONS (Corporate Anis Online Services Sapphire Blue)
    ========================================================================= */
 
 .theme-btn-primary {
   color: #ffffff !important;
+  background: linear-gradient(135deg, #0284c7 0%, #0d4775 100%) !important;
+  border: 1px solid rgba(56, 189, 248, 0.3) !important;
+  box-shadow: 0 4px 16px -2px rgba(2, 132, 199, 0.35) !important;
   transition: all 0.2s cubic-bezier(0.16, 1, 0.3, 1);
 }
 
-:root[data-template="template-1"] .theme-btn-primary {
-  background: linear-gradient(135deg, #ef4444 0%, #dc2626 100%);
-  box-shadow: 0 4px 16px -2px rgba(239, 68, 68, 0.4);
-}
-:root[data-template="template-1"] .theme-btn-primary:hover {
-  background: linear-gradient(135deg, #f87171 0%, #ef4444 100%);
-  box-shadow: 0 6px 22px 0 rgba(239, 68, 68, 0.5);
-  transform: translateY(-1.5px);
-}
-
-:root[data-template="template-2"] .theme-btn-primary {
-  background: linear-gradient(135deg, #2563eb 0%, #1d4ed8 100%);
-  box-shadow: 0 4px 16px -2px rgba(37, 99, 235, 0.35);
-}
-:root[data-template="template-2"] .theme-btn-primary:hover {
-  background: linear-gradient(135deg, #3b82f6 0%, #2563eb 100%);
-  box-shadow: 0 6px 22px 0 rgba(37, 99, 235, 0.45);
-  transform: translateY(-1.5px);
-}
-
-:root[data-template="template-3"] .theme-btn-primary {
-  background: linear-gradient(135deg, #9333ea 0%, #7e22ce 100%);
-  box-shadow: 0 4px 16px -2px rgba(168, 85, 247, 0.4);
-}
-:root[data-template="template-3"] .theme-btn-primary:hover {
-  background: linear-gradient(135deg, #a855f7 0%, #9333ea 100%);
-  box-shadow: 0 6px 22px 0 rgba(168, 85, 247, 0.5);
-  transform: translateY(-1.5px);
-}
-
-:root[data-template="template-4"] .theme-btn-primary {
-  background: linear-gradient(135deg, #334155 0%, #0f172a 100%);
-  border: 1px solid rgba(255, 255, 255, 0.18);
-  box-shadow: 0 2px 10px -1px rgba(0, 0, 0, 0.4);
-}
-:root[data-template="template-4"] .theme-btn-primary:hover {
-  background: linear-gradient(135deg, #475569 0%, #1e293b 100%);
-  box-shadow: 0 4px 16px 0 rgba(0, 0, 0, 0.5);
+.theme-btn-primary:hover {
+  background: linear-gradient(135deg, #38bdf8 0%, #0284c7 100%) !important;
+  box-shadow: 0 6px 22px 0 rgba(2, 132, 199, 0.45) !important;
   transform: translateY(-1.5px);
 }
 
@@ -311,197 +234,42 @@
   font-weight: 600;
 }
 
-/* Dark mode badges */
-.dark:root[data-template="template-1"] .theme-badge,
-.dark[data-template="template-1"] .theme-badge {
-  background-color: rgba(239, 68, 68, 0.18);
-  color: #fca5a5;
-  border: 1px solid rgba(239, 68, 68, 0.35);
-}
-.dark:root[data-template="template-2"] .theme-badge,
-.dark[data-template="template-2"] .theme-badge {
-  background-color: rgba(37, 99, 235, 0.2);
-  color: #93c5fd;
-  border: 1px solid rgba(59, 130, 246, 0.4);
-}
-.dark:root[data-template="template-3"] .theme-badge,
-.dark[data-template="template-3"] .theme-badge,
 .dark .theme-badge {
-  background-color: rgba(168, 85, 247, 0.18);
-  color: #d8b4fe;
-  border: 1px solid rgba(168, 85, 247, 0.35);
-}
-.dark:root[data-template="template-4"] .theme-badge,
-.dark[data-template="template-4"] .theme-badge {
-  background-color: rgba(148, 163, 184, 0.16);
-  color: #cbd5e1;
-  border: 1px solid rgba(148, 163, 184, 0.3);
+  background-color: rgba(2, 132, 199, 0.2);
+  color: #38bdf8;
+  border: 1px solid rgba(56, 189, 248, 0.35);
 }
 
-/* Light mode badges: high contrast */
-:root:not(.dark)[data-template="template-1"] .theme-badge,
-html:not(.dark)[data-template="template-1"] .theme-badge {
-  background-color: #fee2e2;
-  color: #b91c1c;
-  border: 1px solid #fca5a5;
-}
-:root:not(.dark)[data-template="template-2"] .theme-badge,
-html:not(.dark)[data-template="template-2"] .theme-badge {
-  background-color: #dbeafe;
-  color: #1d4ed8;
-  border: 1px solid #93c5fd;
-}
-:root:not(.dark)[data-template="template-3"] .theme-badge,
-html:not(.dark)[data-template="template-3"] .theme-badge,
-:root:not(.dark) .theme-badge {
-  background-color: #f3e8ff;
-  color: #7e22ce;
-  border: 1px solid #d8b4fe;
-}
-:root:not(.dark)[data-template="template-4"] .theme-badge,
-html:not(.dark)[data-template="template-4"] .theme-badge {
-  background-color: #f1f5f9;
-  color: #0f172a;
-  border: 1px solid #cbd5e1;
+html:not(.dark) .theme-badge {
+  background-color: #e0f2fe;
+  color: #0369a1;
+  border: 1px solid #bae6fd;
 }
 
-/* Active Nav Pill */
-.dark:root[data-template="template-1"] .theme-nav-active,
-.dark[data-template="template-1"] .theme-nav-active {
-  background-color: rgba(239, 68, 68, 0.25);
-  color: #ffffff;
-  border: 1px solid rgba(239, 68, 68, 0.55);
-}
-.dark:root[data-template="template-2"] .theme-nav-active,
-.dark[data-template="template-2"] .theme-nav-active {
-  background-color: rgba(37, 99, 235, 0.25);
-  color: #ffffff;
-  border: 1px solid rgba(59, 130, 246, 0.55);
-}
-.dark:root[data-template="template-3"] .theme-nav-active,
-.dark[data-template="template-3"] .theme-nav-active,
-.dark .theme-nav-active {
-  background-color: rgba(168, 85, 247, 0.25);
-  color: #ffffff;
-  border: 1px solid rgba(168, 85, 247, 0.55);
-}
-.dark:root[data-template="template-4"] .theme-nav-active,
-.dark[data-template="template-4"] .theme-nav-active {
-  background-color: rgba(255, 255, 255, 0.15);
-  color: #ffffff;
-  border: 1px solid rgba(255, 255, 255, 0.35);
-}
-
-:root:not(.dark)[data-template="template-1"] .theme-nav-active,
-html:not(.dark)[data-template="template-1"] .theme-nav-active {
-  background-color: #dc2626;
-  color: #ffffff;
-  border: 1px solid #dc2626;
-}
-:root:not(.dark)[data-template="template-2"] .theme-nav-active,
-html:not(.dark)[data-template="template-2"] .theme-nav-active {
-  background-color: #2563eb;
-  color: #ffffff;
-  border: 1px solid #2563eb;
-}
-:root:not(.dark)[data-template="template-3"] .theme-nav-active,
-html:not(.dark)[data-template="template-3"] .theme-nav-active,
-:root:not(.dark) .theme-nav-active {
-  background-color: #9333ea;
-  color: #ffffff;
-  border: 1px solid #9333ea;
-}
-:root:not(.dark)[data-template="template-4"] .theme-nav-active,
-html:not(.dark)[data-template="template-4"] .theme-nav-active {
-  background-color: #0f172a;
-  color: #ffffff;
-  border: 1px solid #0f172a;
-}
-
-/* Accent Text Utilities */
-.dark:root[data-template="template-1"] .theme-text-accent,
-.dark[data-template="template-1"] .theme-text-accent {
-  color: #f87171 !important;
-}
-.dark:root[data-template="template-2"] .theme-text-accent,
-.dark[data-template="template-2"] .theme-text-accent {
-  color: #60a5fa !important;
-}
-.dark:root[data-template="template-3"] .theme-text-accent,
-.dark[data-template="template-3"] .theme-text-accent,
-.dark .theme-text-accent {
-  color: #c084fc !important;
-}
-.dark:root[data-template="template-4"] .theme-text-accent,
-.dark[data-template="template-4"] .theme-text-accent {
-  color: #e2e8f0 !important;
-}
-
-:root:not(.dark)[data-template="template-1"] .theme-text-accent,
-html:not(.dark)[data-template="template-1"] .theme-text-accent {
-  color: #dc2626 !important;
-}
-:root:not(.dark)[data-template="template-2"] .theme-text-accent,
-html:not(.dark)[data-template="template-2"] .theme-text-accent {
-  color: #2563eb !important;
-}
-:root:not(.dark)[data-template="template-3"] .theme-text-accent,
-html:not(.dark)[data-template="template-3"] .theme-text-accent,
-:root:not(.dark) .theme-text-accent {
-  color: #9333ea !important;
-}
-:root:not(.dark)[data-template="template-4"] .theme-text-accent,
-html:not(.dark)[data-template="template-4"] .theme-text-accent {
-  color: #0f172a !important;
-}
-
-/* Custom scrollbars */
+/* Custom Scrollbar */
 ::-webkit-scrollbar {
-  width: 6px;
-  height: 6px;
+  width: 7px;
+  height: 7px;
 }
 
 ::-webkit-scrollbar-track {
   background: transparent;
 }
 
-::-webkit-scrollbar-thumb {
-  background: rgba(148, 163, 184, 0.4);
-  border-radius: 9999px;
+.dark ::-webkit-scrollbar-thumb {
+  background: rgba(56, 189, 248, 0.2);
+  border-radius: 4px;
 }
 
-::-webkit-scrollbar-thumb:hover {
-  background: rgba(148, 163, 184, 0.7);
+.dark ::-webkit-scrollbar-thumb:hover {
+  background: rgba(56, 189, 248, 0.4);
 }
 
-/* Mobile Viewport & Anti-Overflow Protection */
-html,
-body {
-  max-width: 100vw;
-  overflow-x: hidden;
-  position: relative;
-  width: 100%;
-  -webkit-text-size-adjust: 100%;
+html:not(.dark) ::-webkit-scrollbar-thumb {
+  background: #cbd5e1;
+  border-radius: 4px;
 }
 
-#root {
-  max-width: 100%;
-  overflow-x: hidden;
-  width: 100%;
-  min-width: 0;
-}
-
-img,
-svg,
-video,
-canvas {
-  max-width: 100%;
-}
-
-h1, h2, h3, h4, h5, h6, p, span, a {
-  overflow-wrap: break-word;
-}
-
-pre, code, table {
-  max-width: 100%;
+html:not(.dark) ::-webkit-scrollbar-thumb:hover {
+  background: #94a3b8;
 }

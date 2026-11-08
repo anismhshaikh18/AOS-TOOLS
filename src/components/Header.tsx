@@ -21,8 +21,8 @@ import { AosLogoSvg } from './AosLogoSvg';
 interface HeaderProps {
   activeTab: string;
   setActiveTab: (tab: string) => void;
-  isDark?: boolean;
-  onToggleTheme?: () => void;
+  isDark: boolean;
+  onToggleTheme: () => void;
   templateId: TemplateId;
   setTemplateId: (id: TemplateId) => void;
   lang: LanguageCode;
@@ -33,6 +33,8 @@ interface HeaderProps {
 export const Header: React.FC<HeaderProps> = ({
   activeTab,
   setActiveTab,
+  isDark,
+  onToggleTheme,
   lang,
   setLang,
   onOpenSearch,
@@ -64,12 +66,12 @@ export const Header: React.FC<HeaderProps> = ({
   const primaryNavItems = [
     { id: 'home', label: t.home || 'Home' },
     { id: 'tools', label: t.allTools || 'Tools' },
-    { id: 'about', label: 'About' },
-    { id: 'privacy', label: 'Privacy' },
+    { id: 'about', label: t.about || 'About' },
+    { id: 'privacy', label: t.privacy || 'Privacy' },
   ];
 
   return (
-    <header className="sticky top-0 z-40 w-full backdrop-blur-2xl bg-black/40 border-b border-white/10 transition-colors shadow-lg shadow-black/20">
+    <header className="sticky top-0 z-40 w-full backdrop-blur-2xl bg-white/95 dark:bg-[#072642]/90 border-b border-slate-200 dark:border-sky-500/20 transition-colors shadow-sm dark:shadow-lg dark:shadow-black/30">
       <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
         <div className="flex items-center justify-between h-16 sm:h-18">
           
@@ -80,21 +82,21 @@ export const Header: React.FC<HeaderProps> = ({
             tabIndex={0}
             className="flex items-center gap-2.5 cursor-pointer group select-none shrink-0"
           >
-            <div className="w-9 h-9 sm:w-10 sm:h-10 rounded-full overflow-hidden bg-white ring-2 ring-[#0d4775] hover:ring-red-500 flex items-center justify-center shadow-lg shadow-black/40 group-hover:scale-105 transition-all p-0.5 shrink-0">
-              <AosLogoSvg className="w-full h-full object-contain" />
+            <div className="w-9 h-9 sm:w-10 sm:h-10 rounded-full overflow-hidden bg-white ring-2 ring-[#0284c7] hover:ring-sky-400 flex items-center justify-center shadow-md dark:shadow-black/50 group-hover:scale-105 transition-all p-0.5 shrink-0 aspect-square">
+              <AosLogoSvg className="w-full h-full aspect-square object-contain shrink-0" />
             </div>
             <div className="flex items-baseline tracking-tight">
-              <span className="text-lg sm:text-xl font-black text-white">
+              <span className="text-lg sm:text-xl font-black text-slate-900 dark:text-white">
                 AOS
               </span>
-              <span className="text-lg sm:text-xl font-black text-red-500 ml-1">
+              <span className="text-lg sm:text-xl font-black text-[#0284c7] ml-1">
                 TOOLS
               </span>
             </div>
           </div>
 
-          {/* Desktop Nav Pills (Matching Screenshot navigation!) */}
-          <nav className="hidden md:flex items-center gap-1.5 p-1 rounded-full liquid-glass-sub">
+          {/* Desktop Nav Pills (Anis Online Services corporate sapphire styling) */}
+          <nav className="hidden md:flex items-center gap-1.5 p-1 rounded-full bg-slate-100/90 dark:bg-[#03182b]/80 border border-slate-200 dark:border-sky-500/20">
             {primaryNavItems.map((item) => {
               const isSelected = activeTab === item.id;
               return (
@@ -103,8 +105,8 @@ export const Header: React.FC<HeaderProps> = ({
                   onClick={() => setActiveTab(item.id)}
                   className={`px-4 py-1.5 rounded-full text-xs font-semibold transition-all duration-150 cursor-pointer ${
                     isSelected
-                      ? 'bg-red-600 text-white shadow-md shadow-red-600/30'
-                      : 'text-slate-300 hover:text-white hover:bg-white/5'
+                      ? 'bg-gradient-to-r from-[#0284c7] to-[#0d4775] text-white shadow-md shadow-sky-500/20'
+                      : 'text-slate-600 dark:text-slate-300 hover:text-slate-900 dark:hover:text-white hover:bg-white dark:hover:bg-white/10'
                   }`}
                 >
                   {item.label}
@@ -114,17 +116,32 @@ export const Header: React.FC<HeaderProps> = ({
           </nav>
 
           {/* Right Action Tools: Search, Theme Toggle, Language */}
-          <div className="flex items-center gap-2 sm:gap-3">
+          <div className="flex items-center gap-2 sm:gap-2.5">
             {/* Quick Search Shortcut */}
             <button
               onClick={onOpenSearch}
               aria-label="Search tools"
-              className="p-2 text-slate-300 hover:text-white liquid-glass-sub rounded-full transition-all cursor-pointer flex items-center gap-1.5 shadow-sm hover:border-red-500/50"
+              title="Search tools (/)"
+              className="p-2 text-slate-600 dark:text-slate-300 hover:text-slate-900 dark:hover:text-white bg-slate-100 dark:bg-[#0d4775]/40 hover:bg-slate-200 dark:hover:bg-[#0d4775]/70 border border-slate-200 dark:border-sky-500/25 rounded-full transition-all cursor-pointer flex items-center gap-1.5 shadow-xs"
             >
               <Search className="w-4 h-4" />
-              <kbd className="hidden lg:inline text-[10px] font-mono px-1.5 py-0.2 bg-black/40 rounded text-slate-400">
+              <kbd className="hidden lg:inline text-[10px] font-mono px-1.5 py-0.2 bg-white dark:bg-black/40 rounded border border-slate-200 dark:border-white/10 text-slate-500 dark:text-slate-400">
                 /
               </kbd>
+            </button>
+
+            {/* Dark / Light Mode Switch (Anis Online Services Contrast Engine) */}
+            <button
+              onClick={onToggleTheme}
+              aria-label={isDark ? t.themeToggleLight || 'Switch to Light Mode' : t.themeToggleDark || 'Switch to Dark Mode'}
+              title={isDark ? 'Switch to Light Mode' : 'Switch to Dark Mode'}
+              className="p-2 text-slate-600 dark:text-slate-300 hover:text-amber-500 dark:hover:text-sky-300 bg-slate-100 dark:bg-[#0d4775]/40 hover:bg-slate-200 dark:hover:bg-[#0d4775]/70 border border-slate-200 dark:border-sky-500/25 rounded-full transition-all cursor-pointer shadow-xs"
+            >
+              {isDark ? (
+                <Sun className="w-4 h-4 text-amber-400" />
+              ) : (
+                <Moon className="w-4 h-4 text-slate-700" />
+              )}
             </button>
 
             {/* Language Selector Dropdown */}
@@ -132,9 +149,9 @@ export const Header: React.FC<HeaderProps> = ({
               <button
                 onClick={() => setIsLangOpen(!isLangOpen)}
                 aria-label="Select language"
-                className="px-2.5 py-1.5 text-xs font-semibold text-slate-300 hover:text-white liquid-glass-sub rounded-full transition-all cursor-pointer flex items-center gap-1.5 shadow-sm hover:border-red-500/50"
+                className="px-2.5 py-1.5 text-xs font-semibold text-slate-700 dark:text-slate-200 hover:text-slate-900 dark:hover:text-white bg-slate-100 dark:bg-[#0d4775]/40 hover:bg-slate-200 dark:hover:bg-[#0d4775]/70 border border-slate-200 dark:border-sky-500/25 rounded-full transition-all cursor-pointer flex items-center gap-1.5 shadow-xs"
               >
-                <Globe className="w-3.5 h-3.5 text-slate-300" />
+                <Globe className="w-3.5 h-3.5 text-[#0284c7]" />
                 <span className="hidden sm:inline text-[11px] font-medium">
                   {currentLangObj.nativeName}
                 </span>
@@ -145,9 +162,9 @@ export const Header: React.FC<HeaderProps> = ({
               </button>
 
               {isLangOpen && (
-                <div className="absolute right-0 mt-2 w-44 liquid-glass rounded-2xl shadow-2xl p-1.5 z-50 animate-in fade-in zoom-in-95 duration-150">
-                  <div className="px-2.5 py-1 text-[10px] font-bold uppercase tracking-wider text-slate-400 border-b border-white/10 mb-1">
-                    Language
+                <div className="absolute right-0 mt-2 w-48 bg-white dark:bg-[#072642] border border-slate-200 dark:border-sky-500/30 rounded-2xl shadow-xl dark:shadow-2xl p-1.5 z-50 animate-in fade-in zoom-in-95 duration-150">
+                  <div className="px-2.5 py-1 text-[10px] font-bold uppercase tracking-wider text-slate-400 dark:text-slate-400 border-b border-slate-100 dark:border-white/10 mb-1">
+                    {t.langTitle || 'Select Language'}
                   </div>
                   {SUPPORTED_LANGUAGES.map((langItem) => {
                     const isCurrent = lang === langItem.code;
@@ -160,11 +177,14 @@ export const Header: React.FC<HeaderProps> = ({
                         }}
                         className={`w-full flex items-center justify-between px-2.5 py-1.5 rounded-xl text-xs font-medium transition-colors cursor-pointer text-left ${
                           isCurrent
-                            ? 'bg-red-600 text-white font-bold'
-                            : 'text-slate-200 hover:bg-white/10'
+                            ? 'bg-gradient-to-r from-[#0284c7] to-[#0d4775] text-white font-bold'
+                            : 'text-slate-700 dark:text-slate-200 hover:bg-slate-100 dark:hover:bg-white/10'
                         }`}
                       >
-                        <span>{langItem.nativeName}</span>
+                        <div className="flex flex-col">
+                          <span>{langItem.nativeName}</span>
+                          <span className="text-[10px] opacity-75">{langItem.label}</span>
+                        </div>
                         {isCurrent && <Check className="w-3.5 h-3.5" />}
                       </button>
                     );
@@ -176,7 +196,7 @@ export const Header: React.FC<HeaderProps> = ({
             {/* Mobile Hamburger Button */}
             <button
               onClick={() => setIsMobileMenuOpen(!isMobileMenuOpen)}
-              className="md:hidden p-2 text-slate-300 hover:text-white liquid-glass-sub rounded-full cursor-pointer hover:border-red-500/50"
+              className="md:hidden p-2 text-slate-600 dark:text-slate-300 hover:text-slate-900 dark:hover:text-white bg-slate-100 dark:bg-[#0d4775]/40 border border-slate-200 dark:border-sky-500/25 rounded-full cursor-pointer"
             >
               {isMobileMenuOpen ? <X className="w-5 h-5" /> : <Menu className="w-5 h-5" />}
             </button>
@@ -186,7 +206,7 @@ export const Header: React.FC<HeaderProps> = ({
 
         {/* Mobile Dropdown Menu */}
         {isMobileMenuOpen && (
-          <div className="md:hidden py-4 border-t border-white/10 space-y-2 animate-in fade-in duration-150">
+          <div className="md:hidden py-4 border-t border-slate-200 dark:border-sky-500/20 space-y-2 animate-in fade-in duration-150">
             <div className="grid grid-cols-2 gap-2">
               {primaryNavItems.map((item) => (
                 <button
@@ -197,8 +217,8 @@ export const Header: React.FC<HeaderProps> = ({
                   }}
                   className={`p-2.5 rounded-xl text-xs font-bold text-center transition-all ${
                     activeTab === item.id
-                      ? 'bg-red-600 text-white shadow-md'
-                      : 'liquid-glass-sub text-slate-200 hover:border-red-500/40'
+                      ? 'bg-gradient-to-r from-[#0284c7] to-[#0d4775] text-white shadow-md'
+                      : 'bg-slate-100 dark:bg-[#03182b] text-slate-700 dark:text-slate-200 border border-slate-200 dark:border-sky-500/20'
                   }`}
                 >
                   {item.label}

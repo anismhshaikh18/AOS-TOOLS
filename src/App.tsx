@@ -20,7 +20,7 @@ import { ToolItem } from './types';
 import { PDF_TOOLS } from './data/pdfTools';
 import { IMAGE_TOOLS } from './data/imageTools';
 import { SPECIAL_TOOLS } from './data/specialTools';
-import { LanguageCode, TemplateId } from './utils/translations';
+import { LanguageCode, TemplateId, getTranslatedTool } from './utils/translations';
 import { SiteBackgroundSvg } from './components/SiteBackgroundSvg';
 
 export default function App() {
@@ -37,9 +37,20 @@ export default function App() {
       if (saved && ['template-1', 'template-2', 'template-3', 'template-4'].includes(saved)) {
         return saved;
       }
-      return 'template-1'; // Default matching screenshot theme with red accents
+      return 'template-1';
     } catch {
       return 'template-1';
+    }
+  });
+
+  // Dark / Light theme toggle state
+  const [isDark, setIsDark] = useState<boolean>(() => {
+    try {
+      const saved = localStorage.getItem('aos_theme');
+      if (saved) return saved === 'dark';
+      return true; // Default to Anis Online Services deep navy blue
+    } catch {
+      return true;
     }
   });
 
@@ -56,12 +67,18 @@ export default function App() {
     }
   });
 
-  // Dark liquid glass theme is permanently enabled
+  // Synchronize Dark / Light mode class on document
   useEffect(() => {
-    document.documentElement.classList.add('dark');
-    document.body.classList.add('dark');
-    localStorage.setItem('aos_theme', 'dark');
-  }, []);
+    if (isDark) {
+      document.documentElement.classList.add('dark');
+      document.body.classList.add('dark');
+      localStorage.setItem('aos_theme', 'dark');
+    } else {
+      document.documentElement.classList.remove('dark');
+      document.body.classList.remove('dark');
+      localStorage.setItem('aos_theme', 'light');
+    }
+  }, [isDark]);
 
   useEffect(() => {
     document.documentElement.setAttribute('data-template', templateId);
@@ -84,7 +101,7 @@ export default function App() {
         if (state.toolId) {
           const allTools = [...PDF_TOOLS, ...IMAGE_TOOLS, ...SPECIAL_TOOLS];
           const found = allTools.find((t) => t.id === state.toolId);
-          setSelectedTool(found || null);
+          setSelectedTool(found ? getTranslatedTool(found, lang) : null);
         } else {
           setSelectedTool(null);
         }
@@ -105,7 +122,7 @@ export default function App() {
 
     window.addEventListener('popstate', handlePopState);
     return () => window.removeEventListener('popstate', handlePopState);
-  }, []);
+  }, [lang]);
 
   const handleNavigateTab = (tab: string) => {
     setActiveTab(tab);
@@ -118,7 +135,8 @@ export default function App() {
       handleNavigateTab('khata');
       return;
     }
-    setSelectedTool(tool);
+    const localizedTool = getTranslatedTool(tool, lang);
+    setSelectedTool(localizedTool);
     window.history.pushState({ tab: activeTab, toolId: tool.id }, '');
   };
 
@@ -153,13 +171,15 @@ export default function App() {
 
   return (
     <div className="min-h-screen flex flex-col bg-transparent text-slate-900 dark:text-slate-100 transition-colors duration-200 w-full max-w-full overflow-x-hidden relative">
-      {/* Full-Website SVG Background (Hand, Apple & Serpent Artwork) */}
-      <SiteBackgroundSvg />
+      {/* Full-Website SVG Background (Anis Online Services Deep Navy Grid) */}
+      <SiteBackgroundSvg isDark={isDark} />
       
       {/* Responsive Header */}
       <Header
         activeTab={activeTab}
         setActiveTab={handleNavigateTab}
+        isDark={isDark}
+        onToggleTheme={() => setIsDark((prev) => !prev)}
         templateId={templateId}
         setTemplateId={setTemplateId}
         lang={lang}
@@ -200,14 +220,15 @@ export default function App() {
               <ToolsDirectoryView
                 onSelectTool={handleSelectTool}
                 setActiveTab={handleNavigateTab}
+                lang={lang}
               />
             )}
 
             {activeTab === 'about' && (
-              <AboutView onExploreTools={() => handleNavigateTab('tools')} />
+              <AboutView onExploreTools={() => handleNavigateTab('tools')} lang={lang} />
             )}
 
-            {activeTab === 'privacy' && <PrivacyView />}
+            {activeTab === 'privacy' && <PrivacyView lang={lang} />}
 
             {activeTab === 'pdf' && (
               <PdfToolsView onSelectTool={handleSelectTool} lang={lang} />
@@ -221,8 +242,10 @@ export default function App() {
               <SpecialToolsView onSelectTool={handleSelectTool} lang={lang} />
             )}
 
+            {/* Kept 100% untouched and secure */}
             {activeTab === 'khata' && <KhataDiary />}
 
+            {/* Kept 100% untouched and secure */}
             {activeTab === 'pan' && (
               <PanMasterHub onLaunchImageResize={handleLaunchPhotoResizer} />
             )}
@@ -232,11 +255,12 @@ export default function App() {
         )}
       </main>
 
-      {/* Clean Footer matching Screenshot */}
+      {/* Clean Footer */}
       <Footer
         onOpenPrivacy={() => handleNavigateTab('privacy')}
         onOpenFreePolicy={() => setIsFreePolicyOpen(true)}
         setActiveTab={handleNavigateTab}
+        lang={lang}
       />
 
       {/* Search Palette Modal */}
@@ -245,6 +269,7 @@ export default function App() {
           isOpen={isSearchOpen}
           onClose={() => setIsSearchOpen(false)}
           onSelectTool={handleSelectTool}
+          lang={lang}
         />
       )}
 

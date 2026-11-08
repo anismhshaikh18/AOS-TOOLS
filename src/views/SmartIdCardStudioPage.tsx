@@ -842,7 +842,7 @@ export const SmartIdCardStudioPage: React.FC<SmartIdCardStudioPageProps> = ({ on
       <div className="flex items-center justify-between gap-4">
         <button
           onClick={onBack}
-          className="inline-flex items-center gap-1.5 px-3.5 py-1.5 rounded-full liquid-glass-sub hover:border-red-500/50 text-slate-300 hover:text-white text-xs font-semibold transition-all cursor-pointer shadow-sm active:scale-95"
+          className="inline-flex items-center gap-1.5 px-3.5 py-1.5 rounded-full liquid-glass-sub hover:border-[#0284c7]/50 text-slate-700 dark:text-slate-300 hover:text-slate-900 dark:hover:text-white text-xs font-semibold transition-all cursor-pointer shadow-sm active:scale-95"
         >
           <ArrowLeft className="w-3.5 h-3.5" />
           <span>Back to Tools</span>
@@ -913,14 +913,14 @@ export const SmartIdCardStudioPage: React.FC<SmartIdCardStudioPageProps> = ({ on
           <div className="flex items-center gap-2">
             <button
               onClick={handleDownloadFrontJpg}
-              className="px-3 py-1.5 rounded-lg liquid-glass-sub hover:border-red-500/50 text-slate-300 hover:text-white text-xs font-semibold flex items-center gap-1.5 transition-all cursor-pointer"
+              className="px-3 py-1.5 rounded-lg liquid-glass-sub hover:border-[#0284c7]/50 text-slate-700 dark:text-slate-300 hover:text-slate-900 dark:hover:text-white text-xs font-semibold flex items-center gap-1.5 transition-all cursor-pointer"
             >
               <Download className="w-3.5 h-3.5" />
               <span>Front JPG</span>
             </button>
             <button
               onClick={handleDownloadBackJpg}
-              className="px-3 py-1.5 rounded-lg liquid-glass-sub hover:border-red-500/50 text-slate-300 hover:text-white text-xs font-semibold flex items-center gap-1.5 transition-all cursor-pointer"
+              className="px-3 py-1.5 rounded-lg liquid-glass-sub hover:border-[#0284c7]/50 text-slate-700 dark:text-slate-300 hover:text-slate-900 dark:hover:text-white text-xs font-semibold flex items-center gap-1.5 transition-all cursor-pointer"
             >
               <Download className="w-3.5 h-3.5" />
               <span>Back JPG</span>
@@ -986,7 +986,7 @@ export const SmartIdCardStudioPage: React.FC<SmartIdCardStudioPageProps> = ({ on
               className={`px-4 py-2.5 rounded-xl font-bold text-xs sm:text-sm flex items-center gap-2 whitespace-nowrap transition-all cursor-pointer ${
                 isActive
                   ? 'bg-blue-600 text-white shadow-lg shadow-blue-600/40'
-                  : 'liquid-glass-sub text-slate-300 hover:text-white hover:border-red-500/40'
+                  : 'liquid-glass-sub text-slate-700 dark:text-slate-300 hover:text-slate-900 dark:hover:text-white hover:border-[#0284c7]/40'
               }`}
             >
               <Icon className="w-4 h-4" />

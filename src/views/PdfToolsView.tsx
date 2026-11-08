@@ -3,7 +3,7 @@ import { FileText, ShieldCheck, Search } from 'lucide-react';
 import { ToolItem } from '../types';
 import { PDF_TOOLS } from '../data/pdfTools';
 import { ToolCard } from '../components/ToolCard';
-import { LanguageCode, TRANSLATIONS } from '../utils/translations';
+import { LanguageCode, TRANSLATIONS, getTranslatedTool } from '../utils/translations';
 
 interface PdfToolsViewProps {
   onSelectTool: (tool: ToolItem) => void;
@@ -24,8 +24,12 @@ export const PdfToolsView: React.FC<PdfToolsViewProps> = ({ onSelectTool, lang =
     'Security & Organize',
   ];
 
+  const translatedTools = useMemo(() => {
+    return PDF_TOOLS.map((tool) => getTranslatedTool(tool, lang));
+  }, [lang]);
+
   const filteredTools = useMemo(() => {
-    return PDF_TOOLS.filter((tool) => {
+    return translatedTools.filter((tool) => {
       const matchesSearch =
         tool.name.toLowerCase().includes(searchQuery.toLowerCase()) ||
         tool.shortDesc.toLowerCase().includes(searchQuery.toLowerCase());
@@ -47,37 +51,37 @@ export const PdfToolsView: React.FC<PdfToolsViewProps> = ({ onSelectTool, lang =
       }
       return false;
     });
-  }, [searchQuery, activeCategory]);
+  }, [translatedTools, searchQuery, activeCategory]);
 
   return (
     <div className="space-y-6 w-full max-w-full">
-      <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-4 pb-4 border-b border-white/10">
+      <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-4 pb-4 border-b border-slate-200 dark:border-sky-500/20">
         <div>
-          <h1 className="text-xl sm:text-2xl font-bold tracking-tight text-white flex items-center gap-2.5">
-            <FileText className="w-6 h-6 text-red-500" />
-            <span>{s.pdf} ({PDF_TOOLS.length} Working Engines)</span>
+          <h1 className="text-xl sm:text-2xl font-bold tracking-tight text-slate-900 dark:text-white flex items-center gap-2.5">
+            <FileText className="w-6 h-6 text-[#0284c7]" />
+            <span>{s.pdf || 'PDF Tools'} ({PDF_TOOLS.length} Working Engines)</span>
           </h1>
-          <p className="text-xs text-slate-300 mt-1">
-            Browser-native document engines. 100% genuine in-browser merging, compression under 300KB, signature stamping, and conversion.
+          <p className="text-xs text-slate-600 dark:text-slate-300 mt-1">
+            Pure client-side document processing engines. Zero server storage, 100% private.
           </p>
         </div>
 
-        <div className="flex items-center gap-2 text-xs font-semibold text-emerald-400 liquid-glass-sub px-3 py-1.5 rounded-xl">
+        <div className="flex items-center gap-2 text-xs text-emerald-600 dark:text-emerald-400 bg-emerald-500/10 px-3 py-1.5 rounded-lg border border-emerald-500/25 shrink-0">
           <ShieldCheck className="w-4 h-4 shrink-0" />
-          <span>{s.zeroUploads}</span>
+          <span>Local Engine Processing</span>
         </div>
       </div>
 
-      <div className="flex flex-col md:flex-row items-stretch md:items-center justify-between gap-3">
+      <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-4">
         <div className="flex items-center gap-1.5 overflow-x-auto pb-1 scrollbar-none">
           {categories.map((cat) => (
             <button
               key={cat}
               onClick={() => setActiveCategory(cat)}
-              className={`px-3 py-1.5 text-xs font-semibold rounded-xl transition-all cursor-pointer whitespace-nowrap ${
+              className={`px-3.5 py-1.5 rounded-full text-xs font-semibold whitespace-nowrap transition-all cursor-pointer ${
                 activeCategory === cat
-                  ? 'bg-red-600 text-white shadow-md shadow-red-600/30'
-                  : 'liquid-glass-sub text-slate-300 hover:text-white hover:border-red-500/40'
+                  ? 'bg-gradient-to-r from-[#0284c7] to-[#0d4775] text-white shadow-md shadow-sky-500/20'
+                  : 'liquid-glass-sub text-slate-700 dark:text-slate-300 hover:text-slate-900 dark:hover:text-white hover:border-[#0284c7]/40'
               }`}
             >
               {cat}
@@ -85,14 +89,14 @@ export const PdfToolsView: React.FC<PdfToolsViewProps> = ({ onSelectTool, lang =
           ))}
         </div>
 
-        <div className="relative w-full md:w-72">
+        <div className="relative w-full sm:w-64">
           <Search className="w-4 h-4 absolute left-3 top-1/2 -translate-y-1/2 text-slate-400" />
           <input
             type="text"
             value={searchQuery}
             onChange={(e) => setSearchQuery(e.target.value)}
-            placeholder={`${s.search} PDF tools...`}
-            className="w-full pl-9 pr-3 py-2 text-xs rounded-xl liquid-glass-sub text-white placeholder:text-slate-400 focus:outline-none focus:ring-2 focus:ring-red-500/40"
+            placeholder={`${s.search || 'Search'} PDF tools...`}
+            className="w-full pl-9 pr-3 py-2 text-xs rounded-xl liquid-glass-sub text-slate-900 dark:text-white placeholder:text-slate-400 focus:outline-none focus:ring-2 focus:ring-[#0284c7]/40 border border-slate-200 dark:border-sky-500/20"
           />
         </div>
       </div>
@@ -104,7 +108,7 @@ export const PdfToolsView: React.FC<PdfToolsViewProps> = ({ onSelectTool, lang =
       </div>
 
       {filteredTools.length === 0 && (
-        <div className="text-center py-12 text-slate-500 dark:text-purple-300/60 text-xs">
+        <div className="text-center py-12 text-slate-500 dark:text-slate-400 text-xs">
           No PDF tools matched your search query.
         </div>
       )}

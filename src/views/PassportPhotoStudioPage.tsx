@@ -624,15 +624,15 @@ export const PassportPhotoStudioPage: React.FC<PassportPhotoStudioPageProps> = (
       <div className="flex items-center justify-between gap-4">
         <button
           onClick={onBack}
-          className="inline-flex items-center gap-1.5 px-3 py-1.5 rounded-full liquid-glass-sub hover:border-red-500/50 text-slate-300 hover:text-white text-xs font-semibold transition-all cursor-pointer shadow-sm active:scale-95"
+          className="inline-flex items-center gap-1.5 px-3 py-1.5 rounded-full liquid-glass-sub hover:border-[#0284c7]/50 text-slate-700 dark:text-slate-300 hover:text-slate-900 dark:hover:text-white text-xs font-semibold transition-all cursor-pointer shadow-sm active:scale-95"
         >
           <ArrowLeft className="w-3.5 h-3.5" />
           <span>Back to Tools</span>
         </button>
 
         <div className="flex items-center gap-2">
-          <span className="text-[11px] font-mono text-emerald-400 bg-emerald-950/70 border border-emerald-500/30 px-2 py-0.5 rounded-md flex items-center gap-1">
-            <span className="w-1.5 h-1.5 rounded-full bg-emerald-400 animate-pulse" />
+          <span className="text-[11px] font-mono text-emerald-600 dark:text-emerald-400 bg-emerald-50 dark:bg-emerald-950/70 border border-emerald-500/30 px-2 py-0.5 rounded-md flex items-center gap-1">
+            <span className="w-1.5 h-1.5 rounded-full bg-emerald-500 dark:bg-emerald-400 animate-pulse" />
             300 DPI Print Ready
           </span>
         </div>
@@ -641,19 +641,19 @@ export const PassportPhotoStudioPage: React.FC<PassportPhotoStudioPageProps> = (
       {/* Main Studio Title Card */}
       <div className="p-4 sm:p-5 rounded-2xl liquid-glass shadow-xl flex flex-col sm:flex-row sm:items-center justify-between gap-4">
         <div className="flex items-center gap-3">
-          <div className="w-10 h-10 rounded-xl bg-red-600 flex items-center justify-center text-white shadow-lg shadow-red-600/30 shrink-0">
+          <div className="w-10 h-10 rounded-xl bg-[#0284c7] flex items-center justify-center text-white shadow-lg shadow-[#0284c7]/30 shrink-0">
             <Crop className="w-5 h-5 stroke-[2.5]" />
           </div>
           <div>
             <div className="flex items-center gap-2">
-              <h1 className="text-base sm:text-lg font-black text-white tracking-tight">
+              <h1 className="text-base sm:text-lg font-black text-slate-900 dark:text-white tracking-tight">
                 Passport Photo Studio
               </h1>
-              <span className="text-[10px] font-bold uppercase tracking-wider px-2 py-0.5 rounded-full bg-red-950/80 border border-red-500/40 text-red-300">
+              <span className="text-[10px] font-bold uppercase tracking-wider px-2 py-0.5 rounded-full bg-sky-100 dark:bg-[#072642] border border-sky-400/40 text-sky-700 dark:text-[#38bdf8]">
                 STUDIO CROP &amp; PRINT
               </span>
             </div>
-            <p className="text-xs text-slate-300 mt-0.5">
+            <p className="text-xs text-slate-600 dark:text-slate-300 mt-0.5">
               Demo Portrait • Upload your photo to customize
             </p>
           </div>
@@ -669,7 +669,7 @@ export const PassportPhotoStudioPage: React.FC<PassportPhotoStudioPageProps> = (
           />
           <button
             onClick={() => fileInputRef.current?.click()}
-            className="px-4 py-2 rounded-xl bg-red-600 hover:bg-red-500 text-white font-bold text-xs sm:text-sm flex items-center gap-2 shadow-lg shadow-red-600/30 transition-all cursor-pointer active:scale-95"
+            className="px-4 py-2 rounded-xl bg-[#0284c7] hover:bg-[#0369a1] text-white font-bold text-xs sm:text-sm flex items-center gap-2 shadow-lg shadow-[#0284c7]/30 transition-all cursor-pointer active:scale-95"
           >
             <Upload className="w-4 h-4" />
             <span>Upload Photo</span>
@@ -683,7 +683,7 @@ export const PassportPhotoStudioPage: React.FC<PassportPhotoStudioPageProps> = (
                 setPanX(0);
                 setPanY(0);
               }}
-              className="px-3 py-2 rounded-xl liquid-glass-sub hover:border-red-500/50 text-slate-300 hover:text-white text-xs font-semibold flex items-center gap-1.5 transition-all cursor-pointer active:scale-95"
+              className="px-3 py-2 rounded-xl liquid-glass-sub hover:border-[#0284c7]/50 text-slate-700 dark:text-slate-300 hover:text-slate-900 dark:hover:text-white text-xs font-semibold flex items-center gap-1.5 transition-all cursor-pointer active:scale-95"
               title="Reset to official sample portrait"
             >
               <RotateCcw className="w-3.5 h-3.5 text-blue-400" />
@@ -901,8 +901,8 @@ export const PassportPhotoStudioPage: React.FC<PassportPhotoStudioPageProps> = (
                 onClick={() => handleSelectPreset(preset.id)}
                 className={`p-3 rounded-xl border text-center transition-all cursor-pointer ${
                   isSelected
-                    ? 'bg-red-600 border-red-500 text-white shadow-lg shadow-red-600/30'
-                    : 'liquid-glass-sub text-slate-300 hover:border-red-500/40 hover:text-white'
+                    ? 'bg-[#0284c7] border-[#38bdf8] text-white shadow-lg shadow-[#0284c7]/30'
+                    : 'liquid-glass-sub text-slate-700 dark:text-slate-300 hover:border-[#0284c7]/40 hover:text-slate-900 dark:hover:text-white'
                 }`}
               >
                 <div className="text-xs font-black">{preset.label}</div>
@@ -915,8 +915,8 @@ export const PassportPhotoStudioPage: React.FC<PassportPhotoStudioPageProps> = (
         {/* Total Copies on Sheet selector */}
         <div className="space-y-2 pt-2">
           <div className="flex items-center justify-between text-xs">
-            <span className="font-bold text-slate-300">Total Copies on Sheet:</span>
-            <span className="font-mono text-blue-400 font-semibold">
+            <span className="font-bold text-slate-700 dark:text-slate-300">Total Copies on Sheet:</span>
+            <span className="font-mono text-blue-600 dark:text-blue-400 font-semibold">
               {totalCopies} Photos • {activePaperLabel}
             </span>
           </div>
@@ -930,8 +930,8 @@ export const PassportPhotoStudioPage: React.FC<PassportPhotoStudioPageProps> = (
                   onClick={() => setTotalCopies(count)}
                   className={`w-9 h-8 rounded-lg text-xs font-bold transition-all cursor-pointer flex items-center justify-center ${
                     isSelected
-                      ? 'bg-blue-600 text-white shadow-md shadow-blue-600/40'
-                      : 'liquid-glass-sub text-slate-300 hover:text-white hover:border-red-500/40'
+                      ? 'bg-[#0284c7] text-white shadow-md shadow-[#0284c7]/40'
+                      : 'liquid-glass-sub text-slate-700 dark:text-slate-300 hover:text-slate-900 dark:hover:text-white hover:border-[#0284c7]/40'
                   }`}
                 >
                   {count}
@@ -947,21 +947,21 @@ export const PassportPhotoStudioPage: React.FC<PassportPhotoStudioPageProps> = (
         <div className="pt-2 border-t border-white/10">
           <button
             onClick={() => setIsAccordionOpen(!isAccordionOpen)}
-            className="w-full flex items-center justify-between text-xs font-bold text-slate-300 hover:text-white transition-colors cursor-pointer py-1"
+            className="w-full flex items-center justify-between text-xs font-bold text-slate-700 dark:text-slate-300 hover:text-slate-900 dark:hover:text-white transition-colors cursor-pointer py-1"
           >
             <span className="flex items-center gap-1.5">
-              <Scissors className="w-3.5 h-3.5 text-red-400" />
+              <Scissors className="w-3.5 h-3.5 text-[#0284c7]" />
               Advanced Cutting &amp; Border Settings
             </span>
             {isAccordionOpen ? <ChevronUp className="w-4 h-4" /> : <ChevronDown className="w-4 h-4" />}
           </button>
 
           {isAccordionOpen && (
-            <div className="mt-3 p-4 rounded-xl liquid-glass-sub border border-white/10 space-y-5 animate-in fade-in duration-150">
+            <div className="mt-3 p-4 rounded-xl liquid-glass-sub border border-slate-200 dark:border-white/10 space-y-5 animate-in fade-in duration-150">
               
               {/* 1. Photo Border Thickness & Style */}
               <div className="space-y-2">
-                <label className="block text-[11px] font-bold text-slate-300 uppercase tracking-wider">
+                <label className="block text-[11px] font-bold text-slate-700 dark:text-slate-300 uppercase tracking-wider">
                   Photo Border Thickness (Cutting Edge)
                 </label>
                 <div className="grid grid-cols-2 sm:grid-cols-4 gap-2">
@@ -976,12 +976,12 @@ export const PassportPhotoStudioPage: React.FC<PassportPhotoStudioPageProps> = (
                       onClick={() => setBorderThickness(b.id as BorderThickness)}
                       className={`p-2.5 rounded-lg border text-left transition-all cursor-pointer ${
                         borderThickness === b.id
-                          ? 'border-red-500 bg-red-950/60 text-white shadow-sm'
-                          : 'liquid-glass text-slate-300 hover:text-white'
+                          ? 'border-[#0284c7] bg-[#0284c7]/20 text-[#0284c7] dark:text-white shadow-sm'
+                          : 'liquid-glass text-slate-700 dark:text-slate-300 hover:text-slate-900 dark:hover:text-white'
                       }`}
                     >
                       <div className="text-xs font-bold">{b.label}</div>
-                      <div className="text-[10px] text-slate-400">{b.sub}</div>
+                      <div className="text-[10px] text-slate-500 dark:text-slate-400">{b.sub}</div>
                     </button>
                   ))}
                 </div>
@@ -991,7 +991,7 @@ export const PassportPhotoStudioPage: React.FC<PassportPhotoStudioPageProps> = (
               {borderThickness !== 'none' && (
                 <div className="grid grid-cols-1 sm:grid-cols-2 gap-4 pt-1">
                   <div>
-                    <label className="block text-[11px] font-bold text-slate-300 uppercase tracking-wider mb-2">
+                    <label className="block text-[11px] font-bold text-slate-700 dark:text-slate-300 uppercase tracking-wider mb-2">
                       Border Color
                     </label>
                     <div className="flex flex-wrap gap-2">
@@ -1006,8 +1006,8 @@ export const PassportPhotoStudioPage: React.FC<PassportPhotoStudioPageProps> = (
                           onClick={() => setBorderColor(c.color)}
                           className={`px-3 py-1.5 rounded-lg text-xs font-semibold flex items-center gap-1.5 border transition-all cursor-pointer ${
                             borderColor === c.color
-                              ? 'border-red-500 bg-red-950/60 text-white'
-                              : 'liquid-glass text-slate-300'
+                              ? 'border-[#0284c7] bg-[#0284c7]/20 text-[#0284c7] dark:text-white'
+                              : 'liquid-glass text-slate-700 dark:text-slate-300'
                           }`}
                         >
                           <span
@@ -1021,7 +1021,7 @@ export const PassportPhotoStudioPage: React.FC<PassportPhotoStudioPageProps> = (
                   </div>
 
                   <div>
-                    <label className="block text-[11px] font-bold text-slate-300 uppercase tracking-wider mb-2">
+                    <label className="block text-[11px] font-bold text-slate-700 dark:text-slate-300 uppercase tracking-wider mb-2">
                       Corner Cut Style
                     </label>
                     <div className="grid grid-cols-2 gap-2">
@@ -1029,8 +1029,8 @@ export const PassportPhotoStudioPage: React.FC<PassportPhotoStudioPageProps> = (
                         onClick={() => setCornerStyle('sharp')}
                         className={`p-2 rounded-lg border text-xs font-bold transition-all cursor-pointer ${
                           cornerStyle === 'sharp'
-                            ? 'border-red-500 bg-red-950/60 text-white'
-                            : 'liquid-glass text-slate-300'
+                            ? 'border-[#0284c7] bg-[#0284c7]/20 text-[#0284c7] dark:text-white'
+                            : 'liquid-glass text-slate-700 dark:text-slate-300'
                         }`}
                       >
                         Square (90° Standard)
@@ -1039,8 +1039,8 @@ export const PassportPhotoStudioPage: React.FC<PassportPhotoStudioPageProps> = (
                         onClick={() => setCornerStyle('rounded')}
                         className={`p-2 rounded-lg border text-xs font-bold transition-all cursor-pointer ${
                           cornerStyle === 'rounded'
-                            ? 'border-red-500 bg-red-950/60 text-white'
-                            : 'liquid-glass text-slate-300'
+                            ? 'border-[#0284c7] bg-[#0284c7]/20 text-[#0284c7] dark:text-white'
+                            : 'liquid-glass text-slate-700 dark:text-slate-300'
                         }`}
                       >
                         Smooth Rounded (2mm)
@@ -1079,12 +1079,12 @@ export const PassportPhotoStudioPage: React.FC<PassportPhotoStudioPageProps> = (
                       onClick={() => setCutGuideStyle(g.id as CutGuideStyle)}
                       className={`p-2.5 rounded-lg border text-left transition-all cursor-pointer ${
                         cutGuideStyle === g.id
-                          ? 'border-red-500 bg-red-950/60 text-white shadow-sm'
-                          : 'liquid-glass text-slate-300 hover:text-white'
+                          ? 'border-[#0284c7] bg-[#0284c7]/20 text-[#0284c7] dark:text-white shadow-sm'
+                          : 'liquid-glass text-slate-700 dark:text-slate-300 hover:text-slate-900 dark:hover:text-white'
                       }`}
                     >
                       <div className="text-xs font-bold">{g.label}</div>
-                      <div className="text-[10px] text-slate-400">{g.sub}</div>
+                      <div className="text-[10px] text-slate-500 dark:text-slate-400">{g.sub}</div>
                     </button>
                   ))}
                 </div>
@@ -1094,7 +1094,7 @@ export const PassportPhotoStudioPage: React.FC<PassportPhotoStudioPageProps> = (
               {cutGuideStyle !== 'none' && (
                 <div className="grid grid-cols-1 sm:grid-cols-2 gap-4 pt-1">
                   <div>
-                    <label className="block text-[11px] font-bold text-slate-300 uppercase tracking-wider mb-1.5">
+                    <label className="block text-[11px] font-bold text-slate-700 dark:text-slate-300 uppercase tracking-wider mb-1.5">
                       Guide Line Color
                     </label>
                     <div className="flex gap-2">
@@ -1108,8 +1108,8 @@ export const PassportPhotoStudioPage: React.FC<PassportPhotoStudioPageProps> = (
                           onClick={() => setCutGuideColor(c.color)}
                           className={`px-2.5 py-1 rounded-md text-xs font-medium border flex items-center gap-1.5 cursor-pointer ${
                             cutGuideColor === c.color
-                              ? 'border-red-500 bg-red-950/60 text-white'
-                              : 'liquid-glass text-slate-300'
+                              ? 'border-[#0284c7] bg-[#0284c7]/20 text-[#0284c7] dark:text-white'
+                              : 'liquid-glass text-slate-700 dark:text-slate-300'
                           }`}
                         >
                           <span className="w-2.5 h-2.5 rounded-full" style={{ backgroundColor: c.color }} />
@@ -1120,9 +1120,9 @@ export const PassportPhotoStudioPage: React.FC<PassportPhotoStudioPageProps> = (
                   </div>
 
                   <div>
-                    <div className="flex justify-between text-xs text-slate-300 mb-1">
+                    <div className="flex justify-between text-xs text-slate-700 dark:text-slate-300 mb-1">
                       <span>Inter-Photo Cutting Gap</span>
-                      <span className="font-mono text-red-400">{cellGap} mm</span>
+                      <span className="font-mono text-[#0284c7] font-semibold">{cellGap} mm</span>
                     </div>
                     <input
                       type="range"
@@ -1131,25 +1131,25 @@ export const PassportPhotoStudioPage: React.FC<PassportPhotoStudioPageProps> = (
                       step="0.5"
                       value={cellGap}
                       onChange={(e) => setCellGap(parseFloat(e.target.value))}
-                      className="w-full accent-red-600"
+                      className="w-full accent-[#0284c7]"
                     />
                   </div>
                 </div>
               )}
 
               {/* 5. Candidate Name & Date (DOP) Stamp - SSC / UPSC Govt Exam Requirement */}
-              <div className="p-3.5 rounded-xl liquid-glass border border-white/10 space-y-3">
+              <div className="p-3.5 rounded-xl liquid-glass border border-slate-200 dark:border-white/10 space-y-3">
                 <div className="flex items-center justify-between">
-                  <label className="flex items-center gap-2 cursor-pointer text-xs font-bold text-white">
+                  <label className="flex items-center gap-2 cursor-pointer text-xs font-bold text-slate-900 dark:text-white">
                     <input
                       type="checkbox"
                       checked={withNameDate}
                       onChange={(e) => setWithNameDate(e.target.checked)}
-                      className="w-4 h-4 accent-red-600 rounded"
+                      className="w-4 h-4 accent-[#0284c7] rounded"
                     />
                     <span>Print Candidate Name &amp; Date (DOP) on Photo</span>
                   </label>
-                  <span className="text-[10px] font-mono text-amber-400 bg-amber-950/70 border border-amber-500/30 px-2 py-0.5 rounded">
+                  <span className="text-[10px] font-mono text-amber-600 dark:text-amber-400 bg-amber-50 dark:bg-amber-950/70 border border-amber-500/30 px-2 py-0.5 rounded">
                     SSC / UPSC / Govt Exam
                   </span>
                 </div>
@@ -1158,7 +1158,7 @@ export const PassportPhotoStudioPage: React.FC<PassportPhotoStudioPageProps> = (
                   <div className="space-y-3 pt-1 animate-in fade-in duration-150">
                     <div className="grid grid-cols-1 sm:grid-cols-2 gap-3">
                       <div>
-                        <label className="block text-[10px] font-bold text-slate-300 uppercase mb-1">
+                        <label className="block text-[10px] font-bold text-slate-700 dark:text-slate-300 uppercase mb-1">
                           Candidate Full Name
                         </label>
                         <input
@@ -1166,11 +1166,11 @@ export const PassportPhotoStudioPage: React.FC<PassportPhotoStudioPageProps> = (
                           value={candidateName}
                           onChange={(e) => setCandidateName(e.target.value)}
                           placeholder="e.g. ANIS SHAIKH"
-                          className="w-full liquid-glass-sub text-white text-xs px-3 py-2 rounded-lg focus:outline-none focus:border-red-500 font-medium"
+                          className="w-full liquid-glass-sub text-slate-900 dark:text-white text-xs px-3 py-2 rounded-lg focus:outline-none focus:border-[#0284c7] font-medium"
                         />
                       </div>
                       <div>
-                        <label className="block text-[10px] font-bold text-slate-300 uppercase mb-1">
+                        <label className="block text-[10px] font-bold text-slate-700 dark:text-slate-300 uppercase mb-1">
                           Date of Photo (DOP / DOB)
                         </label>
                         <input
@@ -1178,7 +1178,7 @@ export const PassportPhotoStudioPage: React.FC<PassportPhotoStudioPageProps> = (
                           value={dopText}
                           onChange={(e) => setDopText(e.target.value)}
                           placeholder="e.g. DOP: 03/11/2026"
-                          className="w-full liquid-glass-sub text-white text-xs px-3 py-2 rounded-lg focus:outline-none focus:border-red-500 font-medium"
+                          className="w-full liquid-glass-sub text-slate-900 dark:text-white text-xs px-3 py-2 rounded-lg focus:outline-none focus:border-[#0284c7] font-medium"
                         />
                       </div>
                     </div>
@@ -1239,19 +1239,19 @@ export const PassportPhotoStudioPage: React.FC<PassportPhotoStudioPageProps> = (
 
           <div className="flex items-center gap-2">
             {cutGuideStyle !== 'none' && (
-              <span className="text-[10px] font-mono text-red-300 bg-red-950/70 border border-red-500/30 px-2 py-0.5 rounded flex items-center gap-1">
-                <Scissors className="w-3 h-3 text-red-400" />
+              <span className="text-[10px] font-mono text-[#0284c7] bg-sky-50 dark:bg-sky-950/70 border border-sky-500/30 px-2 py-0.5 rounded flex items-center gap-1">
+                <Scissors className="w-3 h-3 text-[#0284c7]" />
                 {cutGuideStyle === 'crop-marks' ? 'Crop Marks Active' : 'Cut Guides Active'}
               </span>
             )}
-            <span className="text-[10px] font-bold uppercase tracking-wider text-emerald-300 bg-emerald-950/80 border border-emerald-500/40 px-2 py-0.5 rounded">
+            <span className="text-[10px] font-bold uppercase tracking-wider text-emerald-600 dark:text-emerald-300 bg-emerald-50 dark:bg-emerald-950/80 border border-emerald-500/40 px-2 py-0.5 rounded">
               READY TO PRINT
             </span>
           </div>
         </div>
 
         {/* Live Print Canvas Sheet Display */}
-        <div className="w-full py-4 flex items-center justify-center liquid-glass-sub rounded-2xl border border-white/10 overflow-hidden p-2 sm:p-4">
+        <div className="w-full py-4 flex items-center justify-center liquid-glass-sub rounded-2xl border border-slate-200 dark:border-white/10 overflow-hidden p-2 sm:p-4">
           <canvas
             ref={sheetCanvasRef}
             className="w-full max-w-2xl rounded-lg shadow-2xl border border-slate-700 bg-white object-contain"
@@ -1263,25 +1263,25 @@ export const PassportPhotoStudioPage: React.FC<PassportPhotoStudioPageProps> = (
           {/* Blue Primary Button: Direct Print Sheet */}
           <button
             onClick={handleDirectPrint}
-            className="w-full py-3.5 rounded-xl bg-blue-600 hover:bg-blue-500 text-white font-bold text-sm flex items-center justify-center gap-2 shadow-xl shadow-blue-600/30 transition-all cursor-pointer active:scale-98"
+            className="w-full py-3.5 rounded-xl bg-[#0284c7] hover:bg-[#0369a1] text-white font-bold text-sm flex items-center justify-center gap-2 shadow-xl shadow-[#0284c7]/30 transition-all cursor-pointer active:scale-98"
           >
             <Printer className="w-4 h-4 stroke-[2.5]" />
             <span>Direct Print Sheet</span>
           </button>
 
-          {/* Row of 2: Download PDF (Red) & Download JPG (Dark) */}
+          {/* Row of 2: Download PDF & Download JPG */}
           <div className="grid grid-cols-1 sm:grid-cols-2 gap-2.5">
             <button
               onClick={handleDownloadPdf}
-              className="py-3 rounded-xl bg-red-600 hover:bg-red-500 text-white font-bold text-xs sm:text-sm flex items-center justify-center gap-2 shadow-lg shadow-red-600/30 transition-all cursor-pointer active:scale-98"
+              className="py-3 rounded-xl bg-[#072642] hover:bg-[#0d4775] text-white border border-[#38bdf8]/30 font-bold text-xs sm:text-sm flex items-center justify-center gap-2 shadow-lg transition-all cursor-pointer active:scale-98"
             >
-              <FileDown className="w-4 h-4" />
+              <FileDown className="w-4 h-4 text-sky-400" />
               <span>Download PDF</span>
             </button>
 
             <button
               onClick={handleDownloadSheetJpg}
-              className="py-3 rounded-xl liquid-glass-sub hover:border-red-500/50 text-slate-200 hover:text-white font-bold text-xs sm:text-sm flex items-center justify-center gap-2 shadow-md transition-all cursor-pointer active:scale-98"
+              className="py-3 rounded-xl liquid-glass-sub hover:border-[#0284c7]/50 text-slate-700 dark:text-slate-200 hover:text-slate-900 dark:hover:text-white font-bold text-xs sm:text-sm flex items-center justify-center gap-2 shadow-md transition-all cursor-pointer active:scale-98"
             >
               <Download className="w-4 h-4" />
               <span>Download JPG</span>
@@ -1291,9 +1291,9 @@ export const PassportPhotoStudioPage: React.FC<PassportPhotoStudioPageProps> = (
           {/* Full-width button: Download Single Photo JPG for Online Forms */}
           <button
             onClick={handleDownloadSingleJpg}
-            className="w-full py-2.5 rounded-xl liquid-glass-sub hover:border-red-500/50 text-slate-300 hover:text-white text-xs font-semibold flex items-center justify-center gap-2 transition-all cursor-pointer active:scale-98"
+            className="w-full py-2.5 rounded-xl liquid-glass-sub hover:border-[#0284c7]/50 text-slate-700 dark:text-slate-300 hover:text-slate-900 dark:hover:text-white text-xs font-semibold flex items-center justify-center gap-2 transition-all cursor-pointer active:scale-98"
           >
-            <Download className="w-3.5 h-3.5 text-slate-400" />
+            <Download className="w-3.5 h-3.5 text-[#0284c7]" />
             <span>Download Single Photo JPG (For Online Forms)</span>
           </button>
         </div>

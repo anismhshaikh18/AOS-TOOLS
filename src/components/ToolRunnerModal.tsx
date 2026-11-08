@@ -1065,14 +1065,14 @@ export const ToolRunnerModal: React.FC<ToolRunnerModalProps> = ({
       <div className="flex items-center justify-between gap-4">
         <button
           onClick={onClose}
-          className="inline-flex items-center gap-1.5 px-3.5 py-1.5 rounded-full liquid-glass-sub hover:border-red-500/50 text-slate-300 hover:text-white text-xs font-semibold transition-all cursor-pointer shadow-sm active:scale-95"
+          className="inline-flex items-center gap-1.5 px-3.5 py-1.5 rounded-full liquid-glass-sub hover:border-[#0284c7]/50 text-slate-700 dark:text-slate-300 hover:text-slate-900 dark:hover:text-white text-xs font-semibold transition-all cursor-pointer shadow-sm active:scale-95"
         >
           <ArrowLeft className="w-3.5 h-3.5" />
           <span>Back to Tools</span>
         </button>
 
-        <span className="text-[11px] font-mono text-emerald-400 bg-emerald-950/70 border border-emerald-500/30 px-2.5 py-1 rounded-md flex items-center gap-1.5">
-          <span className="w-1.5 h-1.5 rounded-full bg-emerald-400 animate-pulse" />
+        <span className="text-[11px] font-mono text-emerald-600 dark:text-emerald-400 bg-emerald-50 dark:bg-emerald-950/70 border border-emerald-500/30 px-2.5 py-1 rounded-md flex items-center gap-1.5">
+          <span className="w-1.5 h-1.5 rounded-full bg-emerald-500 dark:bg-emerald-400 animate-pulse" />
           100% Client-Side Engine · Zero Uploads
         </span>
       </div>
@@ -1081,21 +1081,21 @@ export const ToolRunnerModal: React.FC<ToolRunnerModalProps> = ({
       <div className="relative w-full liquid-glass rounded-3xl shadow-2xl overflow-hidden">
         
         {/* Tool Page Header */}
-        <div className="flex items-center justify-between px-6 py-5 border-b border-white/10 liquid-glass-sub">
+        <div className="flex items-center justify-between px-6 py-5 border-b border-slate-200 dark:border-white/10 liquid-glass-sub">
           <div className="flex items-center gap-3.5">
-            <div className="w-11 h-11 rounded-2xl bg-red-600 text-white flex items-center justify-center shadow-lg shadow-red-600/30 shrink-0">
+            <div className="w-11 h-11 rounded-2xl bg-[#0284c7] text-white flex items-center justify-center shadow-lg shadow-[#0284c7]/30 shrink-0">
               <DynamicIcon name={tool.iconName} className="w-5 h-5 stroke-[2.5]" />
             </div>
             <div>
               <div className="flex items-center gap-2">
-                <h1 className="text-lg sm:text-xl font-black text-white tracking-tight">
+                <h1 className="text-lg sm:text-xl font-black text-slate-900 dark:text-white tracking-tight">
                   {tool.name}
                 </h1>
-                <span className="text-[10px] font-bold uppercase tracking-wider px-2 py-0.5 rounded-full bg-red-950/80 border border-red-500/40 text-red-300">
+                <span className="text-[10px] font-bold uppercase tracking-wider px-2 py-0.5 rounded-full bg-sky-100 dark:bg-[#072642] border border-sky-400/40 text-sky-700 dark:text-[#38bdf8]">
                   {tool.category.toUpperCase()} TOOL
                 </span>
               </div>
-              <div className="flex items-center gap-2 text-xs text-slate-400 mt-0.5">
+              <div className="flex items-center gap-2 text-xs text-slate-500 dark:text-slate-400 mt-0.5">
                 <span>In-Browser WebAssembly / HTML5 Engine</span>
                 <span aria-hidden="true">·</span>
                 <span>Private &amp; Secure</span>
@@ -1104,7 +1104,7 @@ export const ToolRunnerModal: React.FC<ToolRunnerModalProps> = ({
           </div>
           <button
             onClick={onClose}
-            className="p-2 text-slate-400 hover:text-white rounded-xl liquid-glass-sub hover:border-red-500/50 transition-colors cursor-pointer"
+            className="p-2 text-slate-500 dark:text-slate-400 hover:text-slate-900 dark:hover:text-white rounded-xl liquid-glass-sub hover:border-[#0284c7]/50 transition-colors cursor-pointer"
             aria-label="Close Tool"
           >
             <X className="w-5 h-5" />

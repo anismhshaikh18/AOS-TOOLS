@@ -9,11 +9,12 @@ export const AosLogoSvg: React.FC<AosLogoSvgProps> = ({ className = 'w-10 h-10',
   return (
     <svg
       viewBox="0 0 200 200"
+      preserveAspectRatio="xMidYMid meet"
       width={size}
       height={size}
       fill="none"
       xmlns="http://www.w3.org/2000/svg"
-      className={`${className} select-none`}
+      className={`${className} aspect-square shrink-0 select-none`}
     >
       {/* Outer Circle Ring */}
       <circle
