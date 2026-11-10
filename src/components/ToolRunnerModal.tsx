@@ -1,6 +1,7 @@
 import React, { useState, useRef, useEffect } from 'react';
 import { ToolItem } from '../types';
 import { DynamicIcon } from './DynamicIcon';
+import { ToolGuideSection } from './ToolGuideSection';
 import {
   X,
   Upload,
@@ -54,6 +55,8 @@ import {
   ArrowLeft,
   Barcode,
   QrCode,
+  Printer,
+  Send,
 } from 'lucide-react';
 import {
   mergePDFs,
@@ -284,6 +287,70 @@ export const ToolRunnerModal: React.FC<ToolRunnerModalProps> = ({
   const [textCaseContent, setTextCaseContent] = useState<string>(
     'AOS Tools provides client-side zero-knowledge document processing, PAN services, and modern utilities.'
   );
+
+  // AOS Receipt Hub State
+  const [receiptTemplate, setReceiptTemplate] = useState<'1' | '2' | '3' | '4' | '5'>('1');
+  const [receiptShopName, setReceiptShopName] = useState<string>('Anis Online Services');
+  const [receiptShopTagline, setReceiptShopTagline] = useState<string>('Official Digital Citizen & CSC Services');
+  const [receiptCustomerName, setReceiptCustomerName] = useState<string>('Rahul Kumar');
+  const [receiptCustomerPhone, setReceiptCustomerPhone] = useState<string>('9876543210');
+  const [receiptAmount, setReceiptAmount] = useState<number>(1500);
+  const [receiptDate, setReceiptDate] = useState<string>(() => new Date().toISOString().split('T')[0]);
+  const [receiptNumber, setReceiptNumber] = useState<string>('AOS-REC-2026-001');
+  const [receiptDescription, setReceiptDescription] = useState<string>('Aadhaar & PAN Documentation Services Fee');
+  const [receiptPaymentMode, setReceiptPaymentMode] = useState<string>('UPI / Online');
+  const [receiptAccentColor, setReceiptAccentColor] = useState<string>('#0284c7');
+  const [receiptAuthSign, setReceiptAuthSign] = useState<string>('Authorized Signatory');
+  const [receiptLogoUrl, setReceiptLogoUrl] = useState<string | null>(null);
+  const [receiptSignUrl, setReceiptSignUrl] = useState<string | null>(null);
+  const [receiptStampUrl, setReceiptStampUrl] = useState<string | null>(null);
+  const [receiptLang, setReceiptLang] = useState<string>('hi');
+
+  const receiptPanchayatLabels: Record<string, { title: string; sub: string; cust: string; desc: string; amt: string; sign: string }> = {
+    hi: { title: "ग्राम पंचायत / आधिकारिक रसीद", sub: "डिजिटल नागरिक और सीएससी सेवाएं", cust: "ग्राहक का नाम", desc: "सेवा का विवरण", amt: "कुल राशि", sign: "अधिकृत हस्ताक्षरकर्ता" },
+    ta: { title: "கிராம பஞ்சாயத்து / அதிகாரப்பூர்வ ரசீது", sub: "டிஜிட்டல் குடிமகன் சேவைகள்", cust: "வாடிக்கையாளர் பெயர்", desc: "சேவை விவரங்கள்", amt: "மொத்த தொகை", sign: "அங்கீகரிக்கப்பட்ட கையொப்பம்" },
+    te: { title: "గ్రామ పంచాయితీ / అధికారిక రసీదు", sub: "డిజిటల్ సిటిజన్ సర్వీసెస్", cust: "కస్టమర్ పేరు", desc: "సేవ వివరాలు", amt: "మొత్తం మొత్తం", sign: "అధికారిక సంతకం" },
+    mr: { title: "ग्राम पंचायत / अधिकृत पावती", sub: "डिजिटल नागरिक सेवा", cust: "ग्राहकाचे नाव", desc: "सेवेचा तपशील", amt: "एकूण रक्कम", sign: "अधिकृत स्वाक्षरीकर्ता" },
+    bn: { title: "গ্রাম পঞ্চায়েত / অফিসিয়াল রসিদ", sub: "ডিজিটাল নাগরিক পরিষেবা", cust: "গ্রাহকের নাম", desc: "পরিষেবার বিবরণ", amt: "মোট পরিমাণ", sign: "অনুমোদিত স্বাক্ষরকারী" },
+    kn: { title: "ಗ್ರಾಮ ಪಂಚಾಯತ್ / ಅಧಿಕೃತ ರಸೀದಿ", sub: "ಡಿಜಿಟಲ್ ನಾಗರಿಕ ಸೇವೆಗಳು", cust: "ಗ್ರಾಹಕರ ಹೆಸರು", desc: "ಸೇವೆಯ ವಿವರಣೆ", amt: "ಒಟ್ಟು ಮೊತ್ತ", sign: "ಅಧಿಕೃತ ಸಹಿದారರು" },
+    ml: { title: "ഗ്രാമപഞ്ചായത്ത് / ഔദ്യോഗിക രസീത്", sub: "ഡിജിറ്റൽ സേവനങ്ങൾ", cust: "ഉപഭോക്താവിന്റെ പേര്", desc: "സേവന വിവരങ്ങൾ", amt: "ആകെ തുക", sign: "അംഗീകൃത ഒപ്പ്" },
+    gu: { title: "ગ્રામ પંચાયત / અધિકૃત રસીદ", sub: "ડિજિટલ નાગરિક સેવાઓ", cust: "ગ્રાહકનું નામ", desc: "સેવાની વિગત", amt: "કુલ રકમ", sign: "અધિકૃત સહી કરનાર" },
+    pa: { title: "ਗ੍ਰਾਮ ਪੰਚਾਇਤ / ਅਧਿਕਾਰਤ ਰਸੀਦ", sub: "ਡਿਜੀਟਲ ਨਾਗਰਿਕ ਸੇਵਾਵਾਂ", cust: "ਗਾਹਕ ਦਾ ਨਾਮ", desc: "ਸੇਵਾ ਦਾ ਵੇਰਵਾ", amt: "ਕੁੱਲ ਰਕਮ", sign: "ਅਧਿਕਾਰਤ ਦਸਤਖਤਕਰਤਾ" },
+    en: { title: "Official Panchayat & Khata Receipt", sub: "Official Digital Citizen & CSC Services", cust: "Customer Name", desc: "Service Particulars", amt: "Total Amount", sign: "Authorized Signatory" }
+  };
+
+  // Indian Rupees to Words converter
+  const getReceiptAmountInWords = (num: number): string => {
+    if (isNaN(num) || num <= 0) return 'Zero Rupees Only';
+    const a = ['', 'One', 'Two', 'Three', 'Four', 'Five', 'Six', 'Seven', 'Eight', 'Nine', 'Ten', 'Eleven', 'Twelve', 'Thirteen', 'Fourteen', 'Fifteen', 'Sixteen', 'Seventeen', 'Eighteen', 'Nineteen'];
+    const b = ['', '', 'Twenty', 'Thirty', 'Forty', 'Fifty', 'Sixty', 'Seventy', 'Eighty', 'Ninety'];
+    const inWords = (n: number): string => {
+      let str = '';
+      if (n >= 10000000) {
+        str += inWords(Math.floor(n / 10000000)) + ' Crore ';
+        n %= 10000000;
+      }
+      if (n >= 100000) {
+        str += inWords(Math.floor(n / 100000)) + ' Lakh ';
+        n %= 100000;
+      }
+      if (n >= 1000) {
+        str += inWords(Math.floor(n / 1000)) + ' Thousand ';
+        n %= 1000;
+      }
+      if (n >= 100) {
+        str += inWords(Math.floor(n / 100)) + ' Hundred ';
+        n %= 100;
+      }
+      if (n > 0) {
+        if (str !== '') str += 'and ';
+        if (n < 20) str += a[n] + ' ';
+        else str += b[Math.floor(n / 10)] + ' ' + (a[n % 10] ? a[n % 10] + ' ' : '');
+      }
+      return str.trim();
+    };
+    return `${inWords(Math.floor(num))} Rupees Only`;
+  };
 
   // Base64 & URL Encoder/Decoder State
   const [codecMode, setCodecMode] = useState<'b64-enc' | 'b64-dec' | 'url-enc' | 'url-dec'>('b64-enc');
@@ -3145,6 +3212,873 @@ export const ToolRunnerModal: React.FC<ToolRunnerModalProps> = ({
             </div>
           )}
 
+          {/* 7e. AOS Receipt Hub Standalone UI */}
+          {tool.id === 'receipt-hub' && (
+            <div className="space-y-6">
+              {/* Template Selector Tabs */}
+              <div className="space-y-2">
+                <label className="text-xs font-bold text-slate-800 dark:text-slate-200 flex items-center justify-between">
+                  <span className="flex items-center gap-1.5">
+                    <Sparkles className="w-3.5 h-3.5 text-blue-600 dark:text-blue-400" />
+                    Select Official Receipt Template
+                  </span>
+                  <span className="text-[11px] font-mono text-slate-500">5 High-Quality Formats</span>
+                </label>
+                <div className="grid grid-cols-1 sm:grid-cols-5 gap-2">
+                  {[
+                    { id: '1', title: '1. Modern Minimalist', desc: 'Clean border & badges' },
+                    { id: '2', title: '2. Classic Panchayat', desc: 'Seal stamp & Hindi title' },
+                    { id: '3', title: '3. Commercial Bill', desc: 'Tax & Khata ledger format' },
+                    { id: '4', title: '4. Legal E-Stamp', desc: 'Agreement & Notary seal' },
+                    { id: '5', title: '5. Cash Voucher', desc: 'Standard Debit voucher' },
+                  ].map((t) => (
+                    <button
+                      key={t.id}
+                      type="button"
+                      onClick={() => setReceiptTemplate(t.id as any)}
+                      className={`p-2.5 rounded-xl border text-left cursor-pointer transition-all ${
+                        receiptTemplate === t.id
+                          ? 'bg-blue-600 text-white border-blue-600 shadow-md scale-[1.02]'
+                          : 'bg-white dark:bg-slate-900 border-slate-200 dark:border-slate-800 text-slate-700 dark:text-slate-300 hover:bg-slate-50 dark:hover:bg-slate-800'
+                      }`}
+                    >
+                      <div className="text-xs font-bold">{t.title}</div>
+                      <div className={`text-[10px] mt-0.5 ${receiptTemplate === t.id ? 'text-blue-100' : 'text-slate-500 dark:text-slate-400'}`}>
+                        {t.desc}
+                      </div>
+                    </button>
+                  ))}
+                </div>
+              </div>
+
+              {/* Regional Language Selector for Panchayat Template */}
+              {receiptTemplate === '2' && (
+                <div className="p-3.5 bg-blue-50/80 dark:bg-blue-950/40 border border-blue-200 dark:border-blue-900/60 rounded-xl flex flex-col sm:flex-row sm:items-center justify-between gap-3">
+                  <div className="flex items-center gap-2">
+                    <Globe className="w-4 h-4 text-blue-600 dark:text-blue-400 shrink-0" />
+                    <div>
+                      <span className="text-xs font-bold text-slate-900 dark:text-white block">
+                        Select Regional Language (Panchayat Template)
+                      </span>
+                      <span className="text-[11px] text-slate-500 dark:text-slate-400">
+                        Translates official stamp headers, labels & citizen particulars dynamically
+                      </span>
+                    </div>
+                  </div>
+                  <select
+                    value={receiptLang}
+                    onChange={(e) => setReceiptLang(e.target.value)}
+                    className="px-3 py-1.5 text-xs font-semibold bg-white dark:bg-slate-900 border border-slate-300 dark:border-slate-700 rounded-lg text-slate-900 dark:text-white cursor-pointer"
+                  >
+                    <option value="hi">Hindi (हिंदी)</option>
+                    <option value="ta">Tamil (தமிழ்)</option>
+                    <option value="te">Telugu (తెలుగు)</option>
+                    <option value="mr">Marathi (मराठी)</option>
+                    <option value="bn">Bengali (বাংলা)</option>
+                    <option value="kn">Kannada (ಕನ್ನಡ)</option>
+                    <option value="ml">Malayalam (മലയാളം)</option>
+                    <option value="gu">Gujarati (ગુજરાતી)</option>
+                    <option value="pa">Punjabi (ਪੰਜਾਬੀ)</option>
+                    <option value="en">English</option>
+                  </select>
+                </div>
+              )}
+
+              {/* Form Controls Card */}
+              <div className="p-4 sm:p-5 bg-white dark:bg-slate-900 border border-slate-200 dark:border-slate-800 rounded-2xl shadow-xs space-y-4">
+                {/* Upload Assets Section (Logo, Digital Signature, Official Stamp) */}
+                <div className="p-3.5 bg-slate-50 dark:bg-slate-950/70 border border-slate-200/90 dark:border-slate-800 rounded-xl space-y-3">
+                  <div className="flex items-center justify-between">
+                    <span className="text-xs font-bold text-slate-800 dark:text-slate-200 flex items-center gap-1.5">
+                      <ImageIcon className="w-3.5 h-3.5 text-blue-600 dark:text-blue-400" />
+                      Upload Assets (Logo, Digital Signature & Official Stamp)
+                    </span>
+                    <span className="text-[11px] text-slate-500">Optional PNG/JPG</span>
+                  </div>
+
+                  <div className="grid grid-cols-1 sm:grid-cols-3 gap-3">
+                    {/* Business Logo */}
+                    <div>
+                      <label className="block text-[11px] font-semibold text-slate-700 dark:text-slate-300 mb-1">
+                        Business Logo
+                      </label>
+                      <div className="flex items-center gap-1.5">
+                        <input
+                          type="file"
+                          accept="image/*"
+                          onChange={(e) => {
+                            const file = e.target.files?.[0];
+                            if (file) setReceiptLogoUrl(URL.createObjectURL(file));
+                          }}
+                          className="text-xs text-slate-600 dark:text-slate-400 file:mr-2 file:py-1 file:px-2 file:rounded-md file:border-0 file:text-[11px] file:font-semibold file:bg-blue-50 file:text-blue-700 dark:file:bg-blue-900/40 dark:file:text-blue-300 hover:file:bg-blue-100 cursor-pointer w-full"
+                        />
+                        {receiptLogoUrl && (
+                          <button
+                            type="button"
+                            onClick={() => setReceiptLogoUrl(null)}
+                            className="text-red-500 hover:text-red-700 p-1 text-[11px] cursor-pointer shrink-0"
+                            title="Remove Logo"
+                          >
+                            <X className="w-3.5 h-3.5" />
+                          </button>
+                        )}
+                      </div>
+                    </div>
+
+                    {/* Digital Signature */}
+                    <div>
+                      <label className="block text-[11px] font-semibold text-slate-700 dark:text-slate-300 mb-1">
+                        Digital Signature
+                      </label>
+                      <div className="flex items-center gap-1.5">
+                        <input
+                          type="file"
+                          accept="image/*"
+                          onChange={(e) => {
+                            const file = e.target.files?.[0];
+                            if (file) setReceiptSignUrl(URL.createObjectURL(file));
+                          }}
+                          className="text-xs text-slate-600 dark:text-slate-400 file:mr-2 file:py-1 file:px-2 file:rounded-md file:border-0 file:text-[11px] file:font-semibold file:bg-blue-50 file:text-blue-700 dark:file:bg-blue-900/40 dark:file:text-blue-300 hover:file:bg-blue-100 cursor-pointer w-full"
+                        />
+                        {receiptSignUrl && (
+                          <button
+                            type="button"
+                            onClick={() => setReceiptSignUrl(null)}
+                            className="text-red-500 hover:text-red-700 p-1 text-[11px] cursor-pointer shrink-0"
+                            title="Remove Signature"
+                          >
+                            <X className="w-3.5 h-3.5" />
+                          </button>
+                        )}
+                      </div>
+                    </div>
+
+                    {/* Official Stamp / Seal */}
+                    <div>
+                      <label className="block text-[11px] font-semibold text-slate-700 dark:text-slate-300 mb-1">
+                        Official Stamp / Seal Image
+                      </label>
+                      <div className="flex items-center gap-1.5">
+                        <input
+                          type="file"
+                          accept="image/*"
+                          onChange={(e) => {
+                            const file = e.target.files?.[0];
+                            if (file) setReceiptStampUrl(URL.createObjectURL(file));
+                          }}
+                          className="text-xs text-slate-600 dark:text-slate-400 file:mr-2 file:py-1 file:px-2 file:rounded-md file:border-0 file:text-[11px] file:font-semibold file:bg-blue-50 file:text-blue-700 dark:file:bg-blue-900/40 dark:file:text-blue-300 hover:file:bg-blue-100 cursor-pointer w-full"
+                        />
+                        {receiptStampUrl && (
+                          <button
+                            type="button"
+                            onClick={() => setReceiptStampUrl(null)}
+                            className="text-red-500 hover:text-red-700 p-1 text-[11px] cursor-pointer shrink-0"
+                            title="Remove Stamp"
+                          >
+                            <X className="w-3.5 h-3.5" />
+                          </button>
+                        )}
+                      </div>
+                    </div>
+                  </div>
+                </div>
+
+                <div className="grid grid-cols-1 sm:grid-cols-3 gap-3">
+                  <div>
+                    <label className="block text-xs font-semibold text-slate-700 dark:text-slate-300 mb-1">
+                      Accent Theme Color (Hex)
+                    </label>
+                    <div className="flex items-center gap-2">
+                      <input
+                        type="color"
+                        value={receiptAccentColor}
+                        onChange={(e) => setReceiptAccentColor(e.target.value)}
+                        className="w-9 h-9 p-0.5 rounded-lg border border-slate-300 dark:border-slate-700 cursor-pointer bg-transparent"
+                      />
+                      <input
+                        type="text"
+                        value={receiptAccentColor}
+                        onChange={(e) => setReceiptAccentColor(e.target.value)}
+                        className="flex-1 px-3 py-2 text-xs font-mono bg-slate-50 dark:bg-slate-950 border border-slate-300 dark:border-slate-700 rounded-lg text-slate-900 dark:text-white"
+                        placeholder="#0284c7"
+                      />
+                    </div>
+                  </div>
+
+                  <div>
+                    <label className="block text-xs font-semibold text-slate-700 dark:text-slate-300 mb-1">
+                      Shop / Business Name
+                    </label>
+                    <input
+                      type="text"
+                      value={receiptShopName}
+                      onChange={(e) => setReceiptShopName(e.target.value)}
+                      className="w-full px-3 py-2 text-xs bg-slate-50 dark:bg-slate-950 border border-slate-300 dark:border-slate-700 rounded-lg text-slate-900 dark:text-white"
+                    />
+                  </div>
+
+                  <div>
+                    <label className="block text-xs font-semibold text-slate-700 dark:text-slate-300 mb-1">
+                      Subtitle / Tagline
+                    </label>
+                    <input
+                      type="text"
+                      value={receiptShopTagline}
+                      onChange={(e) => setReceiptShopTagline(e.target.value)}
+                      className="w-full px-3 py-2 text-xs bg-slate-50 dark:bg-slate-950 border border-slate-300 dark:border-slate-700 rounded-lg text-slate-900 dark:text-white"
+                    />
+                  </div>
+                </div>
+
+                <div className="grid grid-cols-1 sm:grid-cols-3 gap-3">
+                  <div>
+                    <label className="block text-xs font-semibold text-slate-700 dark:text-slate-300 mb-1">
+                      Customer Name
+                    </label>
+                    <input
+                      type="text"
+                      value={receiptCustomerName}
+                      onChange={(e) => setReceiptCustomerName(e.target.value)}
+                      className="w-full px-3 py-2 text-xs bg-slate-50 dark:bg-slate-950 border border-slate-300 dark:border-slate-700 rounded-lg text-slate-900 dark:text-white"
+                    />
+                  </div>
+
+                  <div>
+                    <label className="block text-xs font-semibold text-slate-700 dark:text-slate-300 mb-1">
+                      Customer Phone (Optional)
+                    </label>
+                    <input
+                      type="text"
+                      value={receiptCustomerPhone}
+                      onChange={(e) => setReceiptCustomerPhone(e.target.value)}
+                      className="w-full px-3 py-2 text-xs bg-slate-50 dark:bg-slate-950 border border-slate-300 dark:border-slate-700 rounded-lg text-slate-900 dark:text-white"
+                    />
+                  </div>
+
+                  <div>
+                    <label className="block text-xs font-semibold text-slate-700 dark:text-slate-300 mb-1">
+                      Amount (₹ INR)
+                    </label>
+                    <input
+                      type="number"
+                      min="1"
+                      value={receiptAmount}
+                      onChange={(e) => setReceiptAmount(Number(e.target.value) || 0)}
+                      className="w-full px-3 py-2 text-xs font-bold bg-slate-50 dark:bg-slate-950 border border-slate-300 dark:border-slate-700 rounded-lg text-slate-900 dark:text-white"
+                    />
+                  </div>
+                </div>
+
+                <div className="grid grid-cols-1 sm:grid-cols-3 gap-3">
+                  <div>
+                    <label className="block text-xs font-semibold text-slate-700 dark:text-slate-300 mb-1">
+                      Receipt Date
+                    </label>
+                    <input
+                      type="date"
+                      value={receiptDate}
+                      onChange={(e) => setReceiptDate(e.target.value)}
+                      className="w-full px-3 py-2 text-xs bg-slate-50 dark:bg-slate-950 border border-slate-300 dark:border-slate-700 rounded-lg text-slate-900 dark:text-white"
+                    />
+                  </div>
+
+                  <div>
+                    <label className="block text-xs font-semibold text-slate-700 dark:text-slate-300 mb-1">
+                      Receipt / Serial Number
+                    </label>
+                    <input
+                      type="text"
+                      value={receiptNumber}
+                      onChange={(e) => setReceiptNumber(e.target.value)}
+                      className="w-full px-3 py-2 text-xs font-mono bg-slate-50 dark:bg-slate-950 border border-slate-300 dark:border-slate-700 rounded-lg text-slate-900 dark:text-white"
+                    />
+                  </div>
+
+                  <div>
+                    <label className="block text-xs font-semibold text-slate-700 dark:text-slate-300 mb-1">
+                      Payment Mode
+                    </label>
+                    <select
+                      value={receiptPaymentMode}
+                      onChange={(e) => setReceiptPaymentMode(e.target.value)}
+                      className="w-full px-3 py-2 text-xs bg-slate-50 dark:bg-slate-950 border border-slate-300 dark:border-slate-700 rounded-lg text-slate-900 dark:text-white"
+                    >
+                      <option value="UPI / Online">UPI / QR Code Scan</option>
+                      <option value="Cash Payment">Cash Payment</option>
+                      <option value="Bank Transfer (NEFT/IMPS)">Bank Transfer</option>
+                      <option value="Debit / Credit Card">Debit / Credit Card</option>
+                    </select>
+                  </div>
+                </div>
+
+                <div>
+                  <label className="block text-xs font-semibold text-slate-700 dark:text-slate-300 mb-1">
+                    Particulars / Services Description
+                  </label>
+                  <textarea
+                    rows={2}
+                    value={receiptDescription}
+                    onChange={(e) => setReceiptDescription(e.target.value)}
+                    className="w-full px-3 py-2 text-xs bg-slate-50 dark:bg-slate-950 border border-slate-300 dark:border-slate-700 rounded-lg text-slate-900 dark:text-white resize-none"
+                  />
+                </div>
+
+                <div className="flex flex-wrap items-center justify-between gap-3 pt-3 border-t border-slate-200 dark:border-slate-800">
+                  <div className="text-[11px] text-slate-500 dark:text-slate-400">
+                    <strong>In Words:</strong> {getReceiptAmountInWords(receiptAmount)}
+                  </div>
+
+                  {/* Action Buttons */}
+                  <div className="flex flex-wrap items-center gap-2">
+                    <button
+                      type="button"
+                      onClick={() => {
+                        const summary = `*OFFICIAL PAYMENT RECEIPT*\n` +
+                          `Shop: ${receiptShopName}\n` +
+                          `Receipt No: ${receiptNumber}\n` +
+                          `Date: ${receiptDate}\n` +
+                          `Customer: ${receiptCustomerName}\n` +
+                          `Particulars: ${receiptDescription}\n` +
+                          `Total: ₹${receiptAmount}/- (${getReceiptAmountInWords(receiptAmount)})\n` +
+                          `Mode: ${receiptPaymentMode}`;
+                        navigator.clipboard.writeText(summary);
+                        setCopyToast('Receipt summary copied to clipboard!');
+                        setTimeout(() => setCopyToast(null), 2000);
+                      }}
+                      className="px-3 py-2 text-xs font-semibold rounded-lg bg-slate-100 hover:bg-slate-200 dark:bg-slate-800 dark:hover:bg-slate-700 text-slate-700 dark:text-slate-300 inline-flex items-center gap-1.5 cursor-pointer"
+                    >
+                      <Copy className="w-3.5 h-3.5" />
+                      <span>Copy Text</span>
+                    </button>
+
+                    <button
+                      type="button"
+                      onClick={() => {
+                        const text = `*OFFICIAL PAYMENT RECEIPT*\n` +
+                          `*Shop:* ${receiptShopName}\n` +
+                          `*Receipt No:* ${receiptNumber}\n` +
+                          `*Date:* ${receiptDate}\n` +
+                          `*Customer:* ${receiptCustomerName}\n` +
+                          `*Particulars:* ${receiptDescription}\n` +
+                          `*Amount Paid:* ₹${receiptAmount}/-\n` +
+                          `*Words:* ${getReceiptAmountInWords(receiptAmount)}\n` +
+                          `*Status:* Confirmed & Received\n\n` +
+                          `Thank you for using our citizen services!`;
+                        window.open(`https://api.whatsapp.com/send?text=${encodeURIComponent(text)}`, '_blank');
+                      }}
+                      className="px-3.5 py-2 text-xs font-bold text-white bg-emerald-600 hover:bg-emerald-700 rounded-lg shadow-xs inline-flex items-center gap-1.5 cursor-pointer"
+                    >
+                      <Send className="w-3.5 h-3.5" />
+                      <span>Share on WhatsApp</span>
+                    </button>
+
+                    <button
+                      type="button"
+                      onClick={() => {
+                        const printable = document.getElementById('aos-live-receipt-card');
+                        if (!printable) return;
+                        const w = window.open('', '_blank');
+                        if (!w) {
+                          window.print();
+                          return;
+                        }
+                        w.document.write(`
+                          <!DOCTYPE html>
+                          <html>
+                          <head>
+                            <title>Receipt_${receiptNumber}</title>
+                            <meta charset="utf-8">
+                            <meta name="viewport" content="width=device-width, initial-scale=1.0">
+                            <style>
+                              @page { size: auto; margin: 10mm; }
+                              body { margin: 0; padding: 15px; font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, sans-serif; background: #fff; color: #000; }
+                              * { box-sizing: border-box; }
+                              @media print {
+                                body { padding: 0; }
+                              }
+                            </style>
+                          </head>
+                          <body>
+                            ${printable.outerHTML}
+                            <script>
+                              window.onload = function() {
+                                window.focus();
+                                window.print();
+                                setTimeout(function(){ window.close(); }, 1200);
+                              };
+                            </script>
+                          </body>
+                          </html>
+                        `);
+                        w.document.close();
+                      }}
+                      className="px-4 py-2 text-xs font-bold text-white bg-blue-600 hover:bg-blue-700 rounded-lg shadow-xs inline-flex items-center gap-1.5 cursor-pointer"
+                    >
+                      <Printer className="w-3.5 h-3.5" />
+                      <span>Print / Save as PDF</span>
+                    </button>
+                  </div>
+                </div>
+              </div>
+
+              {/* Live Receipt Preview Header */}
+              <div className="flex items-center justify-between text-xs font-bold text-slate-800 dark:text-slate-200">
+                <span className="flex items-center gap-1.5">
+                  <Eye className="w-3.5 h-3.5 text-blue-600 dark:text-blue-400" />
+                  Live Authentic Print Preview
+                </span>
+                <span className="text-[11px] font-mono text-slate-500">Auto Scaled A4 / Slip Output</span>
+              </div>
+
+              {/* RENDERED RECEIPT CONTAINER */}
+              <div className="flex justify-center bg-slate-200/60 dark:bg-slate-950 p-4 sm:p-8 rounded-2xl border border-slate-300/80 dark:border-slate-800 overflow-x-auto">
+                <div
+                  id="aos-live-receipt-card"
+                  style={{
+                    maxWidth: '680px',
+                    width: '100%',
+                    backgroundColor: '#ffffff',
+                    color: '#0f172a',
+                    fontFamily: receiptTemplate === '2' || receiptTemplate === '4' ? 'Georgia, serif' : 'system-ui, -apple-system, sans-serif',
+                  }}
+                  className="rounded-xl shadow-xl overflow-hidden border border-slate-300 relative text-left"
+                >
+                  {/* Uploaded Stamp / Seal Image overlay if uploaded */}
+                  {receiptStampUrl && (
+                    <img
+                      src={receiptStampUrl}
+                      alt="Official Stamp"
+                      style={{
+                        position: 'absolute',
+                        right: '18px',
+                        top: '18px',
+                        maxHeight: '75px',
+                        maxWidth: '75px',
+                        objectFit: 'contain',
+                        opacity: 0.88,
+                        zIndex: 20,
+                        pointerEvents: 'none',
+                        transform: 'rotate(-4deg)',
+                      }}
+                    />
+                  )}
+
+                  {/* TEMPLATE 1: Modern Minimalist */}
+                  {receiptTemplate === '1' && (
+                    <div className="p-6 sm:p-8 space-y-6">
+                      {/* Top Header Banner */}
+                      <div
+                        style={{ borderTop: `6px solid ${receiptAccentColor}` }}
+                        className="pt-4 flex flex-col sm:flex-row justify-between items-start sm:items-center gap-4 border-b border-slate-200 pb-5"
+                      >
+                        <div>
+                          {receiptLogoUrl && (
+                            <img src={receiptLogoUrl} alt="Logo" className="max-h-12 max-w-[140px] mb-2 object-contain" />
+                          )}
+                          <h2 style={{ color: receiptAccentColor }} className="text-xl sm:text-2xl font-black tracking-tight m-0">
+                            {receiptShopName}
+                          </h2>
+                          <p className="text-xs text-slate-500 font-medium m-0 mt-0.5">{receiptShopTagline}</p>
+                        </div>
+                        <div className="sm:text-right">
+                          <span
+                            style={{ backgroundColor: `${receiptAccentColor}15`, color: receiptAccentColor, borderColor: `${receiptAccentColor}40` }}
+                            className="inline-block px-3 py-1 rounded-full text-xs font-bold uppercase tracking-wider border mb-1"
+                          >
+                            Payment Receipt
+                          </span>
+                          <div className="text-xs text-slate-600 font-mono">#{receiptNumber}</div>
+                        </div>
+                      </div>
+
+                      {/* Info Grid */}
+                      <div className="grid grid-cols-2 gap-4 text-xs bg-slate-50 p-4 rounded-xl border border-slate-200">
+                        <div>
+                          <span className="text-slate-400 block uppercase text-[10px] font-bold">Billed To (Customer)</span>
+                          <div className="font-bold text-slate-900 text-sm mt-0.5">{receiptCustomerName}</div>
+                          {receiptCustomerPhone && <div className="text-slate-500 text-[11px]">Phone: +91 {receiptCustomerPhone}</div>}
+                        </div>
+                        <div className="text-right">
+                          <span className="text-slate-400 block uppercase text-[10px] font-bold">Receipt Details</span>
+                          <div className="font-semibold text-slate-800 text-xs mt-0.5">Date: {receiptDate}</div>
+                          <div className="text-slate-500 text-[11px]">Mode: {receiptPaymentMode}</div>
+                        </div>
+                      </div>
+
+                      {/* Particulars Table */}
+                      <div className="border border-slate-200 rounded-xl overflow-hidden">
+                        <table className="w-full text-xs">
+                          <thead style={{ backgroundColor: `${receiptAccentColor}10` }}>
+                            <tr className="border-b border-slate-200 text-slate-700">
+                              <th className="py-2.5 px-4 text-left font-bold">Description of Services</th>
+                              <th className="py-2.5 px-4 text-right font-bold w-28">Amount</th>
+                            </tr>
+                          </thead>
+                          <tbody>
+                            <tr>
+                              <td className="py-4 px-4 text-slate-800 font-medium leading-relaxed">
+                                {receiptDescription}
+                              </td>
+                              <td className="py-4 px-4 text-right font-mono font-bold text-slate-900">
+                                ₹{receiptAmount.toLocaleString('en-IN')}.00
+                              </td>
+                            </tr>
+                          </tbody>
+                        </table>
+                      </div>
+
+                      {/* Total Box & Words */}
+                      <div className="flex flex-col sm:flex-row justify-between items-start sm:items-center gap-4 bg-slate-50 p-4 rounded-xl border border-slate-200">
+                        <div className="text-xs">
+                          <span className="text-slate-400 block uppercase text-[10px] font-bold">Amount in Words</span>
+                          <span className="font-semibold text-slate-800">{getReceiptAmountInWords(receiptAmount)}</span>
+                        </div>
+                        <div className="sm:text-right w-full sm:w-auto">
+                          <span className="text-slate-500 text-xs font-semibold mr-2">Grand Total:</span>
+                          <span style={{ color: receiptAccentColor }} className="text-2xl font-black font-mono">
+                            ₹{receiptAmount.toLocaleString('en-IN')}/-
+                          </span>
+                        </div>
+                      </div>
+
+                      {/* Footer & Signatures */}
+                      <div className="pt-6 border-t border-slate-200 flex justify-between items-end text-xs text-slate-600">
+                        <div className="text-center w-36">
+                          <div className="h-10 border-b border-slate-300 mb-1 flex items-end justify-center pb-1 text-[11px] text-slate-400 italic">
+                            Verified
+                          </div>
+                          <span className="font-semibold text-[11px]">Customer Signature</span>
+                        </div>
+                        <div className="text-center w-44">
+                          {receiptSignUrl ? (
+                            <img src={receiptSignUrl} alt="Signature" className="max-h-10 max-w-[130px] mx-auto mb-1 object-contain" />
+                          ) : (
+                            <div className="h-10 border-b border-slate-300 mb-1 flex items-end justify-center pb-1 font-bold text-slate-800 text-xs">
+                              {receiptShopName}
+                            </div>
+                          )}
+                          <span className="font-semibold text-[11px]">{receiptAuthSign}</span>
+                        </div>
+                      </div>
+                    </div>
+                  )}
+
+                  {/* TEMPLATE 2: Classic Stamp / Panchayat Format with Multi-Language */}
+                  {receiptTemplate === '2' && (() => {
+                    const l = receiptPanchayatLabels[receiptLang] || receiptPanchayatLabels['hi'];
+                    return (
+                    <div className="p-6 sm:p-8 m-3 border-4 border-double border-slate-900 rounded-lg space-y-5 relative">
+                      {/* Logo if uploaded */}
+                      {receiptLogoUrl && (
+                        <img src={receiptLogoUrl} alt="Logo" className="max-h-12 max-w-[140px] mx-auto mb-1 object-contain" />
+                      )}
+
+                      {/* Hindi & Multi-Language Official Header */}
+                      <div className="text-center border-b-2 border-slate-900 pb-3">
+                        <div className="text-[11px] font-bold uppercase tracking-widest text-slate-700">
+                          // {l.title} //
+                        </div>
+                        <h2 className="text-xl sm:text-2xl font-black text-slate-950 uppercase mt-1">
+                          {receiptShopName}
+                        </h2>
+                        <p className="text-xs text-slate-700 italic mt-0.5">{receiptShopTagline || l.sub}</p>
+                        <div className="flex justify-between items-center text-xs font-mono font-bold mt-3 px-2">
+                          <span>रसीद क्र. / No: {receiptNumber}</span>
+                          <span>दिनांक / Date: {receiptDate}</span>
+                        </div>
+                      </div>
+
+                      {/* Traditional Form Body */}
+                      <div className="space-y-3 text-xs leading-loose text-slate-900">
+                        <div className="border-b border-dotted border-slate-600 pb-1 flex">
+                          <span className="font-bold min-w-36">{l.cust}:</span>
+                          <span className="font-bold font-serif flex-1 underline decoration-dotted">{receiptCustomerName}</span>
+                        </div>
+                        <div className="border-b border-dotted border-slate-600 pb-1 flex">
+                          <span className="font-bold min-w-36">मोबाइल / Phone:</span>
+                          <span className="flex-1 font-mono">+91 {receiptCustomerPhone || 'N/A'}</span>
+                        </div>
+                        <div className="border-b border-dotted border-slate-600 pb-1 flex">
+                          <span className="font-bold min-w-36">{l.desc}:</span>
+                          <span className="flex-1 font-medium underline decoration-dotted">{receiptDescription}</span>
+                        </div>
+                        <div className="border-b border-dotted border-slate-600 pb-1 flex">
+                          <span className="font-bold min-w-36">माध्यम / Mode:</span>
+                          <span className="flex-1 font-semibold">{receiptPaymentMode} (Payment Verified)</span>
+                        </div>
+                        <div className="border-b border-dotted border-slate-600 pb-1 flex">
+                          <span className="font-bold min-w-36">{l.amt} (In Words):</span>
+                          <span className="flex-1 font-serif italic">{getReceiptAmountInWords(receiptAmount)}</span>
+                        </div>
+                      </div>
+
+                      {/* Cash Box & Seal */}
+                      <div className="pt-2 flex justify-between items-center">
+                        <div
+                          style={{ borderColor: receiptAccentColor }}
+                          className="border-2 border-slate-900 px-5 py-2.5 rounded-lg bg-slate-50 font-black text-xl font-mono"
+                        >
+                          ₹ {receiptAmount.toLocaleString('en-IN')}/-
+                        </div>
+
+                        {/* Stamp graphic or uploaded stamp */}
+                        {receiptStampUrl ? (
+                          <img src={receiptStampUrl} alt="Stamp Seal" className="w-24 h-24 object-contain opacity-90 transform -rotate-6" />
+                        ) : (
+                          <div
+                            style={{ borderColor: receiptAccentColor, color: receiptAccentColor }}
+                            className="w-24 h-24 rounded-full border-2 border-dashed flex flex-col items-center justify-center text-center p-1 transform -rotate-12 select-none opacity-85"
+                          >
+                            <span className="text-[8px] font-bold uppercase tracking-tight">GOVT SERVICES</span>
+                            <span className="text-[10px] font-black uppercase my-0.5">CSC SEAL</span>
+                            <span className="text-[7px] font-semibold">VERIFIED</span>
+                          </div>
+                        )}
+                      </div>
+
+                      {/* Signatures */}
+                      <div className="pt-6 flex justify-between items-end text-xs text-slate-800 font-bold">
+                        <div className="text-center">
+                          <div className="w-28 border-b border-slate-800 mb-1"></div>
+                          <span>हस्ताक्षर ग्राहक</span>
+                        </div>
+                        <div className="text-center">
+                          {receiptSignUrl && (
+                            <img src={receiptSignUrl} alt="Signature" className="max-h-9 max-w-[120px] mx-auto mb-1 object-contain" />
+                          )}
+                          <div className="w-36 border-b border-slate-800 mb-1"></div>
+                          <span>{l.sign}</span>
+                        </div>
+                      </div>
+                    </div>
+                    );
+                  })()}
+
+                  {/* TEMPLATE 3: Commercial Khata Bill */}
+                  {receiptTemplate === '3' && (
+                    <div className="p-6 sm:p-8 space-y-5">
+                      <div className="flex justify-between items-start border-b-2 border-slate-900 pb-4">
+                        <div>
+                          {receiptLogoUrl && (
+                            <img src={receiptLogoUrl} alt="Logo" className="max-h-11 max-w-[130px] mb-1 object-contain" />
+                          )}
+                          <h2 className="text-xl font-black uppercase tracking-tight text-slate-900">{receiptShopName}</h2>
+                          <p className="text-xs text-slate-600">{receiptShopTagline}</p>
+                          <p className="text-[11px] text-slate-500 mt-1">Official Client Khata & Documentation Ledger</p>
+                        </div>
+                        <div className="text-right">
+                          <span className="px-2.5 py-1 bg-slate-900 text-white font-mono font-bold text-xs rounded">
+                            RETAIL INVOICE
+                          </span>
+                          <div className="text-xs font-mono font-semibold text-slate-700 mt-1.5">No: {receiptNumber}</div>
+                          <div className="text-xs text-slate-500">Date: {receiptDate}</div>
+                        </div>
+                      </div>
+
+                      <div className="grid grid-cols-2 gap-4 text-xs border border-slate-200 p-3 rounded-lg bg-slate-50">
+                        <div>
+                          <span className="text-[10px] uppercase font-bold text-slate-500">Customer Details:</span>
+                          <div className="font-bold text-slate-900">{receiptCustomerName}</div>
+                          <div className="text-slate-600">Mobile: +91 {receiptCustomerPhone || 'N/A'}</div>
+                        </div>
+                        <div className="text-right">
+                          <span className="text-[10px] uppercase font-bold text-slate-500">Payment Status:</span>
+                          <div className="inline-block px-2 py-0.5 rounded text-[10px] font-bold bg-emerald-100 text-emerald-800 border border-emerald-300 mt-0.5">
+                            PAID IN FULL ({receiptPaymentMode})
+                          </div>
+                        </div>
+                      </div>
+
+                      <table className="w-full text-xs border-collapse border border-slate-300">
+                        <thead>
+                          <tr className="bg-slate-100 text-slate-800 font-bold border-b border-slate-300">
+                            <th className="border border-slate-300 p-2 text-center w-12">S.N.</th>
+                            <th className="border border-slate-300 p-2 text-left">Service / Item Particulars</th>
+                            <th className="border border-slate-300 p-2 text-center w-16">Qty</th>
+                            <th className="border border-slate-300 p-2 text-right w-24">Rate (₹)</th>
+                            <th className="border border-slate-300 p-2 text-right w-24">Total (₹)</th>
+                          </tr>
+                        </thead>
+                        <tbody>
+                          <tr>
+                            <td className="border border-slate-300 p-2 text-center font-mono">1</td>
+                            <td className="border border-slate-300 p-2 font-medium text-slate-800">
+                              {receiptDescription}
+                            </td>
+                            <td className="border border-slate-300 p-2 text-center font-mono">1</td>
+                            <td className="border border-slate-300 p-2 text-right font-mono">
+                              {receiptAmount.toLocaleString('en-IN')}.00
+                            </td>
+                            <td className="border border-slate-300 p-2 text-right font-mono font-bold">
+                              {receiptAmount.toLocaleString('en-IN')}.00
+                            </td>
+                          </tr>
+                          <tr className="bg-slate-50 font-bold">
+                            <td colSpan={4} className="border border-slate-300 p-2 text-right">
+                              Net Amount Payable:
+                            </td>
+                            <td style={{ color: receiptAccentColor }} className="border border-slate-300 p-2 text-right font-mono text-sm">
+                              ₹{receiptAmount.toLocaleString('en-IN')}.00
+                            </td>
+                          </tr>
+                        </tbody>
+                      </table>
+
+                      <div className="text-xs text-slate-700 bg-slate-50 p-2.5 rounded border border-slate-200">
+                        <strong>Amount in Words:</strong> {getReceiptAmountInWords(receiptAmount)}
+                      </div>
+
+                      <div className="pt-4 flex justify-between items-end text-[11px] text-slate-600 border-t border-slate-200">
+                        <div>
+                          <p className="m-0 font-semibold">Terms & Conditions:</p>
+                          <p className="m-0 text-slate-500">1. Computer generated bill, no signature required on client copy.</p>
+                          <p className="m-0 text-slate-500">2. All legal documentation queries subject to verified proof.</p>
+                        </div>
+                        <div className="text-center font-bold text-slate-900">
+                          {receiptSignUrl && (
+                            <img src={receiptSignUrl} alt="Sign" className="max-h-9 max-w-[120px] mx-auto mb-1 object-contain" />
+                          )}
+                          <div className="h-4"></div>
+                          <span>For {receiptShopName}</span>
+                        </div>
+                      </div>
+                    </div>
+                  )}
+
+                  {/* TEMPLATE 4: Agreement / Legal Stamp Style */}
+                  {receiptTemplate === '4' && (
+                    <div className="p-6 sm:p-8 space-y-5 border-2 border-slate-400 m-2 rounded-lg relative">
+                      {/* Logo if uploaded */}
+                      {receiptLogoUrl && (
+                        <img src={receiptLogoUrl} alt="Logo" className="max-h-12 max-w-[140px] mx-auto mb-2 object-contain" />
+                      )}
+
+                      {/* Government E-Stamp Banner Look */}
+                      <div
+                        style={{ backgroundColor: receiptAccentColor }}
+                        className="text-white text-center py-2 px-3 rounded font-serif shadow-xs"
+                      >
+                        <div className="text-[10px] uppercase font-bold tracking-widest opacity-90">
+                          GOVERNMENT SERVICES & CSC NOTARIZATION ACKNOWLEDGMENT
+                        </div>
+                        <h2 className="text-lg sm:text-xl font-bold uppercase tracking-wider mt-0.5">
+                          E-STAMP & SERVICE RECEIPT
+                        </h2>
+                      </div>
+
+                      <div className="flex justify-between items-center text-xs font-mono border-b border-slate-300 pb-2 text-slate-600">
+                        <span>CERTIFICATE NO: {receiptNumber}</span>
+                        <span>ISSUED ON: {receiptDate}</span>
+                      </div>
+
+                      <div className="text-xs leading-relaxed text-slate-800 space-y-2.5 text-justify font-serif">
+                        <p>
+                          This document confirms that <strong>{receiptCustomerName}</strong> (Contact: +91 {receiptCustomerPhone || 'N/A'}) has paid the full and finalized sum of <strong>₹{receiptAmount.toLocaleString('en-IN')}/-</strong> ({getReceiptAmountInWords(receiptAmount)}) to <strong>{receiptShopName}</strong>.
+                        </p>
+                        <p className="p-3 bg-slate-50 border-l-4 border-slate-900 rounded-r font-sans text-[11px]">
+                          <strong>Subject / Undertaking:</strong> {receiptDescription}. Both parties acknowledge that the service charges and statutory portal fees have been verified and settled in full via {receiptPaymentMode}.
+                        </p>
+                      </div>
+
+                      <div className="flex justify-between items-center pt-3 border-t border-slate-300">
+                        <div className="border border-slate-900 px-4 py-2 font-mono font-bold text-lg bg-slate-100">
+                          PAID: ₹{receiptAmount.toLocaleString('en-IN')}/-
+                        </div>
+                        <div className="text-center">
+                          <div className="text-[10px] font-bold text-emerald-700 uppercase tracking-widest border border-emerald-500 bg-emerald-50 px-2 py-1 rounded">
+                            ✓ E-VERIFIED & ACKNOWLEDGED
+                          </div>
+                        </div>
+                      </div>
+
+                      <div className="pt-6 flex justify-between items-end text-xs text-slate-800 font-serif">
+                        <div className="text-center w-36">
+                          <div className="border-b border-slate-600 pb-1 mb-1 italic text-slate-400">Signature</div>
+                          <span className="font-bold">Applicant / Citizen</span>
+                        </div>
+                        <div className="text-center w-44">
+                          {receiptSignUrl ? (
+                            <img src={receiptSignUrl} alt="Sign" className="max-h-9 max-w-[120px] mx-auto mb-1 object-contain" />
+                          ) : (
+                            <div className="border-b border-slate-600 pb-1 mb-1 font-bold text-slate-950">{receiptShopName}</div>
+                          )}
+                          <span className="font-bold">Authorized CSC Agent</span>
+                        </div>
+                      </div>
+                    </div>
+                  )}
+
+                  {/* TEMPLATE 5: Standard Cash Voucher */}
+                  {receiptTemplate === '5' && (
+                    <div className="p-6 sm:p-8 space-y-5 border-2 border-slate-800 m-2 rounded-lg font-sans">
+                      <div className="flex justify-between items-start border-b-2 border-slate-900 pb-3">
+                        <div>
+                          {receiptLogoUrl && (
+                            <img src={receiptLogoUrl} alt="Logo" className="max-h-11 max-w-[130px] mb-1 object-contain" />
+                          )}
+                          <h2 className="text-xl font-black uppercase text-slate-900">{receiptShopName}</h2>
+                          <p className="text-xs text-slate-600 font-medium">{receiptShopTagline}</p>
+                        </div>
+                        <div className="text-right">
+                          <div className="border-2 border-slate-900 px-2.5 py-1 font-black text-xs uppercase bg-slate-100">
+                            DEBIT CASH VOUCHER
+                          </div>
+                          <div className="text-xs font-mono font-bold mt-1 text-slate-700">Voucher No: {receiptNumber}</div>
+                        </div>
+                      </div>
+
+                      <div className="space-y-3 text-xs">
+                        <div className="flex border-b border-slate-300 pb-1.5">
+                          <span className="w-24 font-bold text-slate-700">Date:</span>
+                          <span className="font-mono font-semibold text-slate-900">{receiptDate}</span>
+                        </div>
+                        <div className="flex border-b border-slate-300 pb-1.5">
+                          <span className="w-24 font-bold text-slate-700">Paid To:</span>
+                          <span className="font-bold text-slate-900 text-sm">{receiptCustomerName}</span>
+                        </div>
+                        <div className="flex border-b border-slate-300 pb-1.5">
+                          <span className="w-24 font-bold text-slate-700">On Account Of:</span>
+                          <span className="font-medium text-slate-800">{receiptDescription}</span>
+                        </div>
+                        <div className="flex border-b border-slate-300 pb-1.5">
+                          <span className="w-24 font-bold text-slate-700">The Sum Of:</span>
+                          <span className="font-semibold text-slate-900 italic">{getReceiptAmountInWords(receiptAmount)}</span>
+                        </div>
+                      </div>
+
+                      <div className="flex justify-between items-center py-2">
+                        <div className="border-2 border-slate-900 bg-slate-100 px-4 py-2 font-mono font-black text-xl">
+                          ₹ {receiptAmount.toLocaleString('en-IN')}/-
+                        </div>
+                        <div className="text-xs text-slate-600 font-medium">
+                          Payment Mode: <strong className="text-slate-900">{receiptPaymentMode}</strong>
+                        </div>
+                      </div>
+
+                      <div className="pt-6 grid grid-cols-3 gap-2 text-center text-xs text-slate-800 border-t border-slate-300">
+                        <div>
+                          <div className="border-b border-slate-600 pb-1 mb-1"></div>
+                          <span className="font-bold">Prepared By</span>
+                        </div>
+                        <div>
+                          <div className="border-b border-slate-600 pb-1 mb-1"></div>
+                          <span className="font-bold">Receiver's Sign</span>
+                        </div>
+                        <div>
+                          {receiptSignUrl && (
+                            <img src={receiptSignUrl} alt="Sign" className="max-h-8 max-w-[100px] mx-auto mb-1 object-contain" />
+                          )}
+                          <div className="border-b border-slate-600 pb-1 mb-1 font-bold">{receiptShopName}</div>
+                          <span className="font-bold">Manager / Admin</span>
+                        </div>
+                      </div>
+                    </div>
+                  )}
+                </div>
+              </div>
+            </div>
+          )}
+
           {/* 8. Options and Settings visible for all file-based tools */}
           {tool.acceptedFormats && tool.id !== 'image-to-color' && (
             <div className="space-y-4">
@@ -4099,6 +5033,9 @@ export const ToolRunnerModal: React.FC<ToolRunnerModalProps> = ({
               )}
             </div>
           )}
+
+          {/* Professional Information & Guide Section (Pi7-style: How to Use, Key Features, Conclusion) */}
+          <ToolGuideSection tool={tool} />
 
         </div>
 

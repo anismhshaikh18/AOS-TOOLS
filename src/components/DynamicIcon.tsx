@@ -62,10 +62,12 @@ import {
   Type,
   Binary,
   ArrowRightLeft,
+  Receipt,
   type LucideIcon,
 } from 'lucide-react';
 
 const ICON_MAP: Record<string, LucideIcon> = {
+  Receipt,
   Scale,
   Type,
   Binary,

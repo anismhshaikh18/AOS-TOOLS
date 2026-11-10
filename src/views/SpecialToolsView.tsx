@@ -23,7 +23,7 @@ export const SpecialToolsView: React.FC<SpecialToolsViewProps> = ({ onSelectTool
         <div>
           <h1 className="text-xl sm:text-2xl font-bold tracking-tight text-slate-900 dark:text-white flex items-center gap-2.5">
             <Sparkles className="w-6 h-6 text-[#0284c7]" />
-            <span>{s.special || 'Special Tools'} ({SPECIAL_TOOLS.length} Core Utilities)</span>
+            <span>{s.special || 'AOS Pro Tools'} ({SPECIAL_TOOLS.length} Core Utilities)</span>
           </h1>
           <p className="text-xs text-slate-600 dark:text-slate-300 mt-1">
             Essential productivity utilities: Barcode/QR generation, cryptographic password creation, color eyedropper, ZIP extraction, and HTML sandboxing.

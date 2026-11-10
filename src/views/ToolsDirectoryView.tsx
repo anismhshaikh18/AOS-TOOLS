@@ -170,7 +170,7 @@ export const ToolsDirectoryView: React.FC<ToolsDirectoryViewProps> = ({
       }
       if (selectedFilter === 'PDF Suite') return t.category === 'pdf';
       if (selectedFilter === 'Image Tools') return t.category === 'image';
-      if (selectedFilter === 'Special Tools') return t.category === 'special';
+      if (selectedFilter === 'AOS Pro Tools' || selectedFilter === 'Special Tools') return t.category === 'special';
       return true;
     });
   }, [allTools, searchQuery, selectedFilter]);
@@ -234,7 +234,7 @@ export const ToolsDirectoryView: React.FC<ToolsDirectoryViewProps> = ({
     { id: 'Passport & ID', label: t.passportCategoryTab || 'Passport & ID' },
     { id: 'PDF Suite', label: t.pdfCategoryTab || 'PDF Suite' },
     { id: 'Image Tools', label: t.imageCategoryTab || 'Image Tools' },
-    { id: 'Special Tools', label: t.specialCategoryTab || 'Special Tools' },
+    { id: 'AOS Pro Tools', label: t.specialCategoryTab || 'AOS Pro Tools' },
   ];
 
   return (
