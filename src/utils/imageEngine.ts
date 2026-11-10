@@ -10,10 +10,27 @@ export interface ImageProcessingResult {
 
 export function loadImage(src: string | File): Promise<HTMLImageElement> {
   return new Promise((resolve, reject) => {
+    if (src instanceof File) {
+      const name = (src.name || '').toLowerCase();
+      const type = (src.type || '').toLowerCase();
+      if (name.endsWith('.heic') || name.endsWith('.heif') || type.includes('heic') || type.includes('heif')) {
+        return reject(
+          new Error(
+            `HEIC/HEIF image format ("${src.name}") is not supported directly by web browsers. Please convert or save your photo as standard JPG, PNG, or WEBP before enhancing.`
+          )
+        );
+      }
+    }
+
     const img = new Image();
     img.crossOrigin = 'anonymous';
     img.onload = () => resolve(img);
-    img.onerror = (e) => reject(new Error('Failed to load image: ' + e));
+    img.onerror = () =>
+      reject(
+        new Error(
+          'Failed to load image: Unsupported or corrupted image format. Please ensure you are uploading a valid JPG, PNG, or WEBP photo.'
+        )
+      );
 
     if (src instanceof File) {
       img.src = URL.createObjectURL(src);

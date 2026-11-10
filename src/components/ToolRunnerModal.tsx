@@ -52,6 +52,8 @@ import {
   Scale,
   Camera,
   ArrowLeft,
+  Barcode,
+  QrCode,
 } from 'lucide-react';
 import {
   mergePDFs,
@@ -126,6 +128,8 @@ export const ToolRunnerModal: React.FC<ToolRunnerModalProps> = ({
 
   const [hasCopied, setHasCopied] = useState<boolean>(false);
   const [copyToast, setCopyToast] = useState<string | null>(null);
+  const [heicWarning, setHeicWarning] = useState<string | null>(null);
+  const [barcodeMode, setBarcodeMode] = useState<'barcode' | 'qr'>('barcode');
   const fileInputRef = useRef<HTMLInputElement>(null);
 
   // PDF Tool Specific Controls
@@ -293,20 +297,82 @@ export const ToolRunnerModal: React.FC<ToolRunnerModalProps> = ({
     try {
       setCodecError(null);
       if (codecMode === 'b64-enc') {
-        setCodecOutput(btoa(unescape(encodeURIComponent(codecInput))));
+        if (!codecInput) {
+          setCodecOutput('');
+          return;
+        }
+        // UTF-8 safe base64 encode
+        const bytes = new TextEncoder().encode(codecInput);
+        let binary = '';
+        for (let i = 0; i < bytes.length; i++) {
+          binary += String.fromCharCode(bytes[i]);
+        }
+        setCodecOutput(btoa(binary));
       } else if (codecMode === 'b64-dec') {
         if (!codecInput.trim()) {
           setCodecOutput('');
-        } else {
-          setCodecOutput(decodeURIComponent(escape(atob(codecInput.trim()))));
+          return;
+        }
+
+        let cleaned = codecInput.trim();
+        // Auto-strip data URL prefix if user pasted a data URI (e.g. data:text/plain;base64,...)
+        if (cleaned.startsWith('data:') && cleaned.includes(';base64,')) {
+          cleaned = cleaned.split(';base64,')[1] || '';
+        }
+
+        // Remove all whitespace/newlines
+        cleaned = cleaned.replace(/\s+/g, '');
+
+        // Normalize URL-safe Base64
+        cleaned = cleaned.replace(/-/g, '+').replace(/_/g, '/');
+
+        // Add padding if missing
+        while (cleaned.length % 4 !== 0) {
+          cleaned += '=';
+        }
+
+        // Basic character check
+        if (!/^[A-Za-z0-9+/=]+$/.test(cleaned)) {
+          setCodecError(
+            'Please provide a valid encoded Base64 string. The input contains plain text or characters outside the Base64 alphabet.'
+          );
+          setCodecOutput('');
+          return;
+        }
+
+        try {
+          const binary = atob(cleaned);
+          const bytes = new Uint8Array(binary.length);
+          for (let i = 0; i < binary.length; i++) {
+            bytes[i] = binary.charCodeAt(i);
+          }
+          const decoded = new TextDecoder('utf-8', { fatal: true }).decode(bytes);
+          setCodecOutput(decoded);
+          setCodecError(null);
+        } catch {
+          setCodecError(
+            'Please provide a valid encoded Base64 string. The current input appears to be plain text or is not properly encoded.'
+          );
+          setCodecOutput('');
         }
       } else if (codecMode === 'url-enc') {
         setCodecOutput(encodeURIComponent(codecInput));
       } else if (codecMode === 'url-dec') {
-        setCodecOutput(decodeURIComponent(codecInput));
+        if (!codecInput.trim()) {
+          setCodecOutput('');
+          return;
+        }
+        try {
+          setCodecOutput(decodeURIComponent(codecInput.replace(/\+/g, ' ')));
+        } catch {
+          setCodecError(
+            'Invalid URL encoded string: Please ensure the input is valid percent-encoded text (e.g. "%20" for spaces).'
+          );
+          setCodecOutput('');
+        }
       }
     } catch {
-      setCodecError('Invalid input syntax for chosen decoding format');
+      setCodecError('Please provide a valid encoded string for the selected decoding mode.');
       setCodecOutput('');
     }
   }, [codecMode, codecInput, tool.id]);
@@ -321,6 +387,17 @@ export const ToolRunnerModal: React.FC<ToolRunnerModalProps> = ({
         setBarcodePngUrl(png);
       } catch {
         // ignore
+      }
+      if (!qrDataUrl) {
+        const initialText = 'https://aostools.local';
+        setQrText(initialText);
+        generateQrCodeDataUrl(initialText, {
+          width: 480,
+          margin: qrMargin,
+          colorDark: qrFgColor,
+          colorLight: qrBgColor,
+          errorCorrectionLevel: qrErrorLevel,
+        }).then(setQrDataUrl).catch(() => {});
       }
     } else if (tool.id === 'qr-code-generator') {
       const initialText = 'https://aostools.local';
@@ -551,13 +628,31 @@ export const ToolRunnerModal: React.FC<ToolRunnerModalProps> = ({
       setErrorMessage(null);
       setSuccessResult(null);
 
+      // Check for Apple/Samsung HEIC/HEIF files
+      const heic = files.find((f) => {
+        const name = (f.name || '').toLowerCase();
+        const type = (f.type || '').toLowerCase();
+        return name.endsWith('.heic') || name.endsWith('.heif') || type.includes('heic') || type.includes('heif');
+      });
+
+      if (heic) {
+        setHeicWarning(
+          `Detected Apple/Samsung HEIC format file: "${heic.name}". Web browsers cannot process HEIC directly on canvas. Please upload a standard JPG, PNG, or WEBP image, or change camera settings to "Most Compatible" (JPEG).`
+        );
+        setErrorMessage(
+          `HEIC format ("${heic.name}") cannot be processed directly by web browsers. Please select a JPEG, PNG, or WEBP image.`
+        );
+      } else {
+        setHeicWarning(null);
+      }
+
       // Color extractor auto trigger
-      if (tool.id === 'color-extractor' && files[0]) {
+      if (tool.id === 'color-extractor' && files[0] && !heic) {
         extractColorPalette(files[0], 6).then(setExtractedPalette).catch(() => {});
       }
 
       // Eyedropper image load
-      if (tool.id === 'image-to-color' && files[0]) {
+      if (tool.id === 'image-to-color' && files[0] && !heic) {
         const url = URL.createObjectURL(files[0]);
         setEyedropperImgUrl(url);
       }
@@ -585,6 +680,8 @@ export const ToolRunnerModal: React.FC<ToolRunnerModalProps> = ({
       setExtractedPalette([]);
       setZipEntries([]);
       setEyedropperImgUrl(null);
+      setHeicWarning(null);
+      setErrorMessage(null);
     }
   };
 
@@ -1121,8 +1218,49 @@ export const ToolRunnerModal: React.FC<ToolRunnerModalProps> = ({
             </p>
           </div>
 
-          {/* 1. Barcode Generator UI */}
+          {/* Mode Switcher for Barcode Generator (allows instant 1D Barcode or 2D QR Code switch) */}
           {tool.id === 'barcode-generator' && (
+            <div className="flex p-1 bg-slate-100 dark:bg-slate-900 border border-slate-200 dark:border-slate-800 rounded-xl">
+              <button
+                type="button"
+                onClick={() => setBarcodeMode('barcode')}
+                className={`flex-1 py-2 text-xs font-bold rounded-lg transition-all flex items-center justify-center gap-1.5 cursor-pointer ${
+                  barcodeMode === 'barcode'
+                    ? 'bg-blue-600 text-white shadow-xs'
+                    : 'text-slate-700 dark:text-slate-300 hover:text-slate-900 dark:hover:text-white'
+                }`}
+              >
+                <Barcode className="w-3.5 h-3.5" />
+                <span>1D Barcode (Code-128 / EAN / UPC)</span>
+              </button>
+              <button
+                type="button"
+                onClick={() => {
+                  setBarcodeMode('qr');
+                  if (!qrDataUrl) {
+                    generateQrCodeDataUrl(qrText || 'https://aostools.local', {
+                      width: 480,
+                      margin: qrMargin,
+                      colorDark: qrFgColor,
+                      colorLight: qrBgColor,
+                      errorCorrectionLevel: qrErrorLevel,
+                    }).then(setQrDataUrl).catch(() => {});
+                  }
+                }}
+                className={`flex-1 py-2 text-xs font-bold rounded-lg transition-all flex items-center justify-center gap-1.5 cursor-pointer ${
+                  barcodeMode === 'qr'
+                    ? 'bg-blue-600 text-white shadow-xs'
+                    : 'text-slate-700 dark:text-slate-300 hover:text-slate-900 dark:hover:text-white'
+                }`}
+              >
+                <QrCode className="w-3.5 h-3.5" />
+                <span>2D QR Code Generator</span>
+              </button>
+            </div>
+          )}
+
+          {/* 1. Barcode Generator UI */}
+          {tool.id === 'barcode-generator' && barcodeMode === 'barcode' && (
             <div className="space-y-4">
               <div>
                 <label className="block text-xs font-semibold text-slate-700 dark:text-slate-300 mb-1.5">
@@ -1213,7 +1351,7 @@ export const ToolRunnerModal: React.FC<ToolRunnerModalProps> = ({
           )}
 
           {/* 2. QR Code Generator UI with Designer Poster Templates & Dynamic Input Types */}
-          {tool.id === 'qr-code-generator' && (
+          {(tool.id === 'qr-code-generator' || (tool.id === 'barcode-generator' && barcodeMode === 'qr')) && (
             <div className="space-y-6">
               
               {/* STEP 1: Dynamic Content Input Type Tabs */}
@@ -2948,8 +3086,36 @@ export const ToolRunnerModal: React.FC<ToolRunnerModalProps> = ({
                   )}
                 </div>
                 {codecError ? (
-                  <div className="p-3 bg-red-50 dark:bg-red-950/40 border border-red-200 dark:border-red-900/60 rounded-xl text-xs text-red-600 dark:text-red-300">
-                    {codecError}
+                  <div className="p-3.5 bg-amber-50 dark:bg-amber-950/40 border border-amber-300 dark:border-amber-800/80 rounded-xl space-y-2.5">
+                    <div className="flex items-start gap-2 text-xs font-semibold text-amber-800 dark:text-amber-200">
+                      <AlertCircle className="w-4 h-4 text-amber-600 dark:text-amber-400 shrink-0 mt-0.5" />
+                      <span className="leading-relaxed">{codecError}</span>
+                    </div>
+
+                    {codecMode === 'b64-dec' && (
+                      <div className="flex flex-wrap gap-2 pt-1 pl-6">
+                        <button
+                          type="button"
+                          onClick={() => {
+                            setCodecMode('b64-enc');
+                            setCodecError(null);
+                          }}
+                          className="px-2.5 py-1 text-[11px] font-bold bg-[#0284c7] hover:bg-[#0369a1] text-white rounded-lg shadow-xs cursor-pointer transition-colors"
+                        >
+                          Switch to "Base64 Encode" with this text
+                        </button>
+                        <button
+                          type="button"
+                          onClick={() => {
+                            setCodecInput('V2VsY29tZSB0byBBT1MgVG9vbHMgLSBDbGllbnQtU2lkZSAmIFNlY3VyZQ==');
+                            setCodecError(null);
+                          }}
+                          className="px-2.5 py-1 text-[11px] font-semibold bg-white dark:bg-slate-900 border border-slate-300 dark:border-slate-700 text-slate-700 dark:text-slate-300 rounded-lg hover:bg-slate-50 dark:hover:bg-slate-800 cursor-pointer"
+                        >
+                          Try Sample Base64
+                        </button>
+                      </div>
+                    )}
                   </div>
                 ) : (
                   <textarea
@@ -3732,6 +3898,42 @@ export const ToolRunnerModal: React.FC<ToolRunnerModalProps> = ({
                 onChange={handleFileChange}
                 className="hidden"
               />
+
+              {/* HEIC/HEIF Warning Banner */}
+              {heicWarning && (
+                <div className="p-4 rounded-xl border border-amber-300 dark:border-amber-700/60 bg-amber-50 dark:bg-amber-950/40 text-amber-900 dark:text-amber-200 text-xs space-y-2">
+                  <div className="flex items-start gap-2.5">
+                    <AlertCircle className="w-4 h-4 text-amber-600 dark:text-amber-400 shrink-0 mt-0.5" />
+                    <div className="space-y-1">
+                      <p className="font-bold text-slate-900 dark:text-white">
+                        Apple / Samsung HEIC Format Detected
+                      </p>
+                      <p className="leading-relaxed">
+                        {heicWarning}
+                      </p>
+                    </div>
+                  </div>
+                  <div className="pt-2 border-t border-amber-200 dark:border-amber-800/40 flex flex-wrap items-center gap-2">
+                    <span className="font-semibold text-slate-800 dark:text-slate-300">Quick Solution:</span>
+                    <span className="px-2 py-0.5 rounded bg-white dark:bg-slate-900 text-[11px] font-mono border border-amber-200 dark:border-amber-800">
+                      Settings → Camera → Formats → "Most Compatible" (JPEG)
+                    </span>
+                    <span className="text-[11px] text-slate-600 dark:text-slate-400">
+                      or take a screenshot / share as JPG
+                    </span>
+                  </div>
+                </div>
+              )}
+
+              {/* Mobile Tip for Image Quality Enhancer */}
+              {tool.id === 'image-quality-enhancer' && !heicWarning && (
+                <div className="p-3 bg-blue-50/70 dark:bg-blue-950/40 border border-blue-200 dark:border-blue-900/50 rounded-xl text-xs text-blue-900 dark:text-blue-300 flex items-center gap-2">
+                  <Sparkles className="w-4 h-4 text-blue-600 dark:text-blue-400 shrink-0" />
+                  <span>
+                    <strong>Mobile Image Tip:</strong> For best results on mobile, upload standard JPG, PNG, or WEBP photos. If your phone took a .heic photo, export it as JPG or switch camera mode to JPEG.
+                  </span>
+                </div>
+              )}
 
               <div
                 onClick={() => fileInputRef.current?.click()}

@@ -112,12 +112,21 @@ export const ToolsDirectoryView: React.FC<ToolsDirectoryViewProps> = ({
         status: 'fully-supported',
       },
       {
-        id: 'barcode-generator',
+        id: 'qr-code-generator',
         name: 'QR Code Generator',
-        shortDesc: 'Generate vector QR codes for UPI payments, business URLs, and client identification tokens.',
+        shortDesc: 'Create high-resolution QR codes for URLs, WiFi credentials, UPI payments, and text with PNG/SVG download.',
         category: 'special',
         iconName: 'QrCode',
         badge: 'SVG / PNG',
+        status: 'fully-supported',
+      },
+      {
+        id: 'barcode-generator',
+        name: 'Barcode Generator',
+        shortDesc: 'Generate Code-128, EAN-13, UPC, and Code-39 standard barcodes with instant SVG/PNG export.',
+        category: 'special',
+        iconName: 'Barcode',
+        badge: 'CODE-128 / EAN',
         status: 'fully-supported',
       },
       {
@@ -136,7 +145,7 @@ export const ToolsDirectoryView: React.FC<ToolsDirectoryViewProps> = ({
       ...IMAGE_TOOLS.filter(
         (tool) => !['passport-photo-sheet', 'photo-signature-resize'].includes(tool.id)
       ),
-      ...SPECIAL_TOOLS.filter((tool) => !['barcode-generator', 'khata-diary'].includes(tool.id)),
+      ...SPECIAL_TOOLS.filter((tool) => !['barcode-generator', 'qr-code-generator', 'khata-diary'].includes(tool.id)),
     ];
   }, []);
 

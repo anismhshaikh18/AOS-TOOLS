@@ -673,11 +673,18 @@ export const TOOL_TRANSLATIONS: Record<string, Partial<Record<LanguageCode, { na
     hinglish: { name: 'Client Khata Diary', shortDesc: 'Daily customer ledger hisab aur WhatsApp payment alerts.' },
   },
   'barcode-generator': {
-    hi: { name: 'क्यूआर व बारकोड जनरेटर', shortDesc: 'यूपीआई, यूआरएल, संपर्क और कस्टम टेक्स्ट हेतु उच्च-रिज़ॉल्यूशन क्यूआर व बारकोड बनाएं।' },
-    ta: { name: 'QR & பார்கோடு ஜெனரேட்டர்', shortDesc: 'UPI, இணையதள இணைப்புகள் மற்றும் தகவல்களுக்கான QR குறியீடு.' },
-    te: { name: 'QR & బార్‌కోడ్ జనరేటర్', shortDesc: 'UPI, లింకులు మరియు టెక్స్ట్ కోసం హై-రిజల్యూషన్ QR కోడ్‌లను సృష్టించండి.' },
-    mr: { name: 'क्यूआर आणि बारकोड जनरेटर', shortDesc: 'यूपीआय, वेबसाइट लिंक आणि मजकुरासाठी थेट क्यूआर तयार करा.' },
-    hinglish: { name: 'QR & Barcode Generator', shortDesc: 'UPI payments, links aur custom text ke liye instant QR codes banayein.' },
+    hi: { name: 'बारकोड जनरेटर', shortDesc: 'Code-128, EAN-13, UPC व Code-39 बारकोड बनाएं व SVG/PNG डाउनलोड करें।' },
+    ta: { name: 'பார்கோடு ஜெனரேட்டர்', shortDesc: 'Code-128 மற்றும் EAN-13 தரநிலை பார்கோடுகளை உருவாக்கவும்.' },
+    te: { name: 'బార్‌కోడ్ జనరేటర్', shortDesc: 'Code-128, EAN-13 బార్‌కోడ్‌లను సృష్టించి SVG/PNG గా డౌన్‌లోడ్ చేయండి.' },
+    mr: { name: 'बारकोड जनरेटर', shortDesc: 'Code-128, EAN-13 आणि इतर औद्योगिक बारकोड तयार करा.' },
+    hinglish: { name: 'Barcode Generator', shortDesc: 'Code-128, EAN-13 aur UPC standard barcodes generate karke SVG/PNG download karein.' },
+  },
+  'qr-code-generator': {
+    hi: { name: 'क्यूआर कोड जनरेटर', shortDesc: 'यूपीआई, वेबसाइट लिंक, सोशल प्रोफाइल व वाई-फाई के लिए उच्च-रिज़ॉल्यूशन क्यूआर कोड बनाएं।' },
+    ta: { name: 'QR குறியீடு ஜெனரேட்டர்', shortDesc: 'UPI, இணையதள இணைப்புகள் மற்றும் தகவல்களுக்கான உயர் துல்லிய QR குறியீடு.' },
+    te: { name: 'QR కోడ్ జనరేటర్', shortDesc: 'UPI, లింకులు మరియు టెక్స్ట్ కోసం హై-రిజల్యూషన్ QR కోడ్‌లను సృష్టించండి.' },
+    mr: { name: 'क्यूआर कोड जनरेटर', shortDesc: 'यूपीआय, वेबसाइट लिंक आणि मजकुरासाठी थेट आकर्षक क्यूआर तयार करा.' },
+    hinglish: { name: 'QR Code Generator', shortDesc: 'UPI payments, links aur custom text ke liye instant designer QR codes banayein.' },
   },
 };
 

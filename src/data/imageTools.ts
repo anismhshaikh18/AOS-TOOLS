@@ -126,6 +126,6 @@ export const IMAGE_TOOLS: ToolItem[] = [
     category: 'image',
     iconName: 'Sliders',
     status: 'fully-supported',
-    acceptedFormats: 'image/*',
+    acceptedFormats: 'JPG, JPEG, PNG, WEBP',
   },
 ];
