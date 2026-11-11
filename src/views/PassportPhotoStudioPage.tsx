@@ -770,11 +770,11 @@ export const PassportPhotoStudioPage: React.FC<PassportPhotoStudioPageProps> = (
             <Crop className="w-5 h-5 stroke-[2.5]" />
           </div>
           <div>
-            <div className="flex items-center gap-2">
+            <div className="flex flex-wrap items-center gap-2">
               <h1 className="text-base sm:text-lg font-black text-slate-900 dark:text-white tracking-tight">
                 Passport Photo Studio
               </h1>
-              <span className="text-[10px] font-bold uppercase tracking-wider px-2 py-0.5 rounded-full bg-sky-100 dark:bg-[#072642] border border-sky-400/40 text-[#0284c7] dark:text-[#38bdf8]">
+              <span className="text-[10px] font-bold uppercase tracking-wider px-2.5 py-0.5 rounded-full bg-sky-100 dark:bg-[#072642] border border-sky-400/40 text-[#0284c7] dark:text-[#38bdf8] whitespace-nowrap shrink-0 inline-flex items-center">
                 STUDIO CROP &amp; PRINT
               </span>
             </div>

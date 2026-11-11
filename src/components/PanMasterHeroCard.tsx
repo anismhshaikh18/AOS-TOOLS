@@ -113,13 +113,13 @@ export const PanMasterHeroCard: React.FC<PanMasterHeroCardProps> = ({
             <Building2 className="w-4 h-4" />
           </div>
           <div>
-            <div className="flex items-center gap-2">
-              <span className="text-sm font-extrabold text-slate-900 dark:text-white tracking-tight">PAN Master Hub</span>
-              <span className="text-[10px] px-2 py-0.5 rounded-full bg-sky-100 dark:bg-[#072642] text-sky-700 dark:text-sky-300 border border-sky-400/40 font-bold uppercase tracking-wider">
+            <div className="flex flex-wrap sm:flex-nowrap items-center gap-2">
+              <span className="text-sm font-extrabold text-slate-900 dark:text-white tracking-tight whitespace-nowrap">PAN Master Hub</span>
+              <span className="text-[10px] px-2.5 py-0.5 rounded-full bg-sky-100 dark:bg-[#072642] text-sky-700 dark:text-sky-300 border border-sky-400/40 font-bold uppercase tracking-wider whitespace-nowrap shrink-0 inline-flex items-center">
                 NSDL &amp; UTIITSL
               </span>
             </div>
-            <div className="text-[11px] text-slate-600 dark:text-slate-300">
+            <div className="text-[11px] text-slate-600 dark:text-slate-300 truncate">
               Form 49A, Correction &amp; &lt;300 KB Document Prep
             </div>
           </div>
@@ -128,10 +128,10 @@ export const PanMasterHeroCard: React.FC<PanMasterHeroCardProps> = ({
         <button
           onClick={onOpenFullHub}
           title="Open Full PAN Master Hub"
-          className="text-xs font-bold text-[#0284c7] hover:text-[#0369a1] dark:text-sky-400 dark:hover:text-sky-300 flex items-center gap-1 transition-colors cursor-pointer group shrink-0"
+          className="text-xs font-bold text-[#0284c7] hover:text-[#0369a1] dark:text-sky-400 dark:hover:text-sky-300 flex items-center gap-1 transition-colors cursor-pointer group shrink-0 whitespace-nowrap"
         >
           <span>Full Hub</span>
-          <ArrowRight className="w-3.5 h-3.5 group-hover:translate-x-1 transition-transform" />
+          <ArrowRight className="w-3.5 h-3.5 group-hover:translate-x-1 transition-transform shrink-0" />
         </button>
       </div>
 

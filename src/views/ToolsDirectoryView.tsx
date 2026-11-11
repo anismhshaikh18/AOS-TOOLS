@@ -360,7 +360,7 @@ export const ToolsDirectoryView: React.FC<ToolsDirectoryViewProps> = ({
                     <DynamicIcon name={tool.iconName} className="w-5 h-5" />
                   </div>
                   {tool.badge && (
-                    <span className="px-2 py-0.5 rounded-md bg-[#0284c7]/15 text-[#0284c7] dark:text-sky-300 border border-[#0284c7]/30 text-[10px] font-bold font-mono uppercase">
+                    <span className="px-2 py-0.5 rounded-md bg-[#0284c7]/15 text-[#0284c7] dark:text-sky-300 border border-[#0284c7]/30 text-[10px] font-bold font-mono uppercase whitespace-nowrap shrink-0 inline-flex items-center">
                       {tool.badge}
                     </span>
                   )}

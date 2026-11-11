@@ -1245,30 +1245,35 @@ export const ToolRunnerModal: React.FC<ToolRunnerModalProps> = ({
       <div className="relative w-full liquid-glass rounded-3xl shadow-2xl overflow-hidden">
         
         {/* Tool Page Header */}
-        <div className="flex items-center justify-between px-6 py-5 border-b border-slate-200 dark:border-white/10 liquid-glass-sub">
-          <div className="flex items-center gap-3.5">
-            <div className="w-11 h-11 rounded-2xl bg-[#0284c7] text-white flex items-center justify-center shadow-lg shadow-[#0284c7]/30 shrink-0">
+        <div className="flex items-center justify-between px-4 sm:px-6 py-4 sm:py-5 border-b border-slate-200 dark:border-white/10 liquid-glass-sub gap-3">
+          <div className="flex items-center gap-3 sm:gap-3.5 min-w-0">
+            <div className="w-10 h-10 sm:w-11 sm:h-11 rounded-2xl bg-[#0284c7] text-white flex items-center justify-center shadow-lg shadow-[#0284c7]/30 shrink-0">
               <DynamicIcon name={tool.iconName} className="w-5 h-5 stroke-[2.5]" />
             </div>
-            <div>
-              <div className="flex items-center gap-2">
-                <h1 className="text-lg sm:text-xl font-black text-slate-900 dark:text-white tracking-tight">
+            <div className="min-w-0">
+              <div className="flex flex-wrap items-center gap-2">
+                <h1 className="text-base sm:text-lg md:text-xl font-black text-slate-900 dark:text-white tracking-tight break-words">
                   {tool.name}
                 </h1>
-                <span className="text-[10px] font-bold uppercase tracking-wider px-2 py-0.5 rounded-full bg-sky-100 dark:bg-[#072642] border border-sky-400/40 text-sky-700 dark:text-[#38bdf8]">
-                  {tool.category.toUpperCase()} TOOL
+                <span className="text-[10px] font-bold uppercase tracking-wider px-2.5 py-0.5 rounded-full bg-sky-100 dark:bg-[#072642] border border-sky-400/40 text-sky-700 dark:text-[#38bdf8] whitespace-nowrap shrink-0 inline-flex items-center">
+                  {tool.category === 'special' ? 'AOS PRO TOOL' : `${tool.category.toUpperCase()} TOOL`}
                 </span>
+                {tool.badge && (
+                  <span className="text-[10px] font-bold uppercase tracking-wider px-2 py-0.5 rounded-full bg-emerald-100 dark:bg-emerald-950/60 border border-emerald-400/40 text-emerald-700 dark:text-emerald-300 whitespace-nowrap shrink-0 inline-flex items-center">
+                    {tool.badge}
+                  </span>
+                )}
               </div>
-              <div className="flex items-center gap-2 text-xs text-slate-500 dark:text-slate-400 mt-0.5">
-                <span>In-Browser WebAssembly / HTML5 Engine</span>
+              <div className="flex flex-wrap items-center gap-1.5 sm:gap-2 text-[11px] sm:text-xs text-slate-500 dark:text-slate-400 mt-0.5">
+                <span className="whitespace-nowrap">In-Browser WebAssembly / HTML5 Engine</span>
                 <span aria-hidden="true">·</span>
-                <span>Private &amp; Secure</span>
+                <span className="whitespace-nowrap">Private &amp; Secure</span>
               </div>
             </div>
           </div>
           <button
             onClick={onClose}
-            className="p-2 text-slate-500 dark:text-slate-400 hover:text-slate-900 dark:hover:text-white rounded-xl liquid-glass-sub hover:border-[#0284c7]/50 transition-colors cursor-pointer"
+            className="p-2 text-slate-500 dark:text-slate-400 hover:text-slate-900 dark:hover:text-white rounded-xl liquid-glass-sub hover:border-[#0284c7]/50 transition-colors cursor-pointer shrink-0"
             aria-label="Close Tool"
           >
             <X className="w-5 h-5" />

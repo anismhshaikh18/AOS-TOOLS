@@ -49,21 +49,26 @@ export const ToolCard: React.FC<ToolCardProps> = ({ tool, onSelect }) => {
       className="theme-card group relative flex flex-col justify-between p-5 rounded-2xl cursor-pointer text-left focus:outline-none focus-visible:ring-2 active:scale-[0.99] text-slate-900 dark:text-white"
     >
       <div>
-        <div className="flex items-center justify-between text-xs text-slate-500 dark:text-sky-200/70 mb-3.5">
-          <div className="flex items-center gap-1.5 font-medium text-[11px]">
-            <span className="font-semibold text-slate-700 dark:text-sky-200">
+        <div className="flex items-center justify-between text-xs text-slate-500 dark:text-sky-200/70 mb-3.5 gap-2">
+          <div className="flex items-center gap-1.5 font-medium text-[11px] min-w-0">
+            <span className="font-semibold text-slate-700 dark:text-sky-200 whitespace-nowrap">
               {getCategoryLabel(tool.category)}
             </span>
             <span aria-hidden="true" className="text-slate-300 dark:text-sky-400/40">
               ·
             </span>
-            <span className="text-emerald-600 dark:text-emerald-400 font-medium">
+            <span className="text-emerald-600 dark:text-emerald-400 font-medium whitespace-nowrap">
               100% Client-Side
             </span>
           </div>
-          {tool.status === 'alternate-workflow' && (
-            <span className="text-amber-600 dark:text-amber-300 text-[11px] font-medium flex items-center gap-1">
-              <Info className="w-3 h-3" /> Alternate flow
+          {tool.badge && (
+            <span className="px-2 py-0.5 rounded-md bg-[#0284c7]/15 text-[#0284c7] dark:text-sky-300 border border-[#0284c7]/30 text-[10px] font-bold font-mono uppercase whitespace-nowrap shrink-0 inline-flex items-center">
+              {tool.badge}
+            </span>
+          )}
+          {tool.status === 'alternate-workflow' && !tool.badge && (
+            <span className="text-amber-600 dark:text-amber-300 text-[11px] font-medium flex items-center gap-1 whitespace-nowrap shrink-0">
+              <Info className="w-3 h-3" /> Alternate
             </span>
           )}
         </div>

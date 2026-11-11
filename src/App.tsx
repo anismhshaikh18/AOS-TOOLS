@@ -147,6 +147,18 @@ export default function App() {
     }
   };
 
+  const handleOpenSearchModal = () => {
+    setIsSearchOpen(true);
+    window.history.pushState({ tab: activeTab, isSearchModal: true }, '');
+  };
+
+  const handleCloseSearchModal = () => {
+    setIsSearchOpen(false);
+    if (window.history.state?.isSearchModal) {
+      window.history.back();
+    }
+  };
+
   // Global keyboard shortcut for search
   useEffect(() => {
     const handleKeyDown = (e: KeyboardEvent) => {
@@ -155,12 +167,12 @@ export default function App() {
         !['INPUT', 'TEXTAREA', 'SELECT'].includes((e.target as HTMLElement)?.tagName)
       ) {
         e.preventDefault();
-        setIsSearchOpen(true);
+        handleOpenSearchModal();
       }
     };
     window.addEventListener('keydown', handleKeyDown);
     return () => window.removeEventListener('keydown', handleKeyDown);
-  }, []);
+  }, [activeTab]);
 
   const handleLaunchPhotoResizer = () => {
     const photoTool = IMAGE_TOOLS.find((t) => t.id === 'photo-signature-resize');
@@ -184,7 +196,7 @@ export default function App() {
         setTemplateId={setTemplateId}
         lang={lang}
         setLang={setLang}
-        onOpenSearch={() => setIsSearchOpen(true)}
+        onOpenSearch={handleOpenSearchModal}
       />
 
       {/* Main Container Viewport */}
@@ -210,7 +222,7 @@ export default function App() {
               <HomeView
                 onSelectTool={handleSelectTool}
                 setActiveTab={handleNavigateTab}
-                onOpenSearch={() => setIsSearchOpen(true)}
+                onOpenSearch={handleOpenSearchModal}
                 templateId={templateId}
                 lang={lang}
               />
@@ -267,7 +279,7 @@ export default function App() {
       {isSearchOpen && (
         <SearchModal
           isOpen={isSearchOpen}
-          onClose={() => setIsSearchOpen(false)}
+          onClose={handleCloseSearchModal}
           onSelectTool={handleSelectTool}
           lang={lang}
         />

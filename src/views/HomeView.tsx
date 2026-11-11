@@ -1,4 +1,4 @@
-import React, { useState } from 'react';
+import React, { useState, useRef, useEffect } from 'react';
 import {
   Search,
   Zap,
@@ -45,7 +45,53 @@ export const HomeView: React.FC<HomeViewProps> = ({
   lang = 'en',
 }) => {
   const [searchQuery, setSearchQuery] = useState('');
+  const searchInputRef = useRef<HTMLInputElement>(null);
+  const isSearchStatePushedRef = useRef(false);
   const t = TRANSLATIONS[lang] || TRANSLATIONS.en;
+
+  // Browser back handling on mobile so pressing back closes suggestions or keyboard instead of exiting website
+  const handleSearchFocus = () => {
+    if (!isSearchStatePushedRef.current) {
+      window.history.pushState({ heroSearchActive: true }, '');
+      isSearchStatePushedRef.current = true;
+    }
+  };
+
+  const handleSearchChange = (val: string) => {
+    setSearchQuery(val);
+    if (val.trim() && !isSearchStatePushedRef.current) {
+      window.history.pushState({ heroSearchActive: true }, '');
+      isSearchStatePushedRef.current = true;
+    }
+  };
+
+  const closeSearchSuggestions = () => {
+    setSearchQuery('');
+    if (searchInputRef.current) {
+      searchInputRef.current.blur();
+    }
+    if (isSearchStatePushedRef.current) {
+      isSearchStatePushedRef.current = false;
+      if (window.history.state?.heroSearchActive) {
+        window.history.back();
+      }
+    }
+  };
+
+  useEffect(() => {
+    const handlePopState = (e: PopStateEvent) => {
+      if (isSearchStatePushedRef.current) {
+        isSearchStatePushedRef.current = false;
+        setSearchQuery('');
+        if (searchInputRef.current) {
+          searchInputRef.current.blur();
+        }
+      }
+    };
+
+    window.addEventListener('popstate', handlePopState);
+    return () => window.removeEventListener('popstate', handlePopState);
+  }, []);
 
   const allTools = [...PDF_TOOLS, ...IMAGE_TOOLS, ...SPECIAL_TOOLS].map((tool) =>
     getTranslatedTool(tool, lang)
@@ -126,16 +172,20 @@ export const HomeView: React.FC<HomeViewProps> = ({
               </p>
             </div>
 
-            {/* Search Input Bar with Corporate Sapphire Button */}
+            {/* Search Input Bar with Corporate Sapphire Circular Button */}
             <div className="relative">
               <div className="relative flex items-center">
                 <input
+                  ref={searchInputRef}
                   type="text"
                   placeholder={t.searchBarPlaceholder || 'Search for tools... (e.g. Passport Photo, Smart ID, PDF to Word)'}
                   value={searchQuery}
-                  onChange={(e) => setSearchQuery(e.target.value)}
+                  onFocus={handleSearchFocus}
+                  onChange={(e) => handleSearchChange(e.target.value)}
                   onKeyDown={(e) => {
-                    if (e.key === 'Enter' && onOpenSearch) {
+                    if (e.key === 'Escape') {
+                      closeSearchSuggestions();
+                    } else if (e.key === 'Enter' && onOpenSearch) {
                       onOpenSearch();
                     }
                   }}
@@ -146,7 +196,7 @@ export const HomeView: React.FC<HomeViewProps> = ({
                     if (onOpenSearch) onOpenSearch();
                   }}
                   aria-label="Search Tools"
-                  className="absolute right-2 w-10 h-10 bg-gradient-to-r from-[#0284c7] to-[#0d4775] hover:from-[#38bdf8] hover:to-[#0284c7] text-white rounded-xl flex items-center justify-center transition-all cursor-pointer shadow-md shadow-sky-500/25 active:scale-95"
+                  className="absolute right-2 w-10 h-10 bg-gradient-to-r from-[#0284c7] to-[#0d4775] hover:from-[#38bdf8] hover:to-[#0284c7] text-white rounded-full flex items-center justify-center transition-all cursor-pointer shadow-md shadow-sky-500/25 active:scale-95"
                 >
                   <Search className="w-4 h-4 stroke-[2.5]" />
                 </button>
@@ -161,6 +211,7 @@ export const HomeView: React.FC<HomeViewProps> = ({
                         key={tool.id}
                         onClick={() => {
                           onSelectTool(tool);
+                          isSearchStatePushedRef.current = false;
                           setSearchQuery('');
                         }}
                         className="w-full flex items-center justify-between p-2.5 rounded-xl text-left hover:bg-slate-100 dark:hover:bg-white/10 transition-colors cursor-pointer text-xs"
@@ -273,7 +324,7 @@ export const HomeView: React.FC<HomeViewProps> = ({
             onClick={() => setActiveTab('tools')}
             className="text-xs font-bold text-[#0284c7] hover:text-[#0369a1] dark:hover:text-sky-300 flex items-center gap-1 transition-colors cursor-pointer group"
           >
-            <span>{t.viewAll || 'View All 35+ Tools'}</span>
+            <span>{t.viewAll || 'View All 50+ Tools'}</span>
             <ArrowRight className="w-3.5 h-3.5 group-hover:translate-x-1 transition-transform" />
           </button>
         </div>
@@ -286,11 +337,11 @@ export const HomeView: React.FC<HomeViewProps> = ({
             className="rounded-2xl liquid-glass liquid-glass-hover p-5 cursor-pointer group hover:-translate-y-1 flex flex-col justify-between"
           >
             <div className="space-y-4">
-              <div className="flex items-center justify-between">
-                <div className="w-14 h-14 rounded-2xl liquid-glass-sub flex items-center justify-center p-1 group-hover:scale-105 transition-transform">
+              <div className="flex items-center justify-between gap-2">
+                <div className="w-14 h-14 rounded-2xl liquid-glass-sub flex items-center justify-center p-1 group-hover:scale-105 transition-transform shrink-0">
                   <PassportIllustrationSvg className="w-full h-full" />
                 </div>
-                <span className="text-[10px] px-2 py-0.5 rounded-md bg-[#0284c7]/15 text-[#0284c7] dark:text-sky-300 border border-[#0284c7]/30 font-bold">
+                <span className="text-[10px] px-2.5 py-0.5 rounded-md bg-[#0284c7]/15 text-[#0284c7] dark:text-sky-300 border border-[#0284c7]/30 font-bold whitespace-nowrap shrink-0 inline-flex items-center">
                   STUDIO CROP &amp; PRINT
                 </span>
               </div>
@@ -315,11 +366,11 @@ export const HomeView: React.FC<HomeViewProps> = ({
             className="rounded-2xl liquid-glass liquid-glass-hover p-5 cursor-pointer group hover:-translate-y-1 flex flex-col justify-between"
           >
             <div className="space-y-4">
-              <div className="flex items-center justify-between">
-                <div className="w-14 h-14 rounded-2xl liquid-glass-sub flex items-center justify-center p-1 group-hover:scale-105 transition-transform">
+              <div className="flex items-center justify-between gap-2">
+                <div className="w-14 h-14 rounded-2xl liquid-glass-sub flex items-center justify-center p-1 group-hover:scale-105 transition-transform shrink-0">
                   <IdCardIllustrationSvg className="w-full h-full" />
                 </div>
-                <span className="text-[10px] px-2 py-0.5 rounded-md bg-sky-600/20 text-sky-600 dark:text-sky-400 border border-sky-500/30 font-bold">
+                <span className="text-[10px] px-2.5 py-0.5 rounded-md bg-sky-600/20 text-sky-600 dark:text-sky-400 border border-sky-500/30 font-bold whitespace-nowrap shrink-0 inline-flex items-center">
                   CR80 300 DPI
                 </span>
               </div>
@@ -344,11 +395,11 @@ export const HomeView: React.FC<HomeViewProps> = ({
             className="rounded-2xl liquid-glass liquid-glass-hover p-5 cursor-pointer group hover:-translate-y-1 flex flex-col justify-between"
           >
             <div className="space-y-4">
-              <div className="flex items-center justify-between">
-                <div className="w-14 h-14 rounded-2xl liquid-glass-sub flex items-center justify-center p-1 group-hover:scale-105 transition-transform">
+              <div className="flex items-center justify-between gap-2">
+                <div className="w-14 h-14 rounded-2xl liquid-glass-sub flex items-center justify-center p-1 group-hover:scale-105 transition-transform shrink-0">
                   <PdfSuiteIllustrationSvg className="w-full h-full" />
                 </div>
-                <span className="text-[10px] px-2 py-0.5 rounded-md bg-indigo-600/20 text-indigo-600 dark:text-indigo-400 border border-indigo-500/30 font-bold">
+                <span className="text-[10px] px-2.5 py-0.5 rounded-md bg-indigo-600/20 text-indigo-600 dark:text-indigo-400 border border-indigo-500/30 font-bold whitespace-nowrap shrink-0 inline-flex items-center">
                   19 UTILITIES
                 </span>
               </div>
@@ -373,11 +424,11 @@ export const HomeView: React.FC<HomeViewProps> = ({
             className="rounded-2xl liquid-glass liquid-glass-hover p-5 cursor-pointer group hover:-translate-y-1 flex flex-col justify-between"
           >
             <div className="space-y-4">
-              <div className="flex items-center justify-between">
-                <div className="w-14 h-14 rounded-2xl liquid-glass-sub flex items-center justify-center p-1 group-hover:scale-105 transition-transform">
+              <div className="flex items-center justify-between gap-2">
+                <div className="w-14 h-14 rounded-2xl liquid-glass-sub flex items-center justify-center p-1 group-hover:scale-105 transition-transform shrink-0">
                   <SupportHelpIllustrationSvg className="w-full h-full" />
                 </div>
-                <span className="text-[10px] px-2 py-0.5 rounded-md bg-emerald-600/20 text-emerald-600 dark:text-emerald-400 border border-emerald-500/30 font-bold">
+                <span className="text-[10px] px-2.5 py-0.5 rounded-md bg-emerald-600/20 text-emerald-600 dark:text-emerald-400 border border-emerald-500/30 font-bold whitespace-nowrap shrink-0 inline-flex items-center">
                   CITIZEN LEDGER
                 </span>
               </div>

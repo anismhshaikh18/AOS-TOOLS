@@ -1310,7 +1310,7 @@ export const SmartIdCardStudioPage: React.FC<SmartIdCardStudioPageProps> = ({ on
               <h1 className="text-base sm:text-lg font-black text-slate-900 dark:text-white tracking-tight">
                 Smart ID Card Studio
               </h1>
-              <span className="text-[10px] font-bold uppercase tracking-wider px-2.5 py-0.5 rounded-full bg-sky-100 dark:bg-[#072642] border border-sky-400/40 text-[#0284c7] dark:text-[#38bdf8]">
+              <span className="text-[10px] font-bold uppercase tracking-wider px-2.5 py-0.5 rounded-full bg-sky-100 dark:bg-[#072642] border border-sky-400/40 text-[#0284c7] dark:text-[#38bdf8] whitespace-nowrap shrink-0 inline-flex items-center">
                 100% CUSTOM EDITING
               </span>
             </div>

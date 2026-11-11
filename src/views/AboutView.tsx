@@ -134,7 +134,7 @@ export const AboutView: React.FC<AboutViewProps> = ({ onExploreTools, lang = 'en
               onClick={onExploreTools}
               className="inline-flex items-center gap-2 px-5 py-2.5 rounded-xl bg-gradient-to-r from-[#0284c7] to-[#0d4775] hover:from-[#38bdf8] hover:to-[#0284c7] text-white text-xs font-bold transition-all shadow-md shadow-sky-500/25 cursor-pointer"
             >
-              <span>{t.viewAll || 'Explore All 35+ Working Tools'}</span>
+              <span>{t.viewAll || 'Explore All 50+ Working Tools'}</span>
               <ArrowRight className="w-4 h-4" />
             </button>
           </div>

@@ -29,8 +29,17 @@ export const SearchModal: React.FC<SearchModalProps> = ({
         onClose();
       }
     };
+    const handlePopState = () => {
+      if (isOpen) {
+        onClose();
+      }
+    };
     window.addEventListener('keydown', handleKeyDown);
-    return () => window.removeEventListener('keydown', handleKeyDown);
+    window.addEventListener('popstate', handlePopState);
+    return () => {
+      window.removeEventListener('keydown', handleKeyDown);
+      window.removeEventListener('popstate', handlePopState);
+    };
   }, [isOpen, onClose]);
 
   const rawTools = useMemo(() => {
