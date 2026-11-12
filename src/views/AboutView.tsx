@@ -1,5 +1,5 @@
 import React from 'react';
-import { Info, Target, Heart, CheckCircle2, ShieldCheck, Laptop, ArrowRight } from 'lucide-react';
+import { Info, Target, Heart, CheckCircle2, ShieldCheck, Laptop, ArrowRight, ExternalLink } from 'lucide-react';
 import { AosLogoSvg } from '../components/AosLogoSvg';
 import { LanguageCode, TRANSLATIONS } from '../utils/translations';
 
@@ -129,13 +129,23 @@ export const AboutView: React.FC<AboutViewProps> = ({ onExploreTools, lang = 'en
             AOS Tools is an open utility initiative proudly engineered and maintained as part of the Anis Online Services digital ecosystem. For complex citizen services requiring authorized government filings, e-KYC assistance, or document attestation, visit our official portfolio at <a href="https://anis-online-services.pages.dev/" target="_blank" rel="noopener noreferrer" className="text-[#0284c7] hover:underline font-bold">anis-online-services.pages.dev</a>.
           </p>
 
-          <div className="pt-2">
-            <button
-              onClick={onExploreTools}
+          <div className="pt-2 flex flex-wrap items-center gap-3">
+            <a
+              href="https://anis-online-services.pages.dev/"
+              target="_blank"
+              rel="noopener noreferrer"
               className="inline-flex items-center gap-2 px-5 py-2.5 rounded-xl bg-gradient-to-r from-[#0284c7] to-[#0d4775] hover:from-[#38bdf8] hover:to-[#0284c7] text-white text-xs font-bold transition-all shadow-md shadow-sky-500/25 cursor-pointer"
             >
+              <span>Explore Services</span>
+              <ExternalLink className="w-4 h-4" />
+            </a>
+
+            <button
+              onClick={onExploreTools}
+              className="inline-flex items-center gap-2 px-4 py-2.5 rounded-xl liquid-glass-sub hover:border-[#0284c7]/50 text-slate-700 dark:text-slate-200 text-xs font-semibold transition-all cursor-pointer"
+            >
               <span>{t.viewAll || 'Explore All 50+ Working Tools'}</span>
-              <ArrowRight className="w-4 h-4" />
+              <ArrowRight className="w-3.5 h-3.5" />
             </button>
           </div>
         </div>

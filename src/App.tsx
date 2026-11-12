@@ -22,6 +22,15 @@ import { IMAGE_TOOLS } from './data/imageTools';
 import { SPECIAL_TOOLS } from './data/specialTools';
 import { LanguageCode, TemplateId, getTranslatedTool } from './utils/translations';
 import { SiteBackgroundSvg } from './components/SiteBackgroundSvg';
+import { ToolGuideSection } from './components/ToolGuideSection';
+
+const KHATA_TOOL_ITEM: ToolItem = {
+  id: 'khata-diary',
+  name: 'Real Client Ledger Diary (Khata)',
+  shortDesc: 'Digital customer ledger, transaction diary, and balance tracking for CSCs, cyber cafes, and businesses.',
+  category: 'special',
+  iconName: 'BookMarked',
+};
 
 export default function App() {
   const [activeTab, setActiveTab] = useState<string>('home');
@@ -203,9 +212,15 @@ export default function App() {
       <main className="flex-1 max-w-7xl w-full mx-auto px-4 sm:px-6 lg:px-8 pt-6 sm:pt-8 min-w-0">
         {selectedTool ? (
           (selectedTool.id === 'passport-photo-studio' || selectedTool.id === 'passport-photo-sheet') ? (
-            <PassportPhotoStudioPage onBack={handleCloseTool} />
+            <div className="space-y-8 pb-12">
+              <PassportPhotoStudioPage onBack={handleCloseTool} />
+              <ToolGuideSection tool={selectedTool} />
+            </div>
           ) : (selectedTool.id === 'smart-id-card-studio' || selectedTool.id === 'id-card-maker') ? (
-            <SmartIdCardStudioPage onBack={handleCloseTool} />
+            <div className="space-y-8 pb-12">
+              <SmartIdCardStudioPage onBack={handleCloseTool} />
+              <ToolGuideSection tool={selectedTool} />
+            </div>
           ) : (
             <ToolRunnerModal
               tool={selectedTool}
@@ -255,7 +270,12 @@ export default function App() {
             )}
 
             {/* Kept 100% untouched and secure */}
-            {activeTab === 'khata' && <KhataDiary />}
+            {activeTab === 'khata' && (
+              <div className="space-y-8 pb-12">
+                <KhataDiary />
+                <ToolGuideSection tool={KHATA_TOOL_ITEM} />
+              </div>
+            )}
 
             {/* Kept 100% untouched and secure */}
             {activeTab === 'pan' && (

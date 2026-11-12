@@ -508,7 +508,7 @@ export const HomeView: React.FC<HomeViewProps> = ({
                 rel="noopener noreferrer"
                 className="inline-flex items-center gap-2.5 px-6 py-3.5 rounded-xl bg-gradient-to-r from-[#0284c7] to-[#0d4775] hover:from-[#38bdf8] hover:to-[#0284c7] text-white text-xs sm:text-sm font-bold shadow-lg shadow-sky-500/25 transition-all cursor-pointer active:scale-95 group shrink-0"
               >
-                <span>{t.partnerCta || 'Explore Anis Online Services Portal'}</span>
+                <span>Explore Services</span>
                 <ExternalLink className="w-4 h-4 group-hover:translate-x-0.5 group-hover:-translate-y-0.5 transition-transform" />
               </a>
 
@@ -561,7 +561,7 @@ export const HomeView: React.FC<HomeViewProps> = ({
               onClick={() => setActiveTab('portals')}
               className="text-xs font-semibold text-[#0284c7] dark:text-sky-300 hover:text-[#0369a1] dark:hover:text-sky-200 px-3 py-1.5 rounded-lg liquid-glass-sub hover:bg-slate-100 dark:hover:bg-white/10 border-[#0284c7]/30 transition-colors"
             >
-              {t.govtPortalsBtn || '15+ Govt Portals'}
+              {t.govtPortalsBtn || '50+ Govt Portals'}
             </button>
           </div>
         </div>

@@ -38,7 +38,7 @@ export const ToolsDirectoryView: React.FC<ToolsDirectoryViewProps> = ({
 
   // Specific highlighted tools matching the directory and all tools, localized
   const rawAllTools: ToolItem[] = useMemo(() => {
-    return [
+    const combined: ToolItem[] = [
       {
         id: 'passport-photo-sheet',
         name: 'Passport Photo Maker',
@@ -143,10 +143,18 @@ export const ToolsDirectoryView: React.FC<ToolsDirectoryViewProps> = ({
           !['merge-pdf', 'compress-pdf', 'protect-pdf', 'unlock-pdf', 'sign-pdf'].includes(tool.id)
       ),
       ...IMAGE_TOOLS.filter(
-        (tool) => !['passport-photo-sheet', 'photo-signature-resize'].includes(tool.id)
+        (tool) => !['passport-photo-sheet', 'photo-signature-resize', 'crop-image'].includes(tool.id)
       ),
       ...SPECIAL_TOOLS.filter((tool) => !['barcode-generator', 'qr-code-generator', 'khata-diary'].includes(tool.id)),
     ];
+
+    // Guarantee unique IDs across all categories
+    const seen = new Set<string>();
+    return combined.filter((tool) => {
+      if (seen.has(tool.id)) return false;
+      seen.add(tool.id);
+      return true;
+    });
   }, []);
 
   const allTools = useMemo(() => {
