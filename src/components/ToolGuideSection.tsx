@@ -582,27 +582,33 @@ export const ToolGuideSection: React.FC<ToolGuideSectionProps> = ({ tool }) => {
       className="mt-8 pt-8 border-t border-slate-200 dark:border-white/10 space-y-8 animate-in fade-in duration-300"
     >
       {/* Guide Header Banner - Corporate Deep Navy Blue Theme with Perfect Contrast & No Text Clipping */}
-      <div className="relative overflow-hidden rounded-2xl p-4 sm:p-5 md:p-6 bg-gradient-to-r from-[#07192b] via-[#0d2a45] to-[#07192b] border border-sky-900/40 text-white shadow-xl">
+      <div className="guide-banner-dark relative overflow-hidden rounded-2xl p-4 sm:p-5 md:p-6 bg-gradient-to-r from-[#07192b] via-[#0d2a45] to-[#07192b] border border-sky-900/40 text-white shadow-xl">
         <div className="absolute top-0 right-0 -mt-4 -mr-4 w-32 h-32 rounded-full bg-[#0284c7]/15 blur-2xl pointer-events-none" />
         <div className="relative flex flex-col sm:flex-row items-start sm:items-center justify-between gap-3.5">
           <div className="flex items-center gap-3 min-w-0 flex-1">
             <div className="w-10 h-10 rounded-xl bg-[#0284c7]/20 border border-[#0284c7]/40 flex items-center justify-center text-[#38bdf8] shrink-0 shadow-xs">
-              <BookOpen className="w-5 h-5" />
+              <BookOpen className="w-5 h-5 text-[#38bdf8]" />
             </div>
             <div className="min-w-0 flex-1">
               <div className="flex items-center gap-2">
-                <span className="text-[10px] font-bold uppercase tracking-wider text-[#38bdf8] bg-[#0284c7]/20 px-2.5 py-0.5 rounded border border-[#0284c7]/30 whitespace-nowrap shrink-0 inline-flex items-center">
+                <span className="guide-tag-sky text-[10px] font-bold uppercase tracking-wider text-[#38bdf8] bg-[#0284c7]/20 px-2.5 py-0.5 rounded border border-[#0284c7]/30 whitespace-nowrap shrink-0 inline-flex items-center" style={{ color: '#38bdf8' }}>
                   USER MANUAL &amp; OVERVIEW
                 </span>
               </div>
-              <h2 className="text-sm sm:text-base md:text-lg font-bold text-white mt-1 leading-snug break-words">
+              <h2 
+                className="guide-banner-title text-sm sm:text-base md:text-lg font-bold !text-white mt-1 leading-snug break-words"
+                style={{ color: '#ffffff' }}
+              >
                 Complete Guide to {tool.name}
               </h2>
             </div>
           </div>
-          <div className="flex items-center gap-2 text-xs font-medium text-slate-300 bg-black/40 px-3 py-1.5 rounded-lg border border-white/10 whitespace-nowrap shrink-0">
+          <div 
+            className="guide-banner-badge flex items-center gap-2 text-xs font-semibold !text-white bg-black/50 px-3 py-1.5 rounded-lg border border-white/20 whitespace-nowrap shrink-0 shadow-xs"
+            style={{ color: '#ffffff' }}
+          >
             <ShieldCheck className="w-4 h-4 text-emerald-400 shrink-0" />
-            <span>100% Client-Side Private</span>
+            <span className="!text-white font-medium" style={{ color: '#ffffff' }}>100% Client-Side Private</span>
           </div>
         </div>
       </div>

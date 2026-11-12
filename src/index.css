@@ -138,34 +138,34 @@ html:not(.dark) .liquid-glass-sub {
 }
 
 /* High contrast text overrides for light mode */
-html:not(.dark) .theme-card h1,
-html:not(.dark) .theme-card h2,
-html:not(.dark) .theme-card h3,
-html:not(.dark) .theme-card h4,
-html:not(.dark) .liquid-glass h1,
-html:not(.dark) .liquid-glass h2,
-html:not(.dark) .liquid-glass h3,
-html:not(.dark) .liquid-glass h4,
-html:not(.dark) .liquid-glass-sub h1,
-html:not(.dark) .liquid-glass-sub h2,
-html:not(.dark) .liquid-glass-sub h3,
-html:not(.dark) .liquid-glass-sub h4 {
+html:not(.dark) .theme-card h1:not(.guide-banner-dark *),
+html:not(.dark) .theme-card h2:not(.guide-banner-dark *),
+html:not(.dark) .theme-card h3:not(.guide-banner-dark *),
+html:not(.dark) .theme-card h4:not(.guide-banner-dark *),
+html:not(.dark) .liquid-glass h1:not(.guide-banner-dark *),
+html:not(.dark) .liquid-glass h2:not(.guide-banner-dark *),
+html:not(.dark) .liquid-glass h3:not(.guide-banner-dark *),
+html:not(.dark) .liquid-glass h4:not(.guide-banner-dark *),
+html:not(.dark) .liquid-glass-sub h1:not(.guide-banner-dark *),
+html:not(.dark) .liquid-glass-sub h2:not(.guide-banner-dark *),
+html:not(.dark) .liquid-glass-sub h3:not(.guide-banner-dark *),
+html:not(.dark) .liquid-glass-sub h4:not(.guide-banner-dark *) {
   color: #0f172a !important;
 }
 
-html:not(.dark) .theme-card p,
-html:not(.dark) .liquid-glass p,
-html:not(.dark) .liquid-glass-sub p {
+html:not(.dark) .theme-card p:not(.guide-banner-dark *),
+html:not(.dark) .liquid-glass p:not(.guide-banner-dark *),
+html:not(.dark) .liquid-glass-sub p:not(.guide-banner-dark *) {
   color: #334155 !important;
 }
 
-html:not(.dark) [class*="text-slate-100"],
-html:not(.dark) [class*="text-slate-200"],
-html:not(.dark) [class*="text-slate-300"] {
+html:not(.dark) [class*="text-slate-100"]:not(.guide-banner-dark *),
+html:not(.dark) [class*="text-slate-200"]:not(.guide-banner-dark *),
+html:not(.dark) [class*="text-slate-300"]:not(.guide-banner-dark *) {
   color: #334155 !important;
 }
 
-html:not(.dark) [class*="text-slate-400"] {
+html:not(.dark) [class*="text-slate-400"]:not(.guide-banner-dark *) {
   color: #475569 !important;
 }
 
@@ -187,16 +187,39 @@ html:not(.dark) textarea::placeholder {
 }
 
 /* In light mode, ensure text-white in cards that are NOT colored buttons is high-contrast dark text */
-html:not(.dark) .liquid-glass .text-white:not(button *, a *, [class*="bg-"] *, .theme-btn-primary *),
-html:not(.dark) .liquid-glass-sub .text-white:not(button *, a *, [class*="bg-"] *, .theme-btn-primary *),
-html:not(.dark) .theme-card .text-white:not(button *, a *, [class*="bg-"] *, .theme-btn-primary *) {
+html:not(.dark) .liquid-glass .text-white:not(button *, a *, [class*="bg-"] *, .theme-btn-primary *, .guide-banner-dark *),
+html:not(.dark) .liquid-glass-sub .text-white:not(button *, a *, [class*="bg-"] *, .theme-btn-primary *, .guide-banner-dark *),
+html:not(.dark) .theme-card .text-white:not(button *, a *, [class*="bg-"] *, .theme-btn-primary *, .guide-banner-dark *) {
   color: #0f172a !important;
 }
 
+/* Tool Guide Header Banner (Always Crisp White Text in Light & Dark Mode) */
+.guide-banner-dark,
+.guide-banner-dark .guide-banner-title,
+.guide-banner-dark .guide-banner-badge,
+.guide-banner-dark .guide-banner-badge span,
+html:not(.dark) .guide-banner-dark,
+html:not(.dark) .guide-banner-dark h1,
+html:not(.dark) .guide-banner-dark h2,
+html:not(.dark) .guide-banner-dark h3,
+html:not(.dark) .guide-banner-dark h4,
+html:not(.dark) .guide-banner-dark .guide-banner-title,
+html:not(.dark) .guide-banner-dark .guide-banner-badge,
+html:not(.dark) .guide-banner-dark .guide-banner-badge span,
+html:not(.dark) .liquid-glass .guide-banner-dark h2,
+html:not(.dark) .liquid-glass .guide-banner-dark .guide-banner-title,
+html:not(.dark) .liquid-glass .guide-banner-dark .guide-banner-badge span {
+  color: #ffffff !important;
+}
+
+html:not(.dark) .guide-banner-dark .guide-tag-sky {
+  color: #38bdf8 !important;
+}
+
 /* In light mode, adapt white border utility lines to crisp light borders */
-html:not(.dark) [class*="border-white/10"],
-html:not(.dark) [class*="border-white/15"],
-html:not(.dark) [class*="border-white/20"] {
+html:not(.dark) [class*="border-white/10"]:not(.guide-banner-dark *),
+html:not(.dark) [class*="border-white/15"]:not(.guide-banner-dark *),
+html:not(.dark) [class*="border-white/20"]:not(.guide-banner-dark *) {
   border-color: #e2e8f0 !important;
 }
 
