@@ -2,6 +2,9 @@ import React, { useState, useRef, useEffect } from 'react';
 import { ToolItem } from '../types';
 import { DynamicIcon } from './DynamicIcon';
 import { ToolGuideSection } from './ToolGuideSection';
+import { StarRatingWidget } from './StarRatingWidget';
+import { ColorPaletteExtractorView } from './ColorPaletteExtractorView';
+import { DocumentPhotoCropperView } from './DocumentPhotoCropperView';
 import {
   X,
   Upload,
@@ -91,6 +94,7 @@ import {
   PassportStudioOptions,
   enhanceImageFilters,
   extractColorPalette,
+  ExtractedColorItem,
   cropRectImage,
   sampleImagePixelColor,
   loadImage,
@@ -162,7 +166,8 @@ export const ToolRunnerModal: React.FC<ToolRunnerModalProps> = ({
   const [contrastVal, setContrastVal] = useState<number>(100);
   const [saturationVal, setSaturationVal] = useState<number>(100);
   const [sharpnessToggle, setSharpnessToggle] = useState<boolean>(false);
-  const [extractedPalette, setExtractedPalette] = useState<{ hex: string; rgb: string; percentage: number }[]>([]);
+  const [extractedPalette, setExtractedPalette] = useState<ExtractedColorItem[]>([]);
+  const [paletteMaxColors, setPaletteMaxColors] = useState<number>(8);
   const [cropAspectRatio, setCropAspectRatio] = useState<'1:1' | '4:3' | '16:9' | '3:4' | 'free'>('1:1');
   const [cropMargin, setCropMargin] = useState<number>(0);
 
@@ -715,7 +720,7 @@ export const ToolRunnerModal: React.FC<ToolRunnerModalProps> = ({
 
       // Color extractor auto trigger
       if (tool.id === 'color-extractor' && files[0] && !heic) {
-        extractColorPalette(files[0], 6).then(setExtractedPalette).catch(() => {});
+        extractColorPalette(files[0], paletteMaxColors).then(setExtractedPalette).catch(() => {});
       }
 
       // Eyedropper image load
@@ -752,9 +757,13 @@ export const ToolRunnerModal: React.FC<ToolRunnerModalProps> = ({
     }
   };
 
-  const copyToClipboard = (text: string) => {
+  const copyToClipboard = (text: string, toastMessage?: string) => {
     navigator.clipboard.writeText(text);
     setHasCopied(true);
+    if (toastMessage) {
+      setCopyToast(toastMessage);
+      setTimeout(() => setCopyToast(null), 2500);
+    }
     setTimeout(() => setHasCopied(false), 2000);
   };
 
@@ -1213,6 +1222,15 @@ export const ToolRunnerModal: React.FC<ToolRunnerModalProps> = ({
           newSize: res.newSize,
           customMessage: 'Applied tonal balancing and unsharp clarity filters.',
         });
+      } else if (tool.id === 'color-extractor') {
+        if (!selectedFiles[0]) throw new Error('Please select an image to extract color palette.');
+        const pal = await extractColorPalette(selectedFiles[0], paletteMaxColors);
+        setExtractedPalette(pal);
+        setSuccessResult({
+          downloadUrl: '',
+          fileName: `palette-${selectedFiles[0].name}.json`,
+          customMessage: `Extracted ${pal.length} dominant colors with high precision.`,
+        });
       }
     } catch (err: any) {
       setErrorMessage(err.message || 'An error occurred during file processing.');
@@ -1278,6 +1296,15 @@ export const ToolRunnerModal: React.FC<ToolRunnerModalProps> = ({
           >
             <X className="w-5 h-5" />
           </button>
+        </div>
+
+        {/* Star Rating Strip Directly Beneath Header */}
+        <div className="px-4 sm:px-6 py-2.5 bg-slate-50/90 dark:bg-[#072642]/60 border-b border-slate-200 dark:border-white/10 flex flex-wrap items-center justify-between gap-3">
+          <StarRatingWidget toolId={tool.id} toolName={tool.name} />
+          <div className="hidden sm:flex items-center gap-1.5 text-[11px] text-slate-500 dark:text-slate-400 font-medium">
+            <ShieldCheck className="w-3.5 h-3.5 text-emerald-500" />
+            <span>Verified User Rating</span>
+          </div>
         </div>
 
         {/* Tool Page Body - Natural Flow, no trapped scrollbar! */}
@@ -4455,35 +4482,12 @@ export const ToolRunnerModal: React.FC<ToolRunnerModalProps> = ({
                   </div>
                 )}
 
-                {/* Crop Image Aspect Ratios */}
+                {/* Professional Document & Photo Cropper View */}
                 {tool.id === 'crop-image' && (
-                  <div>
-                    <label className="block text-xs font-semibold text-slate-700 dark:text-slate-300 mb-1.5">
-                      Aspect Ratio Preset
-                    </label>
-                    <div className="flex gap-2">
-                      {[
-                        { label: '1:1 Square', val: '1:1' },
-                        { label: '4:3 Standard', val: '4:3' },
-                        { label: '16:9 Wide', val: '16:9' },
-                        { label: '3:4 Portrait', val: '3:4' },
-                        { label: 'Freeform', val: 'free' },
-                      ].map((ar) => (
-                        <button
-                          key={ar.val}
-                          type="button"
-                          onClick={() => setCropAspectRatio(ar.val as any)}
-                          className={`flex-1 py-1.5 text-xs font-semibold rounded-lg border cursor-pointer ${
-                            cropAspectRatio === ar.val
-                              ? 'bg-blue-600 text-white border-blue-600 shadow-xs'
-                              : 'bg-white dark:bg-slate-950 border-slate-300 dark:border-slate-700 text-slate-700 dark:text-slate-300'
-                          }`}
-                        >
-                          {ar.label}
-                        </button>
-                      ))}
-                    </div>
-                  </div>
+                  <DocumentPhotoCropperView
+                    file={selectedFiles[0] || null}
+                    onSuccess={(res) => setSuccessResult(res)}
+                  />
                 )}
 
                 {/* Image Resize Dimensions */}
@@ -4760,31 +4764,16 @@ export const ToolRunnerModal: React.FC<ToolRunnerModalProps> = ({
                   </div>
                 )}
 
-                {/* Color Extractor Display */}
-                {tool.id === 'color-extractor' && extractedPalette.length > 0 && (
-                  <div className="space-y-2 pt-2">
-                    <span className="text-xs font-semibold text-slate-700 dark:text-slate-300">
-                      Extracted Dominant Palette:
-                    </span>
-                    <div className="grid grid-cols-3 sm:grid-cols-6 gap-2">
-                      {extractedPalette.map((col, idx) => (
-                        <div
-                          key={idx}
-                          onClick={() => copyToClipboard(col.hex)}
-                          className="p-2 rounded-lg border border-slate-200 dark:border-slate-800 text-center cursor-pointer hover:shadow-xs"
-                          title="Click to copy HEX"
-                        >
-                          <div
-                            className="w-full h-8 rounded-md mb-1.5 border border-black/10"
-                            style={{ backgroundColor: col.hex }}
-                          />
-                          <span className="block font-mono text-[11px] font-medium text-slate-800 dark:text-slate-200">
-                            {col.hex}
-                          </span>
-                        </div>
-                      ))}
-                    </div>
-                  </div>
+                {/* Professional AOS Color Palette Extractor View */}
+                {tool.id === 'color-extractor' && (
+                  <ColorPaletteExtractorView
+                    imageFile={selectedFiles[0] || null}
+                    palette={extractedPalette}
+                    onPaletteExtracted={setExtractedPalette}
+                    paletteMaxColors={paletteMaxColors}
+                    setPaletteMaxColors={setPaletteMaxColors}
+                    onCopyText={(text, label) => copyToClipboard(text, label)}
+                  />
                 )}
 
                 {/* ZIP Extractor list */}
@@ -4930,27 +4919,29 @@ export const ToolRunnerModal: React.FC<ToolRunnerModalProps> = ({
               )}
 
               {/* Primary Action Button */}
-              <button
-                onClick={executeProcessing}
-                disabled={isProcessing}
-                className="w-full py-3.5 px-4 text-sm font-bold text-white bg-blue-600 hover:bg-blue-700 disabled:opacity-50 rounded-xl transition-all cursor-pointer shadow-md flex items-center justify-center gap-2"
-              >
-                {isProcessing ? (
-                  <>
-                    <RefreshCw className="w-4 h-4 animate-spin" />
-                    <span>{progressMsg || 'Processing File...'}</span>
-                  </>
-                ) : (
-                  <>
-                    <Sparkles className="w-4 h-4" />
-                    <span>
-                      {selectedFiles.length === 0
-                        ? `Select File & Run ${tool.name}`
-                        : `Process & Run ${tool.name}`}
-                    </span>
-                  </>
-                )}
-              </button>
+              {tool.id !== 'crop-image' && (
+                <button
+                  onClick={executeProcessing}
+                  disabled={isProcessing}
+                  className="w-full py-3.5 px-4 text-sm font-bold text-white bg-blue-600 hover:bg-blue-700 disabled:opacity-50 rounded-xl transition-all cursor-pointer shadow-md flex items-center justify-center gap-2"
+                >
+                  {isProcessing ? (
+                    <>
+                      <RefreshCw className="w-4 h-4 animate-spin" />
+                      <span>{progressMsg || 'Processing File...'}</span>
+                    </>
+                  ) : (
+                    <>
+                      <Sparkles className="w-4 h-4" />
+                      <span>
+                        {selectedFiles.length === 0
+                          ? `Select File & Run ${tool.name}`
+                          : `Process & Run ${tool.name}`}
+                      </span>
+                    </>
+                  )}
+                </button>
+              )}
 
             </div>
           )}
@@ -5039,7 +5030,7 @@ export const ToolRunnerModal: React.FC<ToolRunnerModalProps> = ({
             </div>
           )}
 
-          {/* Professional Information & Guide Section (Pi7-style: How to Use, Key Features, Conclusion) */}
+          {/* Professional Information & Guide Section (How to Use, Key Features, Conclusion) */}
           <ToolGuideSection tool={tool} />
 
         </div>

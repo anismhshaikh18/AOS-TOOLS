@@ -1,11 +1,12 @@
 import React from 'react';
-import { ShieldCheck, ExternalLink } from 'lucide-react';
+import { ShieldCheck, ExternalLink, Lightbulb } from 'lucide-react';
 import { AosLogoSvg } from './AosLogoSvg';
 import { LanguageCode, TRANSLATIONS } from '../utils/translations';
 
 interface FooterProps {
   onOpenPrivacy: () => void;
   onOpenFreePolicy: () => void;
+  onOpenRequestModal?: () => void;
   setActiveTab: (tab: string) => void;
   lang?: LanguageCode;
 }
@@ -13,6 +14,7 @@ interface FooterProps {
 export const Footer: React.FC<FooterProps> = ({
   onOpenPrivacy,
   onOpenFreePolicy,
+  onOpenRequestModal,
   setActiveTab,
   lang = 'en',
 }) => {
@@ -86,6 +88,15 @@ export const Footer: React.FC<FooterProps> = ({
           >
             Strict ₹0-Cost Policy
           </button>
+          {onOpenRequestModal && (
+            <button
+              onClick={onOpenRequestModal}
+              className="hover:text-[#0284c7] dark:hover:text-sky-300 font-bold text-[#0284c7] dark:text-sky-400 transition-colors cursor-pointer flex items-center gap-1.5"
+            >
+              <Lightbulb className="w-3.5 h-3.5" />
+              <span>Request a Tool</span>
+            </button>
+          )}
         </div>
       </div>
     </footer>

@@ -318,3 +318,29 @@ html:not(.dark) ::-webkit-scrollbar-thumb {
 html:not(.dark) ::-webkit-scrollbar-thumb:hover {
   background: #94a3b8;
 }
+
+/* =========================================================================
+   USER MANUAL & GUIDE BANNER HIGH-CONTRAST TEXT (Crisp White #ffffff)
+   Guaranteed visibility across Samsung Browser, Chrome, Firefox in Light & Dark
+   ========================================================================= */
+.guide-banner-dark,
+.guide-banner-dark * {
+  color: #ffffff;
+}
+
+.guide-banner-dark h2,
+.guide-banner-dark .guide-banner-title {
+  color: #ffffff !important;
+  -webkit-text-fill-color: #ffffff !important;
+}
+
+.guide-banner-dark .guide-tag-sky {
+  color: #38bdf8 !important;
+  -webkit-text-fill-color: #38bdf8 !important;
+}
+
+.guide-banner-dark .guide-banner-badge,
+.guide-banner-dark .guide-banner-badge span {
+  color: #ffffff !important;
+  -webkit-text-fill-color: #ffffff !important;
+}

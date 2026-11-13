@@ -27,6 +27,8 @@ import {
   getStockDemoPortraitDataUrl,
   SamplePortrait,
 } from '../utils/stockPassportPhoto';
+import { StarRatingWidget } from '../components/StarRatingWidget';
+import { PassportStudioGraphicCard } from '../components/ToolIllustrativeCards';
 
 interface PassportPhotoStudioPageProps {
   onBack: () => void;
@@ -781,6 +783,7 @@ export const PassportPhotoStudioPage: React.FC<PassportPhotoStudioPageProps> = (
             <p className="text-xs text-slate-600 dark:text-slate-300 mt-0.5">
               Instant 35×45 mm Passport cropping • 4×6 &amp; A4 sheets • 100% private
             </p>
+            <StarRatingWidget toolId="passport-photo-studio" toolName="Passport Photo Studio" className="pt-2" />
           </div>
         </div>
 
@@ -805,6 +808,9 @@ export const PassportPhotoStudioPage: React.FC<PassportPhotoStudioPageProps> = (
           </button>
         </div>
       </div>
+
+      {/* Illustrative Architecture & Precision Standard Card */}
+      <PassportStudioGraphicCard />
 
       {/* SAMPLE PORTRAITS QUICK SWITCHER */}
       <div className="p-3 rounded-xl liquid-glass-sub border border-slate-200 dark:border-white/10 space-y-2">

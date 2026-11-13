@@ -28,6 +28,7 @@ import {
   SupportHelpIllustrationSvg,
 } from '../components/ServiceIllustrationsSvg';
 import { AosLogoSvg } from '../components/AosLogoSvg';
+import { ToolRequestSection } from '../components/ToolRequestSection';
 import { LanguageCode, TRANSLATIONS, getTranslatedTool } from '../utils/translations';
 
 interface HomeViewProps {
@@ -604,6 +605,11 @@ export const HomeView: React.FC<HomeViewProps> = ({
           </div>
         </div>
       </section>
+
+      {/* =========================================================================
+          COMMUNITY FEEDBACK & REQUEST A NEW TOOL SECTION
+          ========================================================================= */}
+      <ToolRequestSection />
 
     </div>
   );

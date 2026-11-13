@@ -23,6 +23,8 @@ import { SPECIAL_TOOLS } from './data/specialTools';
 import { LanguageCode, TemplateId, getTranslatedTool } from './utils/translations';
 import { SiteBackgroundSvg } from './components/SiteBackgroundSvg';
 import { ToolGuideSection } from './components/ToolGuideSection';
+import { StarRatingWidget } from './components/StarRatingWidget';
+import { ToolRequestModal } from './components/ToolRequestModal';
 
 const KHATA_TOOL_ITEM: ToolItem = {
   id: 'khata-diary',
@@ -38,6 +40,7 @@ export default function App() {
   const [isSearchOpen, setIsSearchOpen] = useState<boolean>(false);
   const [isPrivacyOpen, setIsPrivacyOpen] = useState<boolean>(false);
   const [isFreePolicyOpen, setIsFreePolicyOpen] = useState<boolean>(false);
+  const [isRequestModalOpen, setIsRequestModalOpen] = useState<boolean>(false);
 
   // Template Id
   const [templateId, setTemplateId] = useState<TemplateId>(() => {
@@ -271,7 +274,18 @@ export default function App() {
 
             {/* Kept 100% untouched and secure */}
             {activeTab === 'khata' && (
-              <div className="space-y-8 pb-12">
+              <div className="space-y-6 pb-12">
+                <div className="p-3.5 rounded-2xl liquid-glass border border-slate-200 dark:border-sky-500/20 shadow-md flex flex-wrap items-center justify-between gap-3">
+                  <div>
+                    <h2 className="text-sm font-bold text-slate-900 dark:text-white">
+                      Real Client Ledger Diary (Khata)
+                    </h2>
+                    <p className="text-[11px] text-slate-500 dark:text-slate-400">
+                      Rate this digital accounting utility or share citizen feedback:
+                    </p>
+                  </div>
+                  <StarRatingWidget toolId="khata-diary" toolName="Real Client Ledger Diary (Khata)" />
+                </div>
                 <KhataDiary />
                 <ToolGuideSection tool={KHATA_TOOL_ITEM} />
               </div>
@@ -291,6 +305,7 @@ export default function App() {
       <Footer
         onOpenPrivacy={() => handleNavigateTab('privacy')}
         onOpenFreePolicy={() => setIsFreePolicyOpen(true)}
+        onOpenRequestModal={() => setIsRequestModalOpen(true)}
         setActiveTab={handleNavigateTab}
         lang={lang}
       />
@@ -314,6 +329,12 @@ export default function App() {
       <FreePolicyModal
         isOpen={isFreePolicyOpen}
         onClose={() => setIsFreePolicyOpen(false)}
+      />
+
+      {/* Community Tool Request Modal */}
+      <ToolRequestModal
+        isOpen={isRequestModalOpen}
+        onClose={() => setIsRequestModalOpen(false)}
       />
 
     </div>

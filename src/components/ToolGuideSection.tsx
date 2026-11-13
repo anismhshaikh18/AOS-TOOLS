@@ -12,6 +12,7 @@ import {
   Info
 } from 'lucide-react';
 import { ToolItem } from '../types';
+import { ToolOverviewIllustrativeDispatcher, StepVisualBadge } from './ToolIllustrativeCards';
 
 interface ToolGuideSectionProps {
   tool: ToolItem;
@@ -581,9 +582,9 @@ export const ToolGuideSection: React.FC<ToolGuideSectionProps> = ({ tool }) => {
       aria-label={`${tool.name} Guide and Information`}
       className="mt-8 pt-8 border-t border-slate-200 dark:border-white/10 space-y-8 animate-in fade-in duration-300"
     >
-      {/* Guide Header Banner - Corporate Deep Navy Blue Theme with Perfect Contrast & No Text Clipping */}
-      <div className="guide-banner-dark relative overflow-hidden rounded-2xl p-4 sm:p-5 md:p-6 bg-gradient-to-r from-[#07192b] via-[#0d2a45] to-[#07192b] border border-sky-900/40 text-white shadow-xl">
-        <div className="absolute top-0 right-0 -mt-4 -mr-4 w-32 h-32 rounded-full bg-[#0284c7]/15 blur-2xl pointer-events-none" />
+      {/* Guide Header Banner - Adaptive Royal Blue / Deep Navy Theme with Perfect Contrast & Zero Text Clipping */}
+      <div className="guide-banner-dark relative overflow-hidden rounded-2xl p-4 sm:p-5 md:p-6 bg-gradient-to-r from-[#0284c7] via-[#0369a1] to-[#0d4775] dark:from-[#07192b] dark:via-[#0d2a45] dark:to-[#07192b] border border-sky-400/40 dark:border-sky-900/40 text-white shadow-xl">
+        <div className="absolute top-0 right-0 -mt-4 -mr-4 w-32 h-32 rounded-full bg-white/10 dark:bg-[#0284c7]/15 blur-2xl pointer-events-none" />
         <div className="relative flex flex-col sm:flex-row items-start sm:items-center justify-between gap-3.5">
           <div className="flex items-center gap-3 min-w-0 flex-1">
             <div className="w-10 h-10 rounded-xl bg-[#0284c7]/20 border border-[#0284c7]/40 flex items-center justify-center text-[#38bdf8] shrink-0 shadow-xs">
@@ -613,6 +614,9 @@ export const ToolGuideSection: React.FC<ToolGuideSectionProps> = ({ tool }) => {
         </div>
       </div>
 
+      {/* Illustrative Architectural Graphic Banner for Major Tools (Passport, Smart ID, PDF Suites) */}
+      <ToolOverviewIllustrativeDispatcher toolId={tool.id} category={tool.category} />
+
       {/* Section 1: How to Use This Tool */}
       <div className="space-y-4">
         <div className="flex items-center gap-2.5">
@@ -636,13 +640,16 @@ export const ToolGuideSection: React.FC<ToolGuideSectionProps> = ({ tool }) => {
               className="relative p-4 rounded-xl bg-white dark:bg-[#18181b] border border-slate-200 dark:border-slate-800 hover:border-[#0284c7]/40 transition-all shadow-sm flex flex-col justify-between"
             >
               <div className="space-y-2">
-                <div className="flex items-center justify-between">
-                  <span className="w-6 h-6 rounded-full bg-[#0284c7] text-white text-[11px] font-black flex items-center justify-center shadow-sm">
-                    {idx + 1}
-                  </span>
-                  <span className="text-[10px] font-mono text-slate-400 uppercase tracking-widest">
-                    Step {idx + 1}
-                  </span>
+                <div className="flex items-center justify-between gap-2">
+                  <div className="flex items-center gap-2">
+                    <span className="w-6 h-6 rounded-full bg-[#0284c7] text-white text-[11px] font-black flex items-center justify-center shadow-sm">
+                      {idx + 1}
+                    </span>
+                    <span className="text-[10px] font-mono text-slate-400 uppercase tracking-widest">
+                      Step {idx + 1}
+                    </span>
+                  </div>
+                  <StepVisualBadge stepIndex={idx} />
                 </div>
                 <h4 className="text-xs sm:text-sm font-bold text-slate-900 dark:text-slate-100">
                   {step.title}

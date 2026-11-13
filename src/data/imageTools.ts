@@ -39,12 +39,12 @@ export const IMAGE_TOOLS: ToolItem[] = [
   },
   {
     id: 'crop-image',
-    name: 'Crop Image',
-    shortDesc: 'Crop images using standard aspect ratio presets (1:1, 4:3, 16:9, 3:4) or freeform.',
+    name: 'Document & Photo Cropper',
+    shortDesc: 'Precise crop box with passport (35×45 mm), PAN card (CR80), Aadhaar, signature, and freeform document cropping.',
     category: 'image',
     iconName: 'Crop',
     status: 'fully-supported',
-    acceptedFormats: 'image/*',
+    acceptedFormats: 'image/*,application/pdf,.pdf',
   },
   {
     id: 'crop-circle-image',

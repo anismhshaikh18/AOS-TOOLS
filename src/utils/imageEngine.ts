@@ -1,3 +1,5 @@
+import * as pdfjsLib from 'pdfjs-dist';
+
 export interface ImageProcessingResult {
   dataUrl: string;
   blob: Blob;
@@ -8,27 +10,49 @@ export interface ImageProcessingResult {
   height: number;
 }
 
-export function loadImage(src: string | File): Promise<HTMLImageElement> {
-  return new Promise((resolve, reject) => {
-    if (src instanceof File) {
-      const name = (src.name || '').toLowerCase();
-      const type = (src.type || '').toLowerCase();
-      if (name.endsWith('.heic') || name.endsWith('.heif') || type.includes('heic') || type.includes('heif')) {
-        return reject(
-          new Error(
-            `HEIC/HEIF image format ("${src.name}") is not supported directly by web browsers. Please convert or save your photo as standard JPG, PNG, or WEBP before enhancing.`
-          )
-        );
-      }
+export async function loadImage(src: string | File): Promise<HTMLImageElement> {
+  if (src instanceof File) {
+    const name = (src.name || '').toLowerCase();
+    const type = (src.type || '').toLowerCase();
+    if (name.endsWith('.heic') || name.endsWith('.heif') || type.includes('heic') || type.includes('heif')) {
+      throw new Error(
+        `HEIC/HEIF image format ("${src.name}") is not supported directly by web browsers. Please convert or save your photo as standard JPG, PNG, or WEBP before enhancing.`
+      );
     }
+    // PDF Document handling: render page 1 to crisp 300 DPI image canvas
+    if (type === 'application/pdf' || name.endsWith('.pdf')) {
+      const buffer = await src.arrayBuffer();
+      const loadingTask = pdfjsLib.getDocument({ data: new Uint8Array(buffer) });
+      const pdfDoc = await loadingTask.promise;
+      const page = await pdfDoc.getPage(1);
+      const viewport = page.getViewport({ scale: 2.0 });
+      const canvas = document.createElement('canvas');
+      canvas.width = viewport.width;
+      canvas.height = viewport.height;
+      const ctx = canvas.getContext('2d');
+      if (ctx) {
+        ctx.fillStyle = '#FFFFFF';
+        ctx.fillRect(0, 0, canvas.width, canvas.height);
+        await page.render({ canvasContext: ctx, viewport }).promise;
+      }
+      const dataUrl = canvas.toDataURL('image/jpeg', 0.95);
+      return new Promise((resolve, reject) => {
+        const img = new Image();
+        img.onload = () => resolve(img);
+        img.onerror = reject;
+        img.src = dataUrl;
+      });
+    }
+  }
 
+  return new Promise((resolve, reject) => {
     const img = new Image();
     img.crossOrigin = 'anonymous';
     img.onload = () => resolve(img);
     img.onerror = () =>
       reject(
         new Error(
-          'Failed to load image: Unsupported or corrupted image format. Please ensure you are uploading a valid JPG, PNG, or WEBP photo.'
+          'Failed to load image: Unsupported or corrupted format. Please ensure you are uploading a valid JPG, PNG, WEBP, or PDF document.'
         )
       );
 
@@ -619,55 +643,198 @@ export async function enhanceImageFilters(
   };
 }
 
+export interface ExtractedColorItem {
+  hex: string;
+  rgb: string;
+  hsl: string;
+  percentage: number;
+  r: number;
+  g: number;
+  b: number;
+  isDark: boolean;
+  name: string;
+}
+
+function approximateColorName(r: number, g: number, b: number): string {
+  const max = Math.max(r, g, b);
+  const min = Math.min(r, g, b);
+  const delta = max - min;
+  const l = (max + min) / (2 * 255);
+
+  if (delta < 20) {
+    if (l < 0.15) return 'Jet Black';
+    if (l < 0.35) return 'Charcoal';
+    if (l < 0.6) return 'Slate Gray';
+    if (l < 0.85) return 'Silver Gray';
+    return 'Pure White';
+  }
+
+  let h = 0;
+  if (max === r) h = ((g - b) / delta) % 6;
+  else if (max === g) h = (b - r) / delta + 2;
+  else h = (r - g) / delta + 4;
+  h = Math.round(h * 60);
+  if (h < 0) h += 360;
+
+  if (h >= 345 || h < 15) {
+    if (l < 0.3) return 'Deep Maroon';
+    return l > 0.7 ? 'Soft Coral' : 'Crimson Red';
+  }
+  if (h >= 15 && h < 45) {
+    if (l < 0.35) return 'Warm Brown';
+    return l > 0.7 ? 'Peach' : 'Vibrant Orange';
+  }
+  if (h >= 45 && h < 70) {
+    return l > 0.75 ? 'Cream Gold' : 'Golden Amber';
+  }
+  if (h >= 70 && h < 165) {
+    if (l < 0.3) return 'Forest Green';
+    return l > 0.7 ? 'Mint' : 'Emerald Green';
+  }
+  if (h >= 165 && h < 200) {
+    return 'Cyan / Teal';
+  }
+  if (h >= 200 && h < 260) {
+    if (l < 0.25) return 'Midnight Navy';
+    if (l < 0.45) return 'Cobalt Sapphire';
+    return l > 0.7 ? 'Sky Blue' : 'Royal Blue';
+  }
+  if (h >= 260 && h < 315) {
+    if (l < 0.35) return 'Deep Violet';
+    return 'Lavender Purple';
+  }
+  return 'Magenta Pink';
+}
+
+function computeHslString(r: number, g: number, b: number): string {
+  const rNorm = r / 255;
+  const gNorm = g / 255;
+  const bNorm = b / 255;
+  const max = Math.max(rNorm, gNorm, bNorm);
+  const min = Math.min(rNorm, gNorm, bNorm);
+  let h = 0;
+  let s = 0;
+  const l = (max + min) / 2;
+
+  if (max !== min) {
+    const d = max - min;
+    s = l > 0.5 ? d / (2 - max - min) : d / (max + min);
+    switch (max) {
+      case rNorm: h = (gNorm - bNorm) / d + (gNorm < bNorm ? 6 : 0); break;
+      case gNorm: h = (bNorm - rNorm) / d + 2; break;
+      case bNorm: h = (rNorm - gNorm) / d + 4; break;
+    }
+    h /= 6;
+  }
+
+  return `hsl(${Math.round(h * 360)}, ${Math.round(s * 100)}%, ${Math.round(l * 100)}%)`;
+}
+
 export async function extractColorPalette(
   file: File,
-  maxColors: number = 6
-): Promise<{ hex: string; rgb: string; percentage: number }[]> {
+  maxColors: number = 8
+): Promise<ExtractedColorItem[]> {
   const img = await loadImage(file);
   const canvas = document.createElement('canvas');
-  const size = 100;
-  canvas.width = size;
-  canvas.height = size;
+  // High-resolution sampling canvas for maximum palette accuracy
+  const sampleW = 200;
+  const sampleH = Math.max(50, Math.round((img.naturalHeight / (img.naturalWidth || 1)) * sampleW));
+  canvas.width = sampleW;
+  canvas.height = sampleH;
   const ctx = canvas.getContext('2d');
   if (!ctx) return [];
 
-  ctx.drawImage(img, 0, 0, size, size);
-  const imgData = ctx.getImageData(0, 0, size, size).data;
+  ctx.drawImage(img, 0, 0, sampleW, sampleH);
+  const imgData = ctx.getImageData(0, 0, sampleW, sampleH).data;
 
-  const colorBuckets: Record<string, { count: number; r: number; g: number; b: number }> = {};
-  const totalPixels = size * size;
+  // Adaptive color quantization (quantize to 16-step bins)
+  const colorBuckets: Record<string, { count: number; rSum: number; gSum: number; bSum: number }> = {};
+  let totalSampled = 0;
 
   for (let i = 0; i < imgData.length; i += 16) {
-    const r = Math.round(imgData[i] / 32) * 32;
-    const g = Math.round(imgData[i + 1] / 32) * 32;
-    const b = Math.round(imgData[i + 2] / 32) * 32;
-    const key = `${r},${g},${b}`;
+    const alpha = imgData[i + 3];
+    if (alpha < 64) continue; // Skip near-transparent pixels
+
+    const r = imgData[i];
+    const g = imgData[i + 1];
+    const b = imgData[i + 2];
+
+    const qR = Math.round(r / 20) * 20;
+    const qG = Math.round(g / 20) * 20;
+    const qB = Math.round(b / 20) * 20;
+    const key = `${qR},${qG},${qB}`;
 
     if (!colorBuckets[key]) {
-      colorBuckets[key] = { count: 0, r, g, b };
+      colorBuckets[key] = { count: 0, rSum: 0, gSum: 0, bSum: 0 };
     }
     colorBuckets[key].count++;
+    colorBuckets[key].rSum += r;
+    colorBuckets[key].gSum += g;
+    colorBuckets[key].bSum += b;
+    totalSampled++;
   }
 
-  const sorted = Object.values(colorBuckets)
-    .sort((a, b) => b.count - a.count)
-    .slice(0, maxColors);
+  // Centroid calculation
+  const rawList = Object.values(colorBuckets).map((bucket) => {
+    const r = Math.round(bucket.rSum / bucket.count);
+    const g = Math.round(bucket.gSum / bucket.count);
+    const b = Math.round(bucket.bSum / bucket.count);
+    return { r, g, b, count: bucket.count };
+  });
 
-  const sampleCount = (totalPixels / 4);
+  // Sort descending by frequency
+  rawList.sort((a, b) => b.count - a.count);
 
-  return sorted.map((c) => {
+  // Merge centroids that are visually identical (Euclidean distance < 28)
+  const merged: { r: number; g: number; b: number; count: number }[] = [];
+  for (const item of rawList) {
+    let exists = false;
+    for (const m of merged) {
+      const dist = Math.sqrt(
+        Math.pow(item.r - m.r, 2) +
+        Math.pow(item.g - m.g, 2) +
+        Math.pow(item.b - m.b, 2)
+      );
+      if (dist < 28) {
+        m.count += item.count;
+        exists = true;
+        break;
+      }
+    }
+    if (!exists) {
+      merged.push({ ...item });
+    }
+    if (merged.length >= maxColors * 2) break;
+  }
+
+  // Sort merged list again by updated count
+  merged.sort((a, b) => b.count - a.count);
+  const selected = merged.slice(0, maxColors);
+  const effectiveTotal = selected.reduce((acc, c) => acc + c.count, 0) || totalSampled || 1;
+
+  return selected.map((c) => {
     const hex = `#${((1 << 24) + (c.r << 16) + (c.g << 8) + c.b).toString(16).slice(1).toUpperCase()}`;
+    const luminance = (0.299 * c.r + 0.587 * c.g + 0.114 * c.b) / 255;
+    const isDark = luminance < 0.55;
+    const percentage = Math.max(1, Math.round((c.count / effectiveTotal) * 100));
+
     return {
       hex,
       rgb: `rgb(${c.r}, ${c.g}, ${c.b})`,
-      percentage: Math.round((c.count / sampleCount) * 100),
+      hsl: computeHslString(c.r, c.g, c.b),
+      percentage,
+      r: c.r,
+      g: c.g,
+      b: c.b,
+      isDark,
+      name: approximateColorName(c.r, c.g, c.b),
     };
   });
 }
 
 export async function cropRectImage(
   file: File,
-  aspectRatio: 'free' | '1:1' | '4:3' | '16:9' | '3:4' = '1:1',
+  aspectRatio: string = '1:1',
   cropMarginPercent: number = 0
 ): Promise<ImageProcessingResult> {
   const img = await loadImage(file);
@@ -681,34 +848,30 @@ export async function cropRectImage(
   let targetW = origW;
   let targetH = origH;
 
-  if (aspectRatio === '1:1') {
-    const dim = Math.min(origW, origH);
-    targetW = dim;
-    targetH = dim;
-  } else if (aspectRatio === '4:3') {
-    if (origW / origH > 4 / 3) {
+  let ratio: number | null = null;
+  if (aspectRatio === '1:1') ratio = 1;
+  else if (aspectRatio === '4:3') ratio = 4 / 3;
+  else if (aspectRatio === '16:9') ratio = 16 / 9;
+  else if (aspectRatio === '3:4') ratio = 3 / 4;
+  else if (aspectRatio === 'passport' || aspectRatio === '7:9') ratio = 35 / 45;
+  else if (aspectRatio === 'cr80' || aspectRatio === 'pan') ratio = 85.6 / 54;
+  else if (aspectRatio === 'signature') ratio = 3 / 1;
+  else if (aspectRatio === 'a4') ratio = 1 / 1.414;
+
+  if (ratio !== null) {
+    if (origW / origH > ratio) {
       targetH = origH;
-      targetW = Math.round((origH * 4) / 3);
+      targetW = Math.round(origH * ratio);
     } else {
       targetW = origW;
-      targetH = Math.round((origW * 3) / 4);
+      targetH = Math.round(origW / ratio);
     }
-  } else if (aspectRatio === '16:9') {
-    if (origW / origH > 16 / 9) {
-      targetH = origH;
-      targetW = Math.round((origH * 16) / 9);
-    } else {
-      targetW = origW;
-      targetH = Math.round((origW * 9) / 16);
-    }
-  } else if (aspectRatio === '3:4') {
-    if (origW / origH > 3 / 4) {
-      targetH = origH;
-      targetW = Math.round((origH * 3) / 4);
-    } else {
-      targetW = origW;
-      targetH = Math.round((origW * 4) / 3);
-    }
+  } else {
+    // Freeform: crop by margin or 90% centered focus
+    const m = cropMarginPercent > 0 ? cropMarginPercent : 5;
+    const factor = (100 - m) / 100;
+    targetW = Math.round(origW * factor);
+    targetH = Math.round(origH * factor);
   }
 
   // Apply optional margin

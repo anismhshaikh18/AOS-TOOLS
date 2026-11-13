@@ -29,6 +29,8 @@ import {
 import QRCodeLib from 'qrcode';
 import { PDFDocument } from 'pdf-lib';
 import { getStockDemoPortraitDataUrl } from '../utils/stockPassportPhoto';
+import { StarRatingWidget } from '../components/StarRatingWidget';
+import { SmartIdCardGraphicCard } from '../components/ToolIllustrativeCards';
 
 interface SmartIdCardStudioPageProps {
   onBack: () => void;
@@ -1317,6 +1319,7 @@ export const SmartIdCardStudioPage: React.FC<SmartIdCardStudioPageProps> = ({ on
             <p className="text-xs text-slate-600 dark:text-slate-300 mt-0.5">
               Full text &amp; header control • Auto-transparent signature • Vector SVG &amp; 600 DPI output
             </p>
+            <StarRatingWidget toolId="smart-id-card-studio" toolName="Smart ID Card Studio" className="pt-2" />
           </div>
         </div>
 
@@ -1347,6 +1350,9 @@ export const SmartIdCardStudioPage: React.FC<SmartIdCardStudioPageProps> = ({ on
           </button>
         </div>
       </div>
+
+      {/* Illustrative Architecture & CR80 Standard Card */}
+      <SmartIdCardGraphicCard />
 
       {/* =========================================================================
           SECTION 1: LIVE CR80 CARD PREVIEW (FRONT & BACK DUAL VIEW)
