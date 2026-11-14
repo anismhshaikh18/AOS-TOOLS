@@ -322,7 +322,7 @@ export const ToolRunnerModal: React.FC<ToolRunnerModalProps> = ({
     ml: { title: "ഗ്രാമപഞ്ചായത്ത് / ഔദ്യോഗിക രസീത്", sub: "ഡിജിറ്റൽ സേവനങ്ങൾ", cust: "ഉപഭോക്താവിന്റെ പേര്", desc: "സേവന വിവരങ്ങൾ", amt: "ആകെ തുക", sign: "അംഗീകൃത ഒപ്പ്" },
     gu: { title: "ગ્રામ પંચાયત / અધિકૃત રસીદ", sub: "ડિજિટલ નાગરિક સેવાઓ", cust: "ગ્રાહકનું નામ", desc: "સેવાની વિગત", amt: "કુલ રકમ", sign: "અધિકૃત સહી કરનાર" },
     pa: { title: "ਗ੍ਰਾਮ ਪੰਚਾਇਤ / ਅਧਿਕਾਰਤ ਰਸੀਦ", sub: "ਡਿਜੀਟਲ ਨਾਗਰਿਕ ਸੇਵਾਵਾਂ", cust: "ਗਾਹਕ ਦਾ ਨਾਮ", desc: "ਸੇਵਾ ਦਾ ਵੇਰਵਾ", amt: "ਕੁੱਲ ਰਕਮ", sign: "ਅਧਿਕਾਰਤ ਦਸਤਖਤਕਰਤਾ" },
-    en: { title: "Official Panchayat & Khata Receipt", sub: "Official Digital Citizen & CSC Services", cust: "Customer Name", desc: "Service Particulars", amt: "Total Amount", sign: "Authorized Signatory" }
+    en: { title: "Official Panchayat & Client Diary Receipt", sub: "Official Digital Citizen & CSC Services", cust: "Customer Name", desc: "Service Particulars", amt: "Total Amount", sign: "Authorized Signatory" }
   };
 
   // Indian Rupees to Words converter
@@ -2575,20 +2575,20 @@ export const ToolRunnerModal: React.FC<ToolRunnerModalProps> = ({
             </div>
           )}
 
-          {/* 7. Khata Diary direct shortcut */}
+          {/* 7. Client Diary direct shortcut */}
           {tool.id === 'khata-diary' && (
-            <div className="p-6 bg-blue-50 dark:bg-blue-950/40 border border-blue-200 dark:border-blue-900/50 rounded-xl text-center space-y-3">
+            <div className="p-6 bg-[#072642]/5 dark:bg-[#072642]/60 border border-[#0284c7]/30 rounded-xl text-center space-y-3">
               <p className="text-xs text-slate-600 dark:text-slate-300">
-                The Real Client Ledger Diary (Khata) has a dedicated full-screen workspace with search, receipt generator, financial calculations, and editable net profit tokens.
+                Client Diary has a dedicated full-screen workspace with search, receipt generator, financial calculations, and editable net profit tokens.
               </p>
               <button
                 onClick={() => {
                   onClose();
                   if (onOpenKhataTab) onOpenKhataTab();
                 }}
-                className="px-5 py-2.5 text-xs font-bold text-white bg-blue-600 hover:bg-blue-700 rounded-xl shadow-xs transition-colors cursor-pointer inline-flex items-center gap-2"
+                className="px-5 py-2.5 text-xs font-bold text-white bg-gradient-to-r from-[#0284c7] to-[#0d4775] hover:brightness-110 rounded-xl shadow-xs transition-all cursor-pointer inline-flex items-center gap-2"
               >
-                Open Full Khata Ledger Workspace →
+                Open Full Client Diary Workspace →
               </button>
             </div>
           )}
@@ -3261,7 +3261,7 @@ export const ToolRunnerModal: React.FC<ToolRunnerModalProps> = ({
                   {[
                     { id: '1', title: '1. Modern Minimalist', desc: 'Clean border & badges' },
                     { id: '2', title: '2. Classic Panchayat', desc: 'Seal stamp & Hindi title' },
-                    { id: '3', title: '3. Commercial Bill', desc: 'Tax & Khata ledger format' },
+                    { id: '3', title: '3. Commercial Bill', desc: 'Tax & Client Diary format' },
                     { id: '4', title: '4. Legal E-Stamp', desc: 'Agreement & Notary seal' },
                     { id: '5', title: '5. Cash Voucher', desc: 'Standard Debit voucher' },
                   ].map((t) => (
@@ -3887,7 +3887,7 @@ export const ToolRunnerModal: React.FC<ToolRunnerModalProps> = ({
                     );
                   })()}
 
-                  {/* TEMPLATE 3: Commercial Khata Bill */}
+                  {/* TEMPLATE 3: Commercial Client Diary Bill */}
                   {receiptTemplate === '3' && (
                     <div className="p-6 sm:p-8 space-y-5">
                       <div className="flex justify-between items-start border-b-2 border-slate-900 pb-4">
@@ -3897,7 +3897,7 @@ export const ToolRunnerModal: React.FC<ToolRunnerModalProps> = ({
                           )}
                           <h2 className="text-xl font-black uppercase tracking-tight text-slate-900">{receiptShopName}</h2>
                           <p className="text-xs text-slate-600">{receiptShopTagline}</p>
-                          <p className="text-[11px] text-slate-500 mt-1">Official Client Khata & Documentation Ledger</p>
+                          <p className="text-[11px] text-slate-500 mt-1">Official Client Diary & Documentation Ledger</p>
                         </div>
                         <div className="text-right">
                           <span className="px-2.5 py-1 bg-slate-900 text-white font-mono font-bold text-xs rounded">

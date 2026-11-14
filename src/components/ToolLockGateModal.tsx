@@ -31,6 +31,7 @@ export const ToolLockGateModal: React.FC<ToolLockGateModalProps> = ({
     signInWithGoogle,
     verifyAndUnlockPin,
     getToolLockReason,
+    isCoreAuthRequiredTool,
     openAuthModal,
   } = useAuthSecurity();
 
@@ -56,6 +57,7 @@ export const ToolLockGateModal: React.FC<ToolLockGateModalProps> = ({
 
   const needsGoogleAuth = reason === 'auth-required' || reason === 'both';
   const needsPin = reason === 'pin-required' || reason === 'both';
+  const isCoreSuite = isCoreAuthRequiredTool(tool.id);
 
   const handlePinSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
@@ -85,7 +87,7 @@ export const ToolLockGateModal: React.FC<ToolLockGateModalProps> = ({
 
   return (
     <div
-      className="fixed inset-0 z-50 flex items-center justify-center p-4 bg-slate-950/80 backdrop-blur-md animate-in fade-in duration-150"
+      className="fixed inset-0 z-50 flex items-center justify-center p-4 bg-[#0B192C]/85 backdrop-blur-md animate-in fade-in duration-150"
       role="dialog"
       aria-modal="true"
       aria-label="Protected Tool Access Gate"
@@ -101,7 +103,7 @@ export const ToolLockGateModal: React.FC<ToolLockGateModalProps> = ({
               <div className="flex items-center gap-1.5">
                 <Lock className="w-3.5 h-3.5 text-sky-300 shrink-0" />
                 <span className="guide-tag-sky text-[10px] font-bold uppercase tracking-wider">
-                  AOS Access Control
+                  {isCoreSuite ? 'AOS Core Suite Sign-In Gate' : 'AOS Access Control'}
                 </span>
               </div>
               <h3 className="guide-banner-title text-sm font-extrabold truncate">
@@ -124,12 +126,14 @@ export const ToolLockGateModal: React.FC<ToolLockGateModalProps> = ({
             <ShieldAlert className="w-5 h-5 text-[#0284c7] dark:text-sky-300 shrink-0 mt-0.5" />
             <div className="text-xs text-slate-600 dark:text-slate-200 leading-relaxed">
               <span className="font-bold text-slate-900 dark:text-white block mb-0.5">
-                Protected AOS Utility
+                {isCoreSuite
+                  ? 'Operator Authentication Required'
+                  : 'Protected AOS Utility'}
               </span>
               {needsGoogleAuth && needsPin
-                ? 'This tool requires both Google Account verification and your Operator PIN to launch.'
+                ? `${tool.name} requires both Google Account verification and your Operator PIN to launch.`
                 : needsGoogleAuth
-                ? 'Sign in with your verified Google account to unlock and run this protected utility.'
+                ? `Please sign in with your verified Google account to unlock ${tool.name} and keep your AOS workspace secure.`
                 : 'Enter your Operator PIN code to unlock this workstation session and open the tool.'}
             </div>
           </div>
@@ -155,8 +159,25 @@ export const ToolLockGateModal: React.FC<ToolLockGateModalProps> = ({
                   </>
                 ) : (
                   <>
-                    <Unlock className="w-4 h-4" />
-                    <span>Sign In with Google to Unlock</span>
+                    <svg className="w-4 h-4 shrink-0 bg-white rounded-full p-0.5" viewBox="0 0 24 24" aria-hidden="true">
+                      <path
+                        fill="#4285F4"
+                        d="M23.745 12.27c0-.7-.06-1.4-.19-2.07H12v4.51h6.6c-.29 1.52-1.14 2.82-2.4 3.68v3.05h3.88c2.27-2.09 3.665-5.17 3.665-9.17Z"
+                      />
+                      <path
+                        fill="#34A853"
+                        d="M12 24c3.24 0 5.95-1.08 7.93-2.91l-3.88-3.05c-1.08.72-2.45 1.16-4.05 1.16-3.12 0-5.77-2.11-6.72-4.96H1.29v3.14C3.26 21.3 7.31 24 12 24Z"
+                      />
+                      <path
+                        fill="#FBBC05"
+                        d="M5.28 14.24c-.24-.72-.38-1.49-.38-2.24s.14-1.52.38-2.24V6.62H1.29C.47 8.24 0 10.06 0 12s.47 3.76 1.29 5.38l3.99-3.14Z"
+                      />
+                      <path
+                        fill="#EA4335"
+                        d="M12 4.75c1.77 0 3.35.61 4.6 1.8l3.42-3.42C17.95 1.19 15.24 0 12 0 7.31 0 3.26 2.7 1.29 6.62l3.99 3.14c.95-2.85 3.6-4.96 6.72-4.96Z"
+                      />
+                    </svg>
+                    <span>Continue with Google to Open</span>
                   </>
                 )}
               </button>

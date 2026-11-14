@@ -49,19 +49,66 @@ export interface AosSecurityConfig {
 
 export type ToolLockReason = 'auth-required' | 'pin-required' | 'both' | null;
 
-// Core utilities that MUST remain 100% untouched, always open, and never locked
+// Core utilities that remain always open
 export const PROTECTED_ALWAYS_OPEN_TOOL_IDS = [
-  'khata-diary',
   'qr-code-generator',
-  'pan-master-hub',
 ] as const;
 
-// High-tier studios eligible for optional 1-click Pro Auth gating
+// Core professional suites that require active Google Authentication for guest access
+// and can also be individually locked / PIN-protected by the operator
+export const AUTH_REQUIRED_CORE_IDS = [
+  'khata-diary',
+  'pan-master-hub',
+  'receipt-hub',
+  'gov-portals',
+] as const;
+
+export const CORE_SUITE_GATE_TOOLS = {
+  khata: {
+    id: 'khata-diary',
+    name: 'Client Diary',
+    shortDesc:
+      'Digital customer ledger, token registry, billing receipts, and balance tracking for AOS operators.',
+    category: 'special' as const,
+    iconName: 'BookMarked',
+    badge: 'AUTH REQUIRED',
+  },
+  pan: {
+    id: 'pan-master-hub',
+    name: 'PAN Master Hub',
+    shortDesc:
+      'Complete NSDL & UTIITSL PAN application suite, <300 KB PDF compression, and biometric photo/signature tools.',
+    category: 'special' as const,
+    iconName: 'Building2',
+    badge: 'AUTH REQUIRED',
+  },
+  portals: {
+    id: 'gov-portals',
+    name: 'Advanced Portals (50+ Govt Portals)',
+    shortDesc:
+      'Direct verified directory of 50+ central and state citizen service portals.',
+    category: 'special' as const,
+    iconName: 'Building',
+    badge: 'AUTH REQUIRED',
+  },
+} as const;
+
+export function getGateToolForTab(tab: string) {
+  if (tab === 'khata') return CORE_SUITE_GATE_TOOLS.khata;
+  if (tab === 'pan') return CORE_SUITE_GATE_TOOLS.pan;
+  if (tab === 'portals') return CORE_SUITE_GATE_TOOLS.portals;
+  return null;
+}
+
+// High-tier studios & core modules eligible for 1-click Pro Lock / PIN gating
 export const PRO_TIER_TOOL_IDS = [
+  'khata-diary',
+  'pan-master-hub',
+  'receipt-hub',
+  'gov-portals',
   'passport-photo-studio',
   'passport-photo-sheet',
   'smart-id-card-studio',
-  'receipt-hub',
   'protect-pdf',
   'unlock-pdf',
 ] as const;
@@ -168,6 +215,7 @@ interface AuthSecurityContextValue {
   lockAllProTools: () => Promise<void>;
   unlockAllTools: () => Promise<void>;
   isToolProtectedUntouched: (toolId: string) => boolean;
+  isCoreAuthRequiredTool: (toolId: string) => boolean;
   isToolCurrentlyLocked: (toolId: string) => boolean;
   getToolLockReason: (toolId: string) => ToolLockReason;
   isAuthModalOpen: boolean;
@@ -198,6 +246,10 @@ export const AuthSecurityProvider: React.FC<{ children: React.ReactNode }> = ({ 
 
   const isToolProtectedUntouched = useCallback((toolId: string) => {
     return (PROTECTED_ALWAYS_OPEN_TOOL_IDS as readonly string[]).includes(toolId);
+  }, []);
+
+  const isCoreAuthRequiredTool = useCallback((toolId: string) => {
+    return (AUTH_REQUIRED_CORE_IDS as readonly string[]).includes(toolId);
   }, []);
 
   const persistSecurityToFirestore = useCallback(
@@ -638,15 +690,16 @@ export const AuthSecurityProvider: React.FC<{ children: React.ReactNode }> = ({ 
 
   const getToolLockReason = useCallback(
     (toolId: string): ToolLockReason => {
-      // PAN Master Hub, Client Khata Diary, and QR Generator remain 100% open & untouched
       if (isToolProtectedUntouched(toolId)) return null;
 
+      const isCoreAuth = (AUTH_REQUIRED_CORE_IDS as readonly string[]).includes(toolId);
       const isExplicitlyLocked = securityConfig.lockedToolIds.includes(toolId);
       const isProTierTool = (PRO_TIER_TOOL_IDS as readonly string[]).includes(toolId);
 
       const needsAuth =
         !user &&
-        ((securityConfig.requireAuthForProTools && isProTierTool) ||
+        (isCoreAuth ||
+          (securityConfig.requireAuthForProTools && isProTierTool) ||
           (isExplicitlyLocked && !securityConfig.pinEnabled));
 
       const needsPin =
@@ -711,6 +764,7 @@ export const AuthSecurityProvider: React.FC<{ children: React.ReactNode }> = ({ 
         lockAllProTools,
         unlockAllTools,
         isToolProtectedUntouched,
+        isCoreAuthRequiredTool,
         isToolCurrentlyLocked,
         getToolLockReason,
         isAuthModalOpen,

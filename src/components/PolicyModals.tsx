@@ -48,10 +48,10 @@ export const PrivacyModal: React.FC<ModalProps> = ({ isOpen, onClose }) => {
 
           <section className="space-y-1.5">
             <h3 className="text-sm font-bold text-white">
-              3. Client Khata Diary Storage
+              3. Client Diary Storage
             </h3>
             <p className="text-slate-300">
-              All customer ledger entries, tokens, fees, and tracking statuses in the Client Khata Diary are stored strictly in your browser's local sandbox (LocalStorage). No client names or financial balances are transmitted to any cloud database. You can export a CSV backup anytime.
+              All customer ledger entries, tokens, fees, and tracking statuses in the Client Diary are stored strictly in your browser's local sandbox (LocalStorage). No client names or financial balances are transmitted to any cloud database. You can export a CSV backup anytime.
             </p>
           </section>
 

@@ -30,6 +30,7 @@ import {
 import { AosLogoSvg } from '../components/AosLogoSvg';
 import { ToolRequestSection } from '../components/ToolRequestSection';
 import { LanguageCode, TRANSLATIONS, getTranslatedTool } from '../utils/translations';
+import { useAuthSecurity } from '../context/AuthSecurityContext';
 
 interface HomeViewProps {
   onSelectTool: (tool: ToolItem) => void;
@@ -48,6 +49,9 @@ export const HomeView: React.FC<HomeViewProps> = ({
   const [searchQuery, setSearchQuery] = useState('');
   const searchInputRef = useRef<HTMLInputElement>(null);
   const isSearchStatePushedRef = useRef(false);
+  const { isToolCurrentlyLocked } = useAuthSecurity();
+  const isClientDiaryLocked = isToolCurrentlyLocked('khata-diary');
+  const isPortalsLocked = isToolCurrentlyLocked('gov-portals');
   const t = TRANSLATIONS[lang] || TRANSLATIONS.en;
 
   // Browser back handling on mobile so pressing back closes suggestions or keyboard instead of exiting website
@@ -419,7 +423,7 @@ export const HomeView: React.FC<HomeViewProps> = ({
             </div>
           </div>
 
-          {/* Studio Card 4: Client Khata Ledger Diary */}
+          {/* Studio Card 4: Client Diary */}
           <div
             onClick={() => setActiveTab('khata')}
             className="rounded-2xl liquid-glass liquid-glass-hover p-5 cursor-pointer group hover:-translate-y-1 flex flex-col justify-between"
@@ -429,21 +433,25 @@ export const HomeView: React.FC<HomeViewProps> = ({
                 <div className="w-14 h-14 rounded-2xl liquid-glass-sub flex items-center justify-center p-1 group-hover:scale-105 transition-transform shrink-0">
                   <SupportHelpIllustrationSvg className="w-full h-full" />
                 </div>
-                <span className="text-[10px] px-2.5 py-0.5 rounded-md bg-emerald-600/20 text-emerald-600 dark:text-emerald-400 border border-emerald-500/30 font-bold whitespace-nowrap shrink-0 inline-flex items-center">
-                  CITIZEN LEDGER
+                <span className="text-[10px] px-2.5 py-0.5 rounded-md bg-[#0284c7]/15 text-[#0284c7] dark:text-sky-300 border border-[#0284c7]/30 font-bold whitespace-nowrap shrink-0 inline-flex items-center gap-1">
+                  {isClientDiaryLocked && <Lock className="w-3 h-3" />}
+                  <span>{isClientDiaryLocked ? 'SIGN-IN GATE' : 'CLIENT DIARY'}</span>
                 </span>
               </div>
               <div>
-                <h3 className="font-extrabold text-base text-slate-900 dark:text-white group-hover:text-emerald-600 dark:group-hover:text-emerald-400 transition-colors">
-                  {t.khataDiaryTitle || 'Client Khata Ledger Diary'}
+                <h3 className="font-extrabold text-base text-slate-900 dark:text-white group-hover:text-[#0284c7] dark:group-hover:text-sky-300 transition-colors">
+                  {t.khataDiaryTitle || 'Client Diary'}
                 </h3>
                 <p className="text-xs text-slate-600 dark:text-slate-300 mt-1.5 leading-relaxed line-clamp-3">
                   {t.khataDiaryDesc || 'Store customer credit/debit records, send instant WhatsApp payment reminders, search transactions, and export ledger sheets securely.'}
                 </p>
               </div>
             </div>
-            <div className="pt-4 mt-4 border-t border-slate-100 dark:border-white/10 flex items-center justify-between text-xs font-bold text-emerald-600 dark:text-emerald-400 group-hover:text-emerald-500">
-              <span>{t.openTool || 'Open Khata Diary'}</span>
+            <div className="pt-4 mt-4 border-t border-slate-100 dark:border-white/10 flex items-center justify-between text-xs font-bold text-[#0284c7] dark:text-sky-400 group-hover:text-[#0369a1] dark:group-hover:text-sky-300">
+              <span className="inline-flex items-center gap-1.5">
+                {isClientDiaryLocked && <Lock className="w-3.5 h-3.5" />}
+                <span>{isClientDiaryLocked ? 'Sign In to Open Client Diary' : 'Open Client Diary'}</span>
+              </span>
               <ArrowRight className="w-3.5 h-3.5 group-hover:translate-x-1 transition-transform" />
             </div>
           </div>
@@ -560,9 +568,10 @@ export const HomeView: React.FC<HomeViewProps> = ({
             </button>
             <button
               onClick={() => setActiveTab('portals')}
-              className="text-xs font-semibold text-[#0284c7] dark:text-sky-300 hover:text-[#0369a1] dark:hover:text-sky-200 px-3 py-1.5 rounded-lg liquid-glass-sub hover:bg-slate-100 dark:hover:bg-white/10 border-[#0284c7]/30 transition-colors"
+              className="text-xs font-semibold text-[#0284c7] dark:text-sky-300 hover:text-[#0369a1] dark:hover:text-sky-200 px-3 py-1.5 rounded-lg liquid-glass-sub hover:bg-slate-100 dark:hover:bg-white/10 border-[#0284c7]/30 transition-colors inline-flex items-center gap-1.5 cursor-pointer"
             >
-              {t.govtPortalsBtn || '50+ Govt Portals'}
+              {isPortalsLocked && <Lock className="w-3 h-3 shrink-0" />}
+              <span>{t.govtPortalsBtn || '50+ Govt Portals'}</span>
             </button>
           </div>
         </div>

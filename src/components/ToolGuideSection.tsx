@@ -26,7 +26,7 @@ interface ToolCustomGuide {
 }
 
 const TOOL_GUIDES: Record<string, ToolCustomGuide> = {
-  // 1. Real Client Ledger Diary (Khata)
+  // 1. Client Diary
   'khata-diary': {
     steps: [
       {
@@ -48,7 +48,7 @@ const TOOL_GUIDES: Record<string, ToolCustomGuide> = {
       'Dynamic token balance & total debit/credit automatic accounting calculations',
       'Complete data export & backup recovery feature for cyber cafe and Jan Seva Kendra counters'
     ],
-    conclusionNote: 'Real Client Ledger Diary (Khata) is designed specifically for CSC Jan Seva Kendras, cyber cafes, and retail shops to manage customer balances, token tracking, and daily digital service collections without relying on paid third-party accounting apps.'
+    conclusionNote: 'Client Diary is designed specifically for CSC Jan Seva Kendras, cyber cafes, and retail shops to manage customer balances, token tracking, and daily digital service collections without relying on paid third-party accounting apps.'
   },
 
   // 2. QR Code Generator & Barcode Generator

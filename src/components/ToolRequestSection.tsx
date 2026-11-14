@@ -260,7 +260,7 @@ export const ToolRequestSection: React.FC<ToolRequestSectionProps> = ({
                 <option value="Govt & CSC Portal">Govt &amp; Jan Seva Kendra / CSC Helper</option>
                 <option value="PDF Tools">PDF Suite &amp; Converter</option>
                 <option value="Image & Photo Tools">Passport Photo &amp; Image Studio</option>
-                <option value="Financial & Ledger">Khata Diary, Invoicing &amp; Calculations</option>
+                <option value="Financial & Ledger">Client Diary, Invoicing &amp; Calculations</option>
                 <option value="Barcode & QR Suite">Barcode, UPI &amp; Scanner</option>
                 <option value="Developer & Utility">Data, Text &amp; Developer Utility</option>
               </select>

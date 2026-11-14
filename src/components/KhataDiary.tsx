@@ -393,7 +393,7 @@ export const KhataDiary: React.FC = () => {
     link.setAttribute('href', encoded);
     link.setAttribute(
       'download',
-      `AOS_Khata_Ledger_${new Date().toISOString().split('T')[0]}.csv`
+      `AOS_Client_Diary_${new Date().toISOString().split('T')[0]}.csv`
     );
     document.body.appendChild(link);
     link.click();
@@ -406,8 +406,8 @@ export const KhataDiary: React.FC = () => {
       <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-4 pb-4 border-b border-slate-200 dark:border-slate-800">
         <div>
           <h1 className="text-xl sm:text-2xl font-bold tracking-tight text-slate-900 dark:text-white flex items-center gap-2.5">
-            <Briefcase className="w-6 h-6 text-blue-600" />
-            <span>Real Client Ledger Diary (Khata)</span>
+            <Briefcase className="w-6 h-6 text-[#0284c7]" />
+            <span>Client Diary</span>
           </h1>
           <p className="text-xs text-slate-500 dark:text-slate-400 mt-1">
             Compliant daily registry for E-Sevai, CSC operators, cyber cafes, and documentation centers.

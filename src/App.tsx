@@ -27,11 +27,11 @@ import { StarRatingWidget } from './components/StarRatingWidget';
 import { ToolRequestModal } from './components/ToolRequestModal';
 import { AuthSecurityModal } from './components/AuthSecurityModal';
 import { ToolLockGateModal } from './components/ToolLockGateModal';
-import { useAuthSecurity } from './context/AuthSecurityContext';
+import { useAuthSecurity, getGateToolForTab } from './context/AuthSecurityContext';
 
-const KHATA_TOOL_ITEM: ToolItem = {
+const CLIENT_DIARY_TOOL_ITEM: ToolItem = {
   id: 'khata-diary',
-  name: 'Real Client Ledger Diary (Khata)',
+  name: 'Client Diary',
   shortDesc: 'Digital customer ledger, transaction diary, and balance tracking for CSCs, cyber cafes, and businesses.',
   category: 'special',
   iconName: 'BookMarked',
@@ -44,9 +44,13 @@ export default function App() {
   const [isPrivacyOpen, setIsPrivacyOpen] = useState<boolean>(false);
   const [isFreePolicyOpen, setIsFreePolicyOpen] = useState<boolean>(false);
   const [isRequestModalOpen, setIsRequestModalOpen] = useState<boolean>(false);
-  const [pendingLockedTool, setPendingLockedTool] = useState<ToolItem | null>(null);
+  const [pendingGate, setPendingGate] = useState<{
+    kind: 'tool' | 'tab';
+    tab?: string;
+    tool: ToolItem;
+  } | null>(null);
 
-  const { isToolCurrentlyLocked, isToolProtectedUntouched } = useAuthSecurity();
+  const { authReady, isToolCurrentlyLocked } = useAuthSecurity();
 
   // Template Id
   const [templateId, setTemplateId] = useState<TemplateId>(() => {
@@ -119,9 +123,9 @@ export default function App() {
         if (state.toolId) {
           const allTools = [...PDF_TOOLS, ...IMAGE_TOOLS, ...SPECIAL_TOOLS];
           const found = allTools.find((t) => t.id === state.toolId);
-          if (found && !isToolProtectedUntouched(found.id) && isToolCurrentlyLocked(found.id)) {
+          if (found && isToolCurrentlyLocked(found.id)) {
             setSelectedTool(null);
-            setPendingLockedTool(getTranslatedTool(found, lang));
+            setPendingGate({ kind: 'tool', tool: getTranslatedTool(found, lang) });
           } else {
             setSelectedTool(found ? getTranslatedTool(found, lang) : null);
           }
@@ -129,7 +133,17 @@ export default function App() {
           setSelectedTool(null);
         }
         if (state.tab) {
-          setActiveTab(state.tab);
+          const tabGate = getGateToolForTab(state.tab);
+          if (tabGate && isToolCurrentlyLocked(tabGate.id)) {
+            setActiveTab('home');
+            setPendingGate({
+              kind: 'tab',
+              tab: state.tab,
+              tool: getTranslatedTool(tabGate, lang),
+            });
+          } else {
+            setActiveTab(state.tab);
+          }
         }
         setIsSearchOpen(false);
         setIsPrivacyOpen(false);
@@ -145,17 +159,44 @@ export default function App() {
 
     window.addEventListener('popstate', handlePopState);
     return () => window.removeEventListener('popstate', handlePopState);
-  }, [lang, isToolCurrentlyLocked, isToolProtectedUntouched]);
+  }, [lang, isToolCurrentlyLocked]);
 
-  const handleNavigateTab = (tab: string) => {
+  // Guard active gated tabs if user signs out or session locks while viewing them
+  useEffect(() => {
+    if (!authReady) return;
+    const tabGate = getGateToolForTab(activeTab);
+    if (tabGate && isToolCurrentlyLocked(tabGate.id)) {
+      setActiveTab('home');
+      setPendingGate({
+        kind: 'tab',
+        tab: activeTab,
+        tool: getTranslatedTool(tabGate, lang),
+      });
+    }
+  }, [authReady, activeTab, lang, isToolCurrentlyLocked]);
+
+  const navigateTabDirectly = (tab: string) => {
     setActiveTab(tab);
     window.scrollTo({ top: 0, behavior: 'smooth' });
     window.history.pushState({ tab, toolId: null }, '');
   };
 
+  const handleNavigateTab = (tab: string) => {
+    const tabGate = getGateToolForTab(tab);
+    if (tabGate && isToolCurrentlyLocked(tabGate.id)) {
+      setPendingGate({
+        kind: 'tab',
+        tab,
+        tool: getTranslatedTool(tabGate, lang),
+      });
+      return;
+    }
+    navigateTabDirectly(tab);
+  };
+
   const launchToolDirectly = (tool: ToolItem) => {
     if (tool.id === 'khata-diary') {
-      handleNavigateTab('khata');
+      navigateTabDirectly('khata');
       return;
     }
     const localizedTool = getTranslatedTool(tool, lang);
@@ -164,13 +205,12 @@ export default function App() {
   };
 
   const handleSelectTool = (tool: ToolItem) => {
-    // PAN Master Hub, Client Khata Diary & QR Generator are 100% protected & untouched
     if (tool.id === 'khata-diary') {
       handleNavigateTab('khata');
       return;
     }
-    if (!isToolProtectedUntouched(tool.id) && isToolCurrentlyLocked(tool.id)) {
-      setPendingLockedTool(getTranslatedTool(tool, lang));
+    if (isToolCurrentlyLocked(tool.id)) {
+      setPendingGate({ kind: 'tool', tool: getTranslatedTool(tool, lang) });
       return;
     }
     launchToolDirectly(tool);
@@ -296,26 +336,26 @@ export default function App() {
               <SpecialToolsView onSelectTool={handleSelectTool} lang={lang} />
             )}
 
-            {/* Kept 100% untouched and secure */}
+            {/* Client Diary Workspace (Google Auth Gated) */}
             {activeTab === 'khata' && (
               <div className="space-y-6 pb-12">
                 <div className="p-3.5 rounded-2xl liquid-glass border border-slate-200 dark:border-sky-500/20 shadow-md flex flex-wrap items-center justify-between gap-3">
                   <div>
                     <h2 className="text-sm font-bold text-slate-900 dark:text-white">
-                      Real Client Ledger Diary (Khata)
+                      Client Diary
                     </h2>
                     <p className="text-[11px] text-slate-500 dark:text-slate-400">
                       Rate this digital accounting utility or share citizen feedback:
                     </p>
                   </div>
-                  <StarRatingWidget toolId="khata-diary" toolName="Real Client Ledger Diary (Khata)" />
+                  <StarRatingWidget toolId="khata-diary" toolName="Client Diary" />
                 </div>
                 <KhataDiary />
-                <ToolGuideSection tool={KHATA_TOOL_ITEM} />
+                <ToolGuideSection tool={CLIENT_DIARY_TOOL_ITEM} />
               </div>
             )}
 
-            {/* Kept 100% untouched and secure */}
+            {/* PAN Master Hub (Google Auth Gated) */}
             {activeTab === 'pan' && (
               <PanMasterHub onLaunchImageResize={handleLaunchPhotoResizer} />
             )}
@@ -365,11 +405,16 @@ export default function App() {
       <AuthSecurityModal />
 
       <ToolLockGateModal
-        tool={pendingLockedTool}
-        onClose={() => setPendingLockedTool(null)}
+        tool={pendingGate?.tool || null}
+        onClose={() => setPendingGate(null)}
         onUnlocked={(unlockedTool) => {
-          setPendingLockedTool(null);
-          launchToolDirectly(unlockedTool);
+          const gate = pendingGate;
+          setPendingGate(null);
+          if (gate?.kind === 'tab' && gate.tab) {
+            navigateTabDirectly(gate.tab);
+          } else {
+            launchToolDirectly(unlockedTool);
+          }
         }}
       />
 

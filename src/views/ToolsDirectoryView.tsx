@@ -12,6 +12,7 @@ import {
   CheckCircle2,
   BookMarked,
   ShieldAlert,
+  Lock,
 } from 'lucide-react';
 import { ToolItem } from '../types';
 import { PDF_TOOLS } from '../data/pdfTools';
@@ -19,6 +20,7 @@ import { IMAGE_TOOLS } from '../data/imageTools';
 import { SPECIAL_TOOLS } from '../data/specialTools';
 import { DynamicIcon } from '../components/DynamicIcon';
 import { LanguageCode, TRANSLATIONS, getTranslatedTool } from '../utils/translations';
+import { useAuthSecurity } from '../context/AuthSecurityContext';
 
 interface ToolsDirectoryViewProps {
   onSelectTool: (tool: ToolItem) => void;
@@ -33,6 +35,7 @@ export const ToolsDirectoryView: React.FC<ToolsDirectoryViewProps> = ({
 }) => {
   const [searchQuery, setSearchQuery] = useState('');
   const [selectedFilter, setSelectedFilter] = useState('All Tools');
+  const { isToolCurrentlyLocked } = useAuthSecurity();
 
   const t = TRANSLATIONS[lang] || TRANSLATIONS.en;
 
@@ -131,11 +134,11 @@ export const ToolsDirectoryView: React.FC<ToolsDirectoryViewProps> = ({
       },
       {
         id: 'khata-diary',
-        name: 'Client Khata Ledger',
+        name: 'Client Diary',
         shortDesc: 'Daily customer registration, government fee tracking, token balance calculation, and print-ready reports.',
         category: 'special',
         iconName: 'BookMarked',
-        badge: 'OFFLINE LEDGER',
+        badge: 'CLIENT DIARY',
         status: 'fully-supported',
       },
       ...PDF_TOOLS.filter(
@@ -213,6 +216,7 @@ export const ToolsDirectoryView: React.FC<ToolsDirectoryViewProps> = ({
     },
     {
       id: 'pan',
+      gateToolId: 'pan-master-hub',
       title: t.pan || 'PAN Master Hub',
       subtitle: 'UTIITSL & Protean official guides, specs & verification tracking',
       icon: ShieldAlert,
@@ -221,14 +225,16 @@ export const ToolsDirectoryView: React.FC<ToolsDirectoryViewProps> = ({
     },
     {
       id: 'khata',
-      title: t.khata || 'Client Khata Diary',
+      gateToolId: 'khata-diary',
+      title: t.khata || 'Client Diary',
       subtitle: 'Compliant offline token registry & fee calculation ledger',
       icon: BookMarked,
-      color: 'bg-gradient-to-r from-emerald-600 to-teal-800',
+      color: 'bg-gradient-to-r from-[#0284c7] to-[#072642]',
       action: () => setActiveTab('khata'),
     },
     {
       id: 'portals',
+      gateToolId: 'gov-portals',
       title: t.portals || 'Government Portals',
       subtitle: '50 official portals: Aadhaar, PAN, Voter, Passport, Parivahan',
       icon: Building,
@@ -290,6 +296,10 @@ export const ToolsDirectoryView: React.FC<ToolsDirectoryViewProps> = ({
         <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-3.5">
           {categories.map((cat) => {
             const Icon = cat.icon;
+            const catLocked =
+              'gateToolId' in cat && typeof cat.gateToolId === 'string'
+                ? isToolCurrentlyLocked(cat.gateToolId)
+                : false;
             return (
               <div
                 key={cat.id}
@@ -298,15 +308,18 @@ export const ToolsDirectoryView: React.FC<ToolsDirectoryViewProps> = ({
                 tabIndex={0}
                 className="p-4 rounded-2xl liquid-glass liquid-glass-hover transition-all cursor-pointer flex items-center justify-between group border border-slate-200 dark:border-sky-500/20"
               >
-                <div className="flex items-center gap-3.5">
+                <div className="flex items-center gap-3.5 min-w-0">
                   <div
                     className={`w-10 h-10 rounded-xl ${cat.color} flex items-center justify-center text-white shrink-0 shadow-md`}
                   >
                     <Icon className="w-5 h-5" />
                   </div>
-                  <div>
-                    <h3 className="text-sm font-bold text-slate-900 dark:text-white group-hover:text-[#0284c7] dark:group-hover:text-sky-300 transition-colors">
-                      {cat.title}
+                  <div className="min-w-0">
+                    <h3 className="text-sm font-bold text-slate-900 dark:text-white group-hover:text-[#0284c7] dark:group-hover:text-sky-300 transition-colors flex items-center gap-1.5">
+                      <span className="truncate">{cat.title}</span>
+                      {catLocked && (
+                        <Lock className="w-3.5 h-3.5 text-[#0284c7] dark:text-sky-300 shrink-0" />
+                      )}
                     </h3>
                     <p className="text-[11px] text-slate-600 dark:text-slate-300 line-clamp-1">
                       {cat.subtitle}
@@ -354,46 +367,64 @@ export const ToolsDirectoryView: React.FC<ToolsDirectoryViewProps> = ({
         </div>
 
         <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-4">
-          {filteredTools.map((tool) => (
-            <div
-              key={tool.id}
-              onClick={() => onSelectTool(tool)}
-              role="button"
-              tabIndex={0}
-              className="p-5 rounded-2xl liquid-glass liquid-glass-hover transition-all cursor-pointer text-left flex flex-col justify-between group border border-slate-200 dark:border-sky-500/20"
-            >
-              <div>
-                <div className="flex items-center justify-between mb-3">
-                  <div className="w-10 h-10 rounded-xl bg-[#0284c7]/15 dark:bg-[#0d4775]/40 text-[#0284c7] dark:text-sky-300 flex items-center justify-center shrink-0 shadow-xs">
-                    <DynamicIcon name={tool.iconName} className="w-5 h-5" />
+          {filteredTools.map((tool) => {
+            const locked = isToolCurrentlyLocked(tool.id);
+            return (
+              <div
+                key={tool.id}
+                onClick={() => onSelectTool(tool)}
+                role="button"
+                tabIndex={0}
+                className="p-5 rounded-2xl liquid-glass liquid-glass-hover transition-all cursor-pointer text-left flex flex-col justify-between group border border-slate-200 dark:border-sky-500/20"
+              >
+                <div>
+                  <div className="flex items-center justify-between mb-3">
+                    <div className="w-10 h-10 rounded-xl bg-[#0284c7]/15 dark:bg-[#0d4775]/40 text-[#0284c7] dark:text-sky-300 flex items-center justify-center shrink-0 shadow-xs">
+                      <DynamicIcon name={tool.iconName} className="w-5 h-5" />
+                    </div>
+                    {tool.badge && (
+                      <span className="px-2 py-0.5 rounded-md bg-[#0284c7]/15 text-[#0284c7] dark:text-sky-300 border border-[#0284c7]/30 text-[10px] font-bold font-mono uppercase whitespace-nowrap shrink-0 inline-flex items-center">
+                        {tool.badge}
+                      </span>
+                    )}
                   </div>
-                  {tool.badge && (
-                    <span className="px-2 py-0.5 rounded-md bg-[#0284c7]/15 text-[#0284c7] dark:text-sky-300 border border-[#0284c7]/30 text-[10px] font-bold font-mono uppercase whitespace-nowrap shrink-0 inline-flex items-center">
-                      {tool.badge}
-                    </span>
-                  )}
+
+                  <h3 className="text-sm font-bold text-slate-900 dark:text-white group-hover:text-[#0284c7] dark:group-hover:text-sky-300 transition-colors">
+                    {tool.name}
+                  </h3>
+                  <p className="text-xs text-slate-600 dark:text-slate-300 mt-1.5 line-clamp-2 leading-relaxed">
+                    {tool.shortDesc}
+                  </p>
                 </div>
 
-                <h3 className="text-sm font-bold text-slate-900 dark:text-white group-hover:text-[#0284c7] dark:group-hover:text-sky-300 transition-colors">
-                  {tool.name}
-                </h3>
-                <p className="text-xs text-slate-600 dark:text-slate-300 mt-1.5 line-clamp-2 leading-relaxed">
-                  {tool.shortDesc}
-                </p>
+                <div className="pt-4 mt-4 border-t border-slate-100 dark:border-white/10 flex items-center justify-between">
+                  <span
+                    className={`text-xs font-semibold group-hover:translate-x-0.5 transition-transform flex items-center gap-1 ${
+                      locked
+                        ? 'text-amber-600 dark:text-amber-300'
+                        : 'text-[#0284c7] dark:text-sky-400'
+                    }`}
+                  >
+                    {locked ? (
+                      <>
+                        <Lock className="w-3.5 h-3.5" />
+                        <span>Unlock to Open</span>
+                      </>
+                    ) : (
+                      <>
+                        <span>{t.openTool || 'Open Tool'}</span>
+                        <ArrowRight className="w-3.5 h-3.5" />
+                      </>
+                    )}
+                  </span>
+                  <span className="text-[10px] text-emerald-600 dark:text-emerald-400 font-mono font-medium flex items-center gap-1">
+                    <CheckCircle2 className="w-3 h-3" />
+                    {locked ? 'Protected' : t.freeBadge || '100% Free'}
+                  </span>
+                </div>
               </div>
-
-              <div className="pt-4 mt-4 border-t border-slate-100 dark:border-white/10 flex items-center justify-between">
-                <span className="text-xs font-semibold text-[#0284c7] dark:text-sky-400 group-hover:translate-x-0.5 transition-transform flex items-center gap-1">
-                  <span>{t.openTool || 'Open Tool'}</span>
-                  <ArrowRight className="w-3.5 h-3.5" />
-                </span>
-                <span className="text-[10px] text-emerald-600 dark:text-emerald-400 font-mono font-medium flex items-center gap-1">
-                  <CheckCircle2 className="w-3 h-3" />
-                  {t.freeBadge || '100% Free'}
-                </span>
-              </div>
-            </div>
-          ))}
+            );
+          })}
         </div>
 
         {filteredTools.length === 0 && (

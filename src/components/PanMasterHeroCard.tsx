@@ -13,10 +13,10 @@ import {
   RefreshCw,
   Sliders,
   Check,
-  FileCheck,
+  Lock,
 } from 'lucide-react';
-import { PAN_SERVICES, PHOTO_SIGNATURE_SPECS } from '../data/panMasterData';
 import { compressPDF, imagesToPDF } from '../utils/pdfEngine';
+import { useAuthSecurity } from '../context/AuthSecurityContext';
 
 interface PanMasterHeroCardProps {
   onOpenFullHub: () => void;
@@ -27,6 +27,8 @@ export const PanMasterHeroCard: React.FC<PanMasterHeroCardProps> = ({
   onOpenFullHub,
   onLaunchImageResize,
 }) => {
+  const { isToolCurrentlyLocked } = useAuthSecurity();
+  const isPanLocked = isToolCurrentlyLocked('pan-master-hub');
   const [activeTab, setActiveTab] = useState<'services' | 'compressor' | 'specs'>('services');
 
   // Mini In-Hero <300 KB Document Compressor
@@ -127,9 +129,10 @@ export const PanMasterHeroCard: React.FC<PanMasterHeroCardProps> = ({
 
         <button
           onClick={onOpenFullHub}
-          title="Open Full PAN Master Hub"
+          title={isPanLocked ? 'Sign in with Google to open Full PAN Master Hub' : 'Open Full PAN Master Hub'}
           className="text-xs font-bold text-[#0284c7] hover:text-[#0369a1] dark:text-sky-400 dark:hover:text-sky-300 flex items-center gap-1 transition-colors cursor-pointer group shrink-0 whitespace-nowrap"
         >
+          {isPanLocked && <Lock className="w-3 h-3 shrink-0" />}
           <span>Full Hub</span>
           <ArrowRight className="w-3.5 h-3.5 group-hover:translate-x-1 transition-transform shrink-0" />
         </button>
@@ -382,7 +385,8 @@ export const PanMasterHeroCard: React.FC<PanMasterHeroCardProps> = ({
           onClick={onOpenFullHub}
           className="inline-flex items-center gap-1.5 px-3 py-1.5 rounded-lg bg-[#0284c7] hover:bg-[#0369a1] text-white font-bold text-xs shadow-md shadow-[#0284c7]/30 transition-all cursor-pointer active:scale-95"
         >
-          <span>Open Full PAN Master Hub</span>
+          {isPanLocked && <Lock className="w-3.5 h-3.5 shrink-0" />}
+          <span>{isPanLocked ? 'Sign In for Full PAN Hub' : 'Open Full PAN Master Hub'}</span>
           <ArrowRight className="w-3.5 h-3.5" />
         </button>
       </div>

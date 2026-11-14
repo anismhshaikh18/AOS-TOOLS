@@ -19,6 +19,8 @@ import {
   useAuthSecurity,
   AutoLockMinutes,
   PRO_TIER_TOOL_IDS,
+  AUTH_REQUIRED_CORE_IDS,
+  CORE_SUITE_GATE_TOOLS,
 } from '../context/AuthSecurityContext';
 import { PDF_TOOLS } from '../data/pdfTools';
 import { IMAGE_TOOLS } from '../data/imageTools';
@@ -76,9 +78,28 @@ export const AuthSecurityModal: React.FC = () => {
   }, [isAuthModalOpen, authModalInitialTab]);
 
   const allManageableTools = useMemo(() => {
-    const combined = [...PDF_TOOLS, ...IMAGE_TOOLS, ...SPECIAL_TOOLS];
+    const coreSuites = [
+      CORE_SUITE_GATE_TOOLS.pan,
+      CORE_SUITE_GATE_TOOLS.portals,
+    ];
+    // Prioritize Client Diary, PAN Master Hub, AOS Receipt Hub, and Advanced Portals at top
+    const combined = [...SPECIAL_TOOLS, ...coreSuites, ...PDF_TOOLS, ...IMAGE_TOOLS];
+    const priorityOrder = new Map<string, number>([
+      ['khata-diary', 1],
+      ['pan-master-hub', 2],
+      ['receipt-hub', 3],
+      ['gov-portals', 4],
+      ['smart-id-card-studio', 5],
+      ['passport-photo-studio', 6],
+    ]);
+    const sorted = [...combined].sort((a, b) => {
+      const pa = priorityOrder.get(a.id) ?? 99;
+      const pb = priorityOrder.get(b.id) ?? 99;
+      return pa - pb;
+    });
+
     const query = toolFilter.trim().toLowerCase();
-    return combined.filter((t) => {
+    return sorted.filter((t) => {
       if (isToolProtectedUntouched(t.id)) return false;
       if (!query) return true;
       return (
@@ -297,8 +318,8 @@ export const AuthSecurityModal: React.FC = () => {
                       Remembers login status & lock rules across restarts.
                     </div>
                     <div className="p-2.5 rounded-xl bg-white dark:bg-[#0B192C] border border-slate-200 dark:border-sky-500/20">
-                      <span className="font-bold text-[#0284c7] dark:text-sky-300 block">Core Safe</span>
-                      PAN Hub, Khata Diary & QR Generator remain untouched.
+                      <span className="font-bold text-[#0284c7] dark:text-sky-300 block">Pro Access Gate</span>
+                      Unlocks Client Diary, PAN Master Hub, Receipt Hub &amp; Advanced Portals.
                     </div>
                   </div>
                 </div>
@@ -590,20 +611,20 @@ export const AuthSecurityModal: React.FC = () => {
                     </button>
                   </div>
                   <p className="text-[11px] text-slate-600 dark:text-slate-300">
-                    Requires active Google login to open Passport Studio, Smart ID Card Studio, Receipt Hub & PDF Encryption tools.
+                    Requires active Google login to open Passport Studio, Smart ID Card Studio, Client Diary, PAN Master Hub, Receipt Hub, Advanced Portals &amp; PDF Encryption tools.
                   </p>
                 </div>
               </div>
 
-              {/* 3. Untouched Protected Core Assurance Box */}
-              <div className="p-3.5 rounded-2xl border border-emerald-200 dark:border-emerald-500/30 bg-emerald-50/70 dark:bg-emerald-950/25 flex items-start gap-3">
-                <ShieldCheck className="w-5 h-5 text-emerald-600 dark:text-emerald-400 shrink-0 mt-0.5" />
+              {/* 3. Auth-Gated Core Suites Info Box (Deep Blue Brand Theme) */}
+              <div className="p-3.5 rounded-2xl border border-[#0284c7]/30 bg-[#072642]/5 dark:bg-[#072642]/70 flex items-start gap-3">
+                <ShieldCheck className="w-5 h-5 text-[#0284c7] dark:text-sky-300 shrink-0 mt-0.5" />
                 <div className="space-y-1">
-                  <h4 className="text-xs font-extrabold text-emerald-800 dark:text-emerald-300">
-                    100% Untouched & Always-Accessible Core Modules
+                  <h4 className="text-xs font-extrabold text-slate-900 dark:text-white">
+                    Google Auth-Gated Suites &amp; Individual Lock Controls
                   </h4>
-                  <p className="text-[11px] text-emerald-700/90 dark:text-emerald-200/80">
-                    PAN Master Hub, Client Khata Diary, and QR Code Generator are permanently excluded from tool locks and remain 100% untouched for instant citizen workflows.
+                  <p className="text-[11px] text-slate-600 dark:text-sky-100/80">
+                    <strong>Client Diary</strong>, <strong>PAN Master Hub</strong>, <strong>AOS Receipt Hub</strong>, and <strong>Advanced Portals</strong> require Google Sign-In for guest access. You can also lock or PIN-protect each module individually below.
                   </p>
                 </div>
               </div>
@@ -647,6 +668,9 @@ export const AuthSecurityModal: React.FC = () => {
                     const isProAutoLocked =
                       securityConfig.requireAuthForProTools &&
                       (PRO_TIER_TOOL_IDS as readonly string[]).includes(tool.id);
+                    const isCoreAuthGate = (AUTH_REQUIRED_CORE_IDS as readonly string[]).includes(
+                      tool.id
+                    );
                     const locked = isExplicitLocked || isProAutoLocked;
 
                     return (
@@ -656,7 +680,9 @@ export const AuthSecurityModal: React.FC = () => {
                         onClick={() => void toggleToolLock(tool.id)}
                         className={`p-2.5 rounded-xl border text-left flex items-center justify-between gap-2 transition-all cursor-pointer ${
                           locked
-                            ? 'bg-[#0284c7]/10 dark:bg-[#0284c7]/20 border-[#0284c7]/40'
+                            ? 'bg-[#0284c7]/15 dark:bg-[#0284c7]/25 border-[#0284c7]/50'
+                            : isCoreAuthGate
+                            ? 'bg-sky-50/80 dark:bg-[#072642]/75 border-sky-300/60 dark:border-sky-500/35 hover:border-[#0284c7]'
                             : 'bg-white dark:bg-[#072642]/50 border-slate-200 dark:border-sky-500/15 hover:border-sky-400/40'
                         }`}
                       >
@@ -664,18 +690,27 @@ export const AuthSecurityModal: React.FC = () => {
                           <div className="text-xs font-bold text-slate-900 dark:text-white truncate">
                             {tool.name}
                           </div>
-                          <div className="text-[10px] uppercase font-mono text-slate-400">
-                            {tool.category} {isProAutoLocked ? '· Pro Auth' : ''}
+                          <div className="text-[10px] uppercase font-mono text-slate-500 dark:text-sky-300/80 truncate">
+                            {tool.category}
+                            {isCoreAuthGate ? ' · Auth Gate' : ''}
+                            {isProAutoLocked ? ' · Pro Lock' : ''}
+                            {isExplicitLocked ? ' · PIN/Lock' : ''}
                           </div>
                         </div>
                         <span
                           className={`p-1.5 rounded-lg shrink-0 ${
                             locked
                               ? 'bg-[#0284c7] text-white'
+                              : isCoreAuthGate
+                              ? 'bg-[#072642] text-sky-300 border border-sky-400/40'
                               : 'bg-slate-100 dark:bg-white/10 text-slate-400'
                           }`}
                         >
-                          {locked ? <Lock className="w-3.5 h-3.5" /> : <Unlock className="w-3.5 h-3.5" />}
+                          {locked || isCoreAuthGate ? (
+                            <Lock className="w-3.5 h-3.5" />
+                          ) : (
+                            <Unlock className="w-3.5 h-3.5" />
+                          )}
                         </span>
                       </button>
                     );

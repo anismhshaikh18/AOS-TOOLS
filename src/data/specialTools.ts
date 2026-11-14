@@ -105,7 +105,7 @@ export const SPECIAL_TOOLS: ToolItem[] = [
   {
     id: 'receipt-hub',
     name: 'AOS Receipt Hub',
-    shortDesc: 'Stamp & Khata receipt generator with 5 official templates, custom hex colors, stamp seals, and instant print.',
+    shortDesc: 'Stamp & Client Diary receipt generator with 5 official templates, custom hex colors, stamp seals, and instant print.',
     category: 'special',
     iconName: 'Receipt',
     status: 'fully-supported',
@@ -114,8 +114,8 @@ export const SPECIAL_TOOLS: ToolItem[] = [
   },
   {
     id: 'khata-diary',
-    name: 'Client Khata Ledger Diary',
-    shortDesc: 'Complete client ledger diary with token numbers, government fee tracking, work charges, and status.',
+    name: 'Client Diary',
+    shortDesc: 'Complete client diary ledger with token numbers, government fee tracking, work charges, and status.',
     category: 'special',
     iconName: 'BookMarked',
     status: 'fully-supported',

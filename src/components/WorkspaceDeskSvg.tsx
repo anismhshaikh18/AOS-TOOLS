@@ -230,7 +230,7 @@ export const WorkspaceDeskSvg: React.FC<WorkspaceDeskSvgProps> = ({
 
           {/* Bullet 5 */}
           <rect x="0" y="234" width="10" height="10" rx="2" fill="#D97706" />
-          <text x="16" y="243" fill="#0F172A" fontSize="9.5" fontWeight="700">Client Khata Diary</text>
+          <text x="16" y="243" fill="#0F172A" fontSize="9.5" fontWeight="700">Client Diary</text>
           <text x="16" y="255" fill="#64748B" fontSize="8">Token Registry &amp; Ledger</text>
 
           {/* Bottom Stamp Badge */}
