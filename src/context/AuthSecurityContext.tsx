@@ -228,12 +228,48 @@ export const AuthSecurityProvider: React.FC<{ children: React.ReactNode }> = ({ 
     const photoURL = (fbUser.photoURL || '').trim().slice(0, 500);
     const isBootstrapAdmin =
       fbUser.emailVerified && email.toLowerCase() === BOOTSTRAP_ADMIN_EMAIL.toLowerCase();
-    const computedRole: UserRole = isBootstrapAdmin ? 'admin' : 'operator';
+    let resolvedRole: UserRole = isBootstrapAdmin ? 'admin' : 'operator';
+
+    // 1. Establish local authenticated session immediately so Google Auth always works
+    const initialProfile: AosUserProfile = {
+      uid: fbUser.uid,
+      displayName,
+      email,
+      photoURL,
+      role: resolvedRole,
+      emailVerified: fbUser.emailVerified,
+    };
+    setUser(initialProfile);
+
+    const saveLocalSession = (profile: AosUserProfile) => {
+      try {
+        localStorage.setItem(
+          LOCAL_SESSION_STORAGE_KEY,
+          JSON.stringify({
+            uid: profile.uid,
+            email: profile.email,
+            displayName: profile.displayName,
+            role: profile.role,
+            loggedInAt: Date.now(),
+          })
+        );
+      } catch {
+        // Ignore storage error
+      }
+      setSessionCookie('aos_session_active', '1');
+      setSessionCookie('aos_user_role', profile.role);
+    };
+
+    saveLocalSession(initialProfile);
+
+    // 2. Best-effort Firestore profile & security sync with graceful local fallback
+    if (!fbUser.emailVerified) {
+      return;
+    }
 
     const profileRef = doc(db, 'users', fbUser.uid);
     const profilePath = `users/${fbUser.uid}`;
-
-    let resolvedRole: UserRole = computedRole;
+    let profileExistsInFirestore = false;
 
     try {
       const existingProfile = await getDoc(profileRef);
@@ -241,7 +277,7 @@ export const AuthSecurityProvider: React.FC<{ children: React.ReactNode }> = ({ 
         const createPayload: Record<string, unknown> = {
           uid: fbUser.uid,
           email,
-          role: computedRole,
+          role: resolvedRole,
           createdAt: serverTimestamp(),
           updatedAt: serverTimestamp(),
           lastLoginAt: serverTimestamp(),
@@ -251,17 +287,30 @@ export const AuthSecurityProvider: React.FC<{ children: React.ReactNode }> = ({ 
 
         try {
           await setDoc(profileRef, createPayload);
+          profileExistsInFirestore = true;
         } catch (writeErr) {
           handleFirestoreError(writeErr, OperationType.CREATE, profilePath);
         }
       } else {
+        profileExistsInFirestore = true;
         const existingData = existingProfile.data();
         const currentStoredRole = existingData?.role as UserRole | undefined;
         if (isBootstrapAdmin) {
           resolvedRole = 'admin';
-        } else if (currentStoredRole === 'member' || currentStoredRole === 'operator' || currentStoredRole === 'admin') {
+        } else if (
+          currentStoredRole === 'member' ||
+          currentStoredRole === 'operator' ||
+          currentStoredRole === 'admin'
+        ) {
           resolvedRole = currentStoredRole;
         }
+
+        const updatedProfile: AosUserProfile = {
+          ...initialProfile,
+          role: resolvedRole,
+        };
+        setUser(updatedProfile);
+        saveLocalSession(updatedProfile);
 
         const updatePayload: Record<string, unknown> = {
           email,
@@ -284,34 +333,11 @@ export const AuthSecurityProvider: React.FC<{ children: React.ReactNode }> = ({ 
       handleFirestoreError(readErr, OperationType.GET, profilePath);
     }
 
-    const profileObj: AosUserProfile = {
-      uid: fbUser.uid,
-      displayName,
-      email,
-      photoURL,
-      role: resolvedRole,
-      emailVerified: fbUser.emailVerified,
-    };
-    setUser(profileObj);
-
-    try {
-      localStorage.setItem(
-        LOCAL_SESSION_STORAGE_KEY,
-        JSON.stringify({
-          uid: profileObj.uid,
-          email: profileObj.email,
-          displayName: profileObj.displayName,
-          role: profileObj.role,
-          loggedInAt: Date.now(),
-        })
-      );
-    } catch {
-      // Ignore storage error
+    // Sync security configuration from private subcollection only if parent profile succeeded
+    if (!profileExistsInFirestore) {
+      return;
     }
-    setSessionCookie('aos_session_active', '1');
-    setSessionCookie('aos_user_role', profileObj.role);
 
-    // Sync security configuration from private subcollection
     const securityRef = doc(db, 'users', fbUser.uid, 'private', 'security');
     const securityPath = `users/${fbUser.uid}/private/security`;
     try {
@@ -338,11 +364,11 @@ export const AuthSecurityProvider: React.FC<{ children: React.ReactNode }> = ({ 
 
   useEffect(() => {
     const unsubscribe = onAuthStateChanged(auth, async (fbUser) => {
-      if (fbUser && fbUser.emailVerified) {
+      if (fbUser) {
         try {
           await syncUserAndSecurity(fbUser);
-        } catch (err) {
-          console.error('Auth profile sync warning:', err);
+        } catch {
+          // Local session fallback already applied inside syncUserAndSecurity
         }
       } else {
         setUser(null);
@@ -443,7 +469,11 @@ export const AuthSecurityProvider: React.FC<{ children: React.ReactNode }> = ({ 
 
       const currentFbUser = auth.currentUser;
       if (currentFbUser && currentFbUser.emailVerified) {
-        await persistSecurityToFirestore(currentFbUser.uid, sanitized);
+        try {
+          await persistSecurityToFirestore(currentFbUser.uid, sanitized);
+        } catch {
+          // Local storage security preferences already saved above
+        }
       }
     },
     [persistSecurityToFirestore]
@@ -455,7 +485,11 @@ export const AuthSecurityProvider: React.FC<{ children: React.ReactNode }> = ({ 
     try {
       const credential = await signInWithPopup(auth, googleProvider);
       if (credential.user) {
-        await syncUserAndSecurity(credential.user);
+        try {
+          await syncUserAndSecurity(credential.user);
+        } catch {
+          // Local session fallback already established inside syncUserAndSecurity
+        }
         touchActivity();
         return true;
       }

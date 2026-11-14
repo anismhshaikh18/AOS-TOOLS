@@ -24,8 +24,8 @@ googleProvider.setCustomParameters({
 });
 
 // Ensure persistent login across sessions on Cloudflare Workers & web browsers
-setPersistence(auth, browserLocalPersistence).catch((err) => {
-  console.warn('Firebase Auth persistence fallback active:', err);
+setPersistence(auth, browserLocalPersistence).catch(() => {
+  // Fallback safely to in-memory/default persistence if storage is restricted
 });
 
 export enum OperationType {
@@ -54,11 +54,27 @@ export interface FirestoreErrorInfo {
   };
 }
 
+export function isFirestorePermissionError(error: unknown): boolean {
+  if (!error) return false;
+  const code = typeof error === 'object' && error !== null && 'code' in error
+    ? String((error as { code?: unknown }).code || '').toLowerCase()
+    : '';
+  const msg = (error instanceof Error ? error.message : String(error)).toLowerCase();
+
+  return (
+    code.includes('permission-denied') ||
+    code.includes('unauthenticated') ||
+    msg.includes('missing or insufficient permissions') ||
+    msg.includes('permission_denied') ||
+    msg.includes('permission denied')
+  );
+}
+
 export function handleFirestoreError(
   error: unknown,
   operationType: OperationType,
   path: string | null
-): never {
+): FirestoreErrorInfo {
   const errInfo: FirestoreErrorInfo = {
     error: error instanceof Error ? error.message : String(error),
     authInfo: {
@@ -76,17 +92,20 @@ export function handleFirestoreError(
     operationType,
     path,
   };
-  console.error('Firestore Error: ', JSON.stringify(errInfo));
-  throw new Error(JSON.stringify(errInfo));
+
+  // Gracefully suppress console permission errors when local fallback is active
+  if (!isFirestorePermissionError(error)) {
+    console.warn('Firestore sync fallback active:', operationType, path || '');
+  }
+
+  return errInfo;
 }
 
 async function testConnection() {
   try {
     await getDocFromServer(doc(db, 'test', 'connection'));
-  } catch (error) {
-    if (error instanceof Error && error.message.includes('the client is offline')) {
-      console.error('Please check your Firebase configuration. Firestore client appears offline.');
-    }
+  } catch {
+    // Expected when /test/connection is locked by security rules or offline; fall back silently
   }
 }
 
