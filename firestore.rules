@@ -1,0 +1,190 @@
+rules_version = '2';
+
+service cloud.firestore {
+  match /databases/{database}/documents {
+
+    // =========================================================================
+    // 1. GLOBAL DEFAULT-DENY SAFETY NET
+    // =========================================================================
+    match /{document=**} {
+      allow read, write: if false;
+    }
+
+    // =========================================================================
+    // 2. HARDENED PRIMITIVE HELPERS
+    // =========================================================================
+    function isSignedIn() {
+      return request.auth != null;
+    }
+
+    function isVerifiedUser() {
+      return isSignedIn() && request.auth.token.email_verified == true;
+    }
+
+    function isOwner(userId) {
+      return isSignedIn() && request.auth.uid == userId;
+    }
+
+    function isBootstrapAdmin() {
+      return isVerifiedUser() && request.auth.token.email == 'anismhshaikh18@gmail.com';
+    }
+
+    function isAdmin() {
+      return isBootstrapAdmin() ||
+        (isSignedIn() && exists(/databases/$(database)/documents/admins/$(request.auth.uid)));
+    }
+
+    function isValidId(id) {
+      return id is string && id.size() >= 1 && id.size() <= 128 && id.matches('^[a-zA-Z0-9_\\-]+$');
+    }
+
+    function incoming() {
+      return request.resource.data;
+    }
+
+    function existing() {
+      return resource.data;
+    }
+
+    // =========================================================================
+    // 3. ENTITY VALIDATION BLUEPRINTS
+    // =========================================================================
+    function isValidUserProfile(data, userId) {
+      return data.keys().hasAll(['uid', 'email', 'role', 'createdAt', 'updatedAt']) &&
+        data.keys().hasOnly([
+          'uid',
+          'displayName',
+          'email',
+          'photoURL',
+          'role',
+          'lastLoginAt',
+          'createdAt',
+          'updatedAt'
+        ]) &&
+        data.uid is string &&
+        isValidId(data.uid) &&
+        data.uid == userId &&
+        data.email is string &&
+        data.email.size() >= 3 &&
+        data.email.size() <= 150 &&
+        (!('displayName' in data) || (data.displayName is string && data.displayName.size() >= 1 && data.displayName.size() <= 100)) &&
+        (!('photoURL' in data) || (data.photoURL is string && data.photoURL.size() <= 500)) &&
+        data.role is string &&
+        (data.role in ['member', 'operator', 'admin']) &&
+        data.createdAt is timestamp &&
+        data.updatedAt is timestamp &&
+        (!('lastLoginAt' in data) || data.lastLoginAt is timestamp);
+    }
+
+    function isValidSecurityConfig(data, userId) {
+      return data.keys().hasAll([
+          'ownerId',
+          'pinEnabled',
+          'requireAuthForProTools',
+          'autoLockMinutes',
+          'lockedToolIds',
+          'updatedAt'
+        ]) &&
+        data.keys().hasOnly([
+          'ownerId',
+          'pinHash',
+          'pinEnabled',
+          'requireAuthForProTools',
+          'autoLockMinutes',
+          'lockedToolIds',
+          'updatedAt'
+        ]) &&
+        data.ownerId is string &&
+        isValidId(data.ownerId) &&
+        data.ownerId == userId &&
+        data.ownerId == request.auth.uid &&
+        (!('pinHash' in data) || (data.pinHash is string && data.pinHash.size() <= 128)) &&
+        data.pinEnabled is bool &&
+        data.requireAuthForProTools is bool &&
+        data.autoLockMinutes is number &&
+        (data.autoLockMinutes in [0, 1, 5, 15, 30]) &&
+        data.lockedToolIds is list &&
+        data.lockedToolIds.size() <= 50 &&
+        (data.lockedToolIds.size() == 0 || (data.lockedToolIds[0] is string && data.lockedToolIds[0].size() >= 1 && data.lockedToolIds[0].size() <= 64)) &&
+        data.updatedAt is timestamp;
+    }
+
+    // =========================================================================
+    // 4. ADMIN REGISTRY (Read-Only for Self, No Client Writes)
+    // =========================================================================
+    match /admins/{adminId} {
+      allow get: if isSignedIn() && isValidId(adminId) && request.auth.uid == adminId;
+      allow list, create, update, delete: if false;
+    }
+
+    // =========================================================================
+    // 5. USER PROFILES (/users/{userId}) - Strictly Owner / Admin PII Guard
+    // =========================================================================
+    match /users/{userId} {
+      allow get: if isSignedIn() && isValidId(userId) && (isOwner(userId) || isAdmin());
+      allow list: if isAdmin();
+
+      allow create: if isVerifiedUser() &&
+        isValidId(userId) &&
+        isOwner(userId) &&
+        isValidUserProfile(incoming(), userId) &&
+        incoming().createdAt == request.time &&
+        incoming().updatedAt == request.time &&
+        (
+          (incoming().role in ['member', 'operator']) ||
+          (incoming().role == 'admin' && isBootstrapAdmin())
+        );
+
+      allow update: if isVerifiedUser() &&
+        isValidId(userId) &&
+        isValidUserProfile(incoming(), userId) &&
+        incoming().uid == existing().uid &&
+        incoming().createdAt == existing().createdAt &&
+        incoming().updatedAt == request.time &&
+        (
+          (isAdmin()) ||
+          (isOwner(userId) && incoming().diff(existing()).affectedKeys().hasOnly(['displayName', 'email', 'photoURL', 'lastLoginAt', 'updatedAt'])) ||
+          (isOwner(userId) && isBootstrapAdmin() && incoming().role == 'admin' && incoming().diff(existing()).affectedKeys().hasOnly(['displayName', 'email', 'photoURL', 'role', 'lastLoginAt', 'updatedAt']))
+        );
+
+      allow delete: if false;
+
+      // =======================================================================
+      // 6. PRIVATE USER SECURITY & TOOL LOCK CONFIG (/users/{userId}/private/{configId})
+      // =======================================================================
+      match /private/{configId} {
+        allow get: if isSignedIn() && isValidId(userId) && isValidId(configId) && isOwner(userId);
+        allow list: if false;
+
+        allow create: if isVerifiedUser() &&
+          isValidId(userId) &&
+          isValidId(configId) &&
+          configId == 'security' &&
+          isOwner(userId) &&
+          isValidSecurityConfig(incoming(), userId) &&
+          incoming().updatedAt == request.time &&
+          exists(/databases/$(database)/documents/users/$(userId));
+
+        allow update: if isVerifiedUser() &&
+          isValidId(userId) &&
+          isValidId(configId) &&
+          configId == 'security' &&
+          isOwner(userId) &&
+          isValidSecurityConfig(incoming(), userId) &&
+          incoming().ownerId == existing().ownerId &&
+          incoming().updatedAt == request.time &&
+          incoming().diff(existing()).affectedKeys().hasOnly([
+            'pinHash',
+            'pinEnabled',
+            'requireAuthForProTools',
+            'autoLockMinutes',
+            'lockedToolIds',
+            'updatedAt'
+          ]) &&
+          exists(/databases/$(database)/documents/users/$(userId));
+
+        allow delete: if isVerifiedUser() && isValidId(userId) && isValidId(configId) && isOwner(userId);
+      }
+    }
+  }
+}

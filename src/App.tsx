@@ -25,6 +25,9 @@ import { SiteBackgroundSvg } from './components/SiteBackgroundSvg';
 import { ToolGuideSection } from './components/ToolGuideSection';
 import { StarRatingWidget } from './components/StarRatingWidget';
 import { ToolRequestModal } from './components/ToolRequestModal';
+import { AuthSecurityModal } from './components/AuthSecurityModal';
+import { ToolLockGateModal } from './components/ToolLockGateModal';
+import { useAuthSecurity } from './context/AuthSecurityContext';
 
 const KHATA_TOOL_ITEM: ToolItem = {
   id: 'khata-diary',
@@ -41,6 +44,9 @@ export default function App() {
   const [isPrivacyOpen, setIsPrivacyOpen] = useState<boolean>(false);
   const [isFreePolicyOpen, setIsFreePolicyOpen] = useState<boolean>(false);
   const [isRequestModalOpen, setIsRequestModalOpen] = useState<boolean>(false);
+  const [pendingLockedTool, setPendingLockedTool] = useState<ToolItem | null>(null);
+
+  const { isToolCurrentlyLocked, isToolProtectedUntouched } = useAuthSecurity();
 
   // Template Id
   const [templateId, setTemplateId] = useState<TemplateId>(() => {
@@ -113,7 +119,12 @@ export default function App() {
         if (state.toolId) {
           const allTools = [...PDF_TOOLS, ...IMAGE_TOOLS, ...SPECIAL_TOOLS];
           const found = allTools.find((t) => t.id === state.toolId);
-          setSelectedTool(found ? getTranslatedTool(found, lang) : null);
+          if (found && !isToolProtectedUntouched(found.id) && isToolCurrentlyLocked(found.id)) {
+            setSelectedTool(null);
+            setPendingLockedTool(getTranslatedTool(found, lang));
+          } else {
+            setSelectedTool(found ? getTranslatedTool(found, lang) : null);
+          }
         } else {
           setSelectedTool(null);
         }
@@ -134,7 +145,7 @@ export default function App() {
 
     window.addEventListener('popstate', handlePopState);
     return () => window.removeEventListener('popstate', handlePopState);
-  }, [lang]);
+  }, [lang, isToolCurrentlyLocked, isToolProtectedUntouched]);
 
   const handleNavigateTab = (tab: string) => {
     setActiveTab(tab);
@@ -142,7 +153,7 @@ export default function App() {
     window.history.pushState({ tab, toolId: null }, '');
   };
 
-  const handleSelectTool = (tool: ToolItem) => {
+  const launchToolDirectly = (tool: ToolItem) => {
     if (tool.id === 'khata-diary') {
       handleNavigateTab('khata');
       return;
@@ -150,6 +161,19 @@ export default function App() {
     const localizedTool = getTranslatedTool(tool, lang);
     setSelectedTool(localizedTool);
     window.history.pushState({ tab: activeTab, toolId: tool.id }, '');
+  };
+
+  const handleSelectTool = (tool: ToolItem) => {
+    // PAN Master Hub, Client Khata Diary & QR Generator are 100% protected & untouched
+    if (tool.id === 'khata-diary') {
+      handleNavigateTab('khata');
+      return;
+    }
+    if (!isToolProtectedUntouched(tool.id) && isToolCurrentlyLocked(tool.id)) {
+      setPendingLockedTool(getTranslatedTool(tool, lang));
+      return;
+    }
+    launchToolDirectly(tool);
   };
 
   const handleCloseTool = () => {
@@ -335,6 +359,18 @@ export default function App() {
       <ToolRequestModal
         isOpen={isRequestModalOpen}
         onClose={() => setIsRequestModalOpen(false)}
+      />
+
+      {/* Google Auth & Tool Access Control Modals */}
+      <AuthSecurityModal />
+
+      <ToolLockGateModal
+        tool={pendingLockedTool}
+        onClose={() => setPendingLockedTool(null)}
+        onUnlocked={(unlockedTool) => {
+          setPendingLockedTool(null);
+          launchToolDirectly(unlockedTool);
+        }}
       />
 
     </div>

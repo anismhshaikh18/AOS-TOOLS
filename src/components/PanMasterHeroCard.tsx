@@ -107,19 +107,19 @@ export const PanMasterHeroCard: React.FC<PanMasterHeroCardProps> = ({
     <div className="w-full rounded-3xl overflow-hidden liquid-glass p-4 sm:p-6 flex flex-col justify-between space-y-4">
       
       {/* Top Header */}
-      <div className="flex items-center justify-between pb-3 border-b border-slate-200 dark:border-white/10">
-        <div className="flex items-center gap-2.5">
+      <div className="flex items-center justify-between gap-2 pb-3 border-b border-slate-200 dark:border-white/10">
+        <div className="flex items-center gap-2.5 min-w-0 flex-1">
           <div className="w-9 h-9 rounded-xl bg-[#0284c7]/20 border border-[#0284c7]/40 flex items-center justify-center text-[#0284c7] dark:text-sky-300 shrink-0">
             <Building2 className="w-4 h-4" />
           </div>
-          <div>
-            <div className="flex flex-wrap sm:flex-nowrap items-center gap-2">
+          <div className="min-w-0 flex-1">
+            <div className="flex flex-wrap items-center gap-1.5 sm:gap-2">
               <span className="text-sm font-extrabold text-slate-900 dark:text-white tracking-tight whitespace-nowrap">PAN Master Hub</span>
               <span className="text-[10px] px-2.5 py-0.5 rounded-full bg-sky-100 dark:bg-[#072642] text-sky-700 dark:text-sky-300 border border-sky-400/40 font-bold uppercase tracking-wider whitespace-nowrap shrink-0 inline-flex items-center">
                 NSDL &amp; UTIITSL
               </span>
             </div>
-            <div className="text-[11px] text-slate-600 dark:text-slate-300 truncate">
+            <div className="text-[11px] text-slate-600 dark:text-slate-300 leading-snug mt-0.5 break-words">
               Form 49A, Correction &amp; &lt;300 KB Document Prep
             </div>
           </div>

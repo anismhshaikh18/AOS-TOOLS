@@ -1,0 +1,112 @@
+{
+  "entities": {
+    "UserProfile": {
+      "title": "UserProfile",
+      "description": "Authenticated AOS Tools user profile and role metadata.",
+      "type": "object",
+      "properties": {
+        "uid": {
+          "type": "string",
+          "description": "Firebase Auth user UID.",
+          "minLength": 1,
+          "maxLength": 128,
+          "pattern": "^[a-zA-Z0-9_\\-]+$"
+        },
+        "displayName": {
+          "type": "string",
+          "description": "User display name from Google profile.",
+          "minLength": 1,
+          "maxLength": 100
+        },
+        "email": {
+          "type": "string",
+          "format": "email",
+          "description": "Verified user email address.",
+          "minLength": 3,
+          "maxLength": 150
+        },
+        "photoURL": {
+          "type": "string",
+          "description": "Profile avatar URL.",
+          "maxLength": 500
+        },
+        "role": {
+          "type": "string",
+          "enum": ["member", "operator", "admin"],
+          "description": "User access tier within AOS Tools."
+        },
+        "lastLoginAt": {
+          "type": "string",
+          "format": "date-time",
+          "description": "Server timestamp of the latest login."
+        },
+        "createdAt": {
+          "type": "string",
+          "format": "date-time",
+          "description": "Server timestamp when profile was first created."
+        },
+        "updatedAt": {
+          "type": "string",
+          "format": "date-time",
+          "description": "Server timestamp of last profile update."
+        }
+      },
+      "required": ["uid", "email", "role", "createdAt", "updatedAt"]
+    },
+    "UserSecurityConfig": {
+      "title": "UserSecurityConfig",
+      "description": "Private per-user tool locking preferences, hashed PIN, and auto-lock settings.",
+      "type": "object",
+      "properties": {
+        "ownerId": {
+          "type": "string",
+          "description": "Owner UID matching Firebase Auth UID.",
+          "minLength": 1,
+          "maxLength": 128,
+          "pattern": "^[a-zA-Z0-9_\\-]+$"
+        },
+        "pinHash": {
+          "type": "string",
+          "description": "SHA-256 salted hash of operator security PIN (empty string when disabled).",
+          "maxLength": 128
+        },
+        "pinEnabled": {
+          "type": "boolean",
+          "description": "Whether PIN protection is enabled for locked tools."
+        },
+        "requireAuthForProTools": {
+          "type": "boolean",
+          "description": "Whether high-tier tools require active Google authentication."
+        },
+        "autoLockMinutes": {
+          "type": "number",
+          "description": "Inactivity auto-lock duration in minutes (0 disables auto-lock)."
+        },
+        "lockedToolIds": {
+          "type": "array",
+          "description": "Bounded list of tool IDs currently locked by the user."
+        },
+        "updatedAt": {
+          "type": "string",
+          "format": "date-time",
+          "description": "Server timestamp of latest security config update."
+        }
+      },
+      "required": ["ownerId", "pinEnabled", "requireAuthForProTools", "autoLockMinutes", "lockedToolIds", "updatedAt"]
+    }
+  },
+  "firestore": {
+    "/users/{userId}": {
+      "schema": {
+        "$ref": "#/entities/UserProfile"
+      },
+      "description": "Stores verified user profile records strictly accessible only to the profile owner or admins."
+    },
+    "/users/{userId}/private/{configId}": {
+      "schema": {
+        "$ref": "#/entities/UserSecurityConfig"
+      },
+      "description": "Isolated private security preferences and tool lock configurations owned by the user."
+    }
+  }
+}

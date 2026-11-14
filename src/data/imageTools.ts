@@ -49,7 +49,7 @@ export const IMAGE_TOOLS: ToolItem[] = [
   {
     id: 'crop-circle-image',
     name: 'Circle Crop Avatar',
-    shortDesc: 'Crop portrait photos into perfect round avatars with clean transparent PNG background.',
+    shortDesc: 'Pro avatar studio: drag-to-center circle, squircle & hexagon cutouts, custom solid/gradient rings, tilt, tone filters & HD transparent PNG/WEBP.',
     category: 'image',
     iconName: 'Circle',
     status: 'fully-supported',

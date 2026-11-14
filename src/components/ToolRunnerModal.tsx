@@ -5,6 +5,7 @@ import { ToolGuideSection } from './ToolGuideSection';
 import { StarRatingWidget } from './StarRatingWidget';
 import { ColorPaletteExtractorView } from './ColorPaletteExtractorView';
 import { DocumentPhotoCropperView } from './DocumentPhotoCropperView';
+import { CircleCropAvatarView } from './CircleCropAvatarView';
 import {
   X,
   Upload,
@@ -1311,8 +1312,8 @@ export const ToolRunnerModal: React.FC<ToolRunnerModalProps> = ({
         <div className="p-6 sm:p-8 space-y-6">
           
           {/* Tool Description Header */}
-          <div className="text-xs text-slate-200 leading-relaxed liquid-glass-sub p-3.5 rounded-xl border border-white/10">
-            <p className="font-medium text-slate-200">
+          <div className="text-xs text-slate-700 dark:text-slate-200 leading-relaxed liquid-glass-sub p-3.5 rounded-xl border border-slate-200 dark:border-white/10">
+            <p className="font-medium text-slate-800 dark:text-slate-200">
               {tool.shortDesc}
             </p>
           </div>
@@ -4490,6 +4491,14 @@ export const ToolRunnerModal: React.FC<ToolRunnerModalProps> = ({
                   />
                 )}
 
+                {/* Advanced Circle Crop Avatar Studio View */}
+                {tool.id === 'crop-circle-image' && (
+                  <CircleCropAvatarView
+                    file={selectedFiles[0] || null}
+                    onSuccess={(res) => setSuccessResult(res)}
+                  />
+                )}
+
                 {/* Image Resize Dimensions */}
                 {tool.id === 'resize-image' && (
                   <div className="grid grid-cols-2 gap-3">
@@ -4919,7 +4928,7 @@ export const ToolRunnerModal: React.FC<ToolRunnerModalProps> = ({
               )}
 
               {/* Primary Action Button */}
-              {tool.id !== 'crop-image' && (
+              {tool.id !== 'crop-image' && tool.id !== 'crop-circle-image' && (
                 <button
                   onClick={executeProcessing}
                   disabled={isProcessing}

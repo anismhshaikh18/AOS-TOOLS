@@ -487,6 +487,30 @@ const TOOL_GUIDES: Record<string, ToolCustomGuide> = {
       '100% private in-browser image clipping'
     ],
     conclusionNote: 'Provides clean, precise cropping for official documents and identity photos without distorting facial proportions.'
+  },
+
+  'crop-circle-image': {
+    steps: [
+      {
+        title: 'Upload Photo or Load Demo',
+        desc: 'Select any portrait or logo photo from your device (or click Load Demo Portrait to preview tools right away).'
+      },
+      {
+        title: 'Center Face, Shape & Ring Style',
+        desc: 'Drag directly on the canvas to center the face, choose Circle, Squircle, or Hexagon shape, and customize solid or gradient rings, tilt, and studio tones.'
+      },
+      {
+        title: 'Export HD Transparent Avatar',
+        desc: 'Pick 400px to 2048px resolution and download a crisp transparent PNG, lightweight WEBP, or solid-fill JPG instantly.'
+      }
+    ],
+    highlights: [
+      'Interactive touch/mouse pan, zoom (0.5x–3.5x), 90° rotate, flip & fine tilt controls',
+      'Circle, Squircle, and Hexagon cutout shapes with anti-aliased edges',
+      'Customizable solid & gradient avatar rings, inner margins, and drop shadows',
+      '100% client-side HD export up to 2048×2048 px with alpha transparency'
+    ],
+    conclusionNote: 'Ideal for WhatsApp DP, LinkedIn profiles, CSC operator badges, YouTube channel logos, and official portal avatars without external editing software.'
   }
 };
 

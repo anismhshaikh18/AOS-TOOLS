@@ -1,7 +1,8 @@
 import React from 'react';
-import { ArrowRight, Info } from 'lucide-react';
+import { ArrowRight, Info, Lock } from 'lucide-react';
 import { ToolItem } from '../types';
 import { DynamicIcon } from './DynamicIcon';
+import { useAuthSecurity } from '../context/AuthSecurityContext';
 
 interface ToolCardProps {
   tool: ToolItem;
@@ -9,6 +10,9 @@ interface ToolCardProps {
 }
 
 export const ToolCard: React.FC<ToolCardProps> = ({ tool, onSelect }) => {
+  const { isToolCurrentlyLocked } = useAuthSecurity();
+  const isLocked = isToolCurrentlyLocked(tool.id);
+
   const getCategoryLabel = (category: string) => {
     switch (category) {
       case 'pdf':
@@ -83,12 +87,12 @@ export const ToolCard: React.FC<ToolCardProps> = ({ tool, onSelect }) => {
               <DynamicIcon name={tool.iconName} className="w-5 h-5 text-[#0284c7] dark:text-sky-300" />
             </div>
           </div>
-          <div className="min-w-0">
-            <h3 className="text-base font-bold text-slate-900 dark:text-white group-hover:text-[#0284c7] dark:group-hover:text-sky-300 transition-colors tracking-tight truncate">
+          <div className="min-w-0 flex-1">
+            <h3 className="text-base font-bold text-slate-900 dark:text-white group-hover:text-[#0284c7] dark:group-hover:text-sky-300 transition-colors tracking-tight leading-snug break-words line-clamp-2">
               {tool.name}
             </h3>
             {tool.acceptedFormats && (
-              <span className="text-[11px] text-slate-400 dark:text-sky-300/60 font-mono">
+              <span className="text-[11px] text-slate-400 dark:text-sky-300/60 font-mono block truncate">
                 {tool.acceptedFormats}
               </span>
             )}
@@ -101,12 +105,27 @@ export const ToolCard: React.FC<ToolCardProps> = ({ tool, onSelect }) => {
       </div>
 
       <div className="pt-3.5 border-t border-slate-100 dark:border-white/10 flex items-center justify-between">
-        <span className="text-xs font-bold text-[#0284c7] dark:text-sky-400 group-hover:translate-x-1 transition-all duration-150 flex items-center gap-1.5">
-          <span>Open Tool</span>
-          <ArrowRight className="w-3.5 h-3.5 text-[#0284c7] dark:text-sky-400 group-hover:translate-x-0.5 transition-transform" />
+        <span
+          className={`text-xs font-bold group-hover:translate-x-1 transition-all duration-150 flex items-center gap-1.5 ${
+            isLocked
+              ? 'text-amber-600 dark:text-amber-300'
+              : 'text-[#0284c7] dark:text-sky-400'
+          }`}
+        >
+          {isLocked ? (
+            <>
+              <Lock className="w-3.5 h-3.5 shrink-0" />
+              <span>Unlock to Open</span>
+            </>
+          ) : (
+            <>
+              <span>Open Tool</span>
+              <ArrowRight className="w-3.5 h-3.5 text-[#0284c7] dark:text-sky-400 group-hover:translate-x-0.5 transition-transform" />
+            </>
+          )}
         </span>
         <span className="theme-badge text-[10px] font-mono font-semibold px-2 py-0.5 rounded-md">
-          ₹0 Free
+          {isLocked ? 'Protected' : '₹0 Free'}
         </span>
       </div>
     </div>

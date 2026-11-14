@@ -8,6 +8,9 @@ import {
   Menu,
   X,
   Check,
+  Shield,
+  Lock,
+  LogIn,
 } from 'lucide-react';
 import {
   LanguageCode,
@@ -15,6 +18,7 @@ import {
   TemplateId,
   TRANSLATIONS,
 } from '../utils/translations';
+import { useAuthSecurity } from '../context/AuthSecurityContext';
 
 import { AosLogoSvg } from './AosLogoSvg';
 
@@ -43,6 +47,13 @@ export const Header: React.FC<HeaderProps> = ({
   const [isMobileMenuOpen, setIsMobileMenuOpen] = useState(false);
 
   const langDropdownRef = useRef<HTMLDivElement>(null);
+  const {
+    user,
+    securityConfig,
+    isSessionLocked,
+    lockSessionNow,
+    openAuthModal,
+  } = useAuthSecurity();
 
   const t = TRANSLATIONS[lang] || TRANSLATIONS.en;
 
@@ -193,6 +204,81 @@ export const Header: React.FC<HeaderProps> = ({
               )}
             </div>
 
+            {/* Tool Lock / Quick Lock Shield Button */}
+            <button
+              onClick={() => {
+                if (securityConfig.pinEnabled && !isSessionLocked) {
+                  lockSessionNow();
+                } else {
+                  openAuthModal('locks');
+                }
+              }}
+              aria-label={
+                securityConfig.pinEnabled && !isSessionLocked
+                  ? 'Lock session now'
+                  : 'Tool Lock & Security Controls'
+              }
+              title={
+                securityConfig.pinEnabled && !isSessionLocked
+                  ? 'Lock active session now'
+                  : 'Tool Locks & PIN Security'
+              }
+              className={`hidden sm:flex p-2 rounded-full border transition-all cursor-pointer items-center gap-1 shadow-xs ${
+                isSessionLocked
+                  ? 'bg-amber-500/15 text-amber-600 dark:text-amber-300 border-amber-500/35'
+                  : securityConfig.pinEnabled ||
+                    securityConfig.requireAuthForProTools ||
+                    securityConfig.lockedToolIds.length > 0
+                  ? 'bg-[#0284c7]/15 text-[#0284c7] dark:text-sky-300 border-[#0284c7]/35'
+                  : 'text-slate-600 dark:text-slate-300 hover:text-slate-900 dark:hover:text-white bg-slate-100 dark:bg-[#0d4775]/40 border-slate-200 dark:border-sky-500/25'
+              }`}
+            >
+              {isSessionLocked ? (
+                <Lock className="w-4 h-4" />
+              ) : (
+                <Shield className="w-4 h-4" />
+              )}
+            </button>
+
+            {/* Google Account / Sign In Trigger */}
+            <button
+              onClick={() => openAuthModal('account')}
+              aria-label={user ? `Account: ${user.displayName}` : 'Sign in with Google'}
+              title={user ? `${user.displayName} (${user.role})` : 'Google Sign-In & Session'}
+              className={`px-2 sm:px-2.5 py-1.5 rounded-full border transition-all cursor-pointer flex items-center gap-1.5 shadow-xs ${
+                user
+                  ? 'bg-[#0284c7]/15 dark:bg-[#0d4775]/60 border-[#0284c7]/40 text-slate-900 dark:text-white hover:bg-[#0284c7]/25'
+                  : 'bg-gradient-to-r from-[#0284c7] to-[#0d4775] border-sky-400/40 text-white hover:brightness-110'
+              }`}
+            >
+              {user ? (
+                <>
+                  {user.photoURL ? (
+                    <img
+                      src={user.photoURL}
+                      alt={user.displayName}
+                      referrerPolicy="no-referrer"
+                      className="w-5 h-5 rounded-full object-cover ring-1 ring-sky-400 shrink-0"
+                    />
+                  ) : (
+                    <span className="w-5 h-5 rounded-full bg-[#0284c7] text-white text-[10px] font-black flex items-center justify-center shrink-0">
+                      {(user.displayName || 'A').charAt(0).toUpperCase()}
+                    </span>
+                  )}
+                  <span className="hidden lg:inline text-[11px] font-bold max-w-[96px] truncate">
+                    {user.displayName.split(' ')[0]}
+                  </span>
+                </>
+              ) : (
+                <>
+                  <LogIn className="w-3.5 h-3.5 shrink-0" />
+                  <span className="hidden sm:inline text-[11px] font-bold whitespace-nowrap">
+                    Sign In
+                  </span>
+                </>
+              )}
+            </button>
+
             {/* Mobile Hamburger Button */}
             <button
               onClick={() => setIsMobileMenuOpen(!isMobileMenuOpen)}
@@ -206,7 +292,7 @@ export const Header: React.FC<HeaderProps> = ({
 
         {/* Mobile Dropdown Menu */}
         {isMobileMenuOpen && (
-          <div className="md:hidden py-4 border-t border-slate-200 dark:border-sky-500/20 space-y-2 animate-in fade-in duration-150">
+          <div className="md:hidden py-4 border-t border-slate-200 dark:border-sky-500/20 space-y-2.5 animate-in fade-in duration-150">
             <div className="grid grid-cols-2 gap-2">
               {primaryNavItems.map((item) => (
                 <button
@@ -224,6 +310,28 @@ export const Header: React.FC<HeaderProps> = ({
                   {item.label}
                 </button>
               ))}
+            </div>
+            <div className="grid grid-cols-2 gap-2 pt-1">
+              <button
+                onClick={() => {
+                  setIsMobileMenuOpen(false);
+                  openAuthModal('account');
+                }}
+                className="p-2.5 rounded-xl text-xs font-bold flex items-center justify-center gap-1.5 bg-[#0284c7]/15 dark:bg-[#0284c7]/25 text-[#0284c7] dark:text-sky-200 border border-[#0284c7]/30"
+              >
+                <LogIn className="w-3.5 h-3.5" />
+                <span>{user ? 'Operator Profile' : 'Google Sign-In'}</span>
+              </button>
+              <button
+                onClick={() => {
+                  setIsMobileMenuOpen(false);
+                  openAuthModal('locks');
+                }}
+                className="p-2.5 rounded-xl text-xs font-bold flex items-center justify-center gap-1.5 bg-slate-100 dark:bg-[#03182b] text-slate-700 dark:text-slate-200 border border-slate-200 dark:border-sky-500/20"
+              >
+                <Shield className="w-3.5 h-3.5 text-[#0284c7]" />
+                <span>Tool Locks & PIN</span>
+              </button>
             </div>
           </div>
         )}
