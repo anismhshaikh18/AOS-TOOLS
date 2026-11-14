@@ -41,8 +41,8 @@ export const PAN_SERVICES: PanServiceGuide[] = [
         'Marriage certificate issued by Registrar of Marriages',
       ],
     },
-    proteanUrl: 'https://onlineservices.proteantech.in/paam/endUserRegisterContact.html',
-    utiitslUrl: 'https://www.pan.utiitsl.com/PAN/newA49A.html',
+    proteanUrl: 'https://www.protean-tinpan.com',
+    utiitslUrl: 'https://www.pan.utiitsl.com',
     fees: 'Physical Card: ₹107 (incl. GST) for Indian communication address; ₹1,017 for foreign dispatch. e-PAN only: ₹66.',
     steps: [
       'Step 1: Choose mode — Paperless (e-KYC & e-Sign via Aadhaar OTP), DSC based, or Physical documents submission.',
@@ -79,8 +79,8 @@ export const PAN_SERVICES: PanServiceGuide[] = [
         'Birth Certificate / 10th Certificate / Aadhaar / Passport',
       ],
     },
-    proteanUrl: 'https://onlineservices.proteantech.in/paam/endUserRegisterContact.html',
-    utiitslUrl: 'https://www.pan.utiitsl.com/PAN/csf.html',
+    proteanUrl: 'https://www.protean-tinpan.com',
+    utiitslUrl: 'https://www.pan.utiitsl.com',
     fees: '₹107 for Indian dispatch address; ₹1,017 for overseas dispatch.',
     steps: [
       'Step 1: Select Application Type: "Changes or Correction in existing PAN Data / Reprint of PAN Card".',
@@ -104,8 +104,8 @@ export const PAN_SERVICES: PanServiceGuide[] = [
       poa: ['Address will be fetched automatically from Income Tax department database'],
       pod: ['DOB as registered in existing record'],
     },
-    proteanUrl: 'https://onlineservices.proteantech.in/paam/ReprintDownload.html',
-    utiitslUrl: 'https://www.pan.utiitsl.com/PAN/reprint.html',
+    proteanUrl: 'https://www.protean-tinpan.com',
+    utiitslUrl: 'https://www.pan.utiitsl.com',
     fees: '₹50 (inclusive of taxes and speed post delivery across India).',
     steps: [
       'Step 1: Open the official Reprint portal (Protean or UTIITSL based on which entity originally issued your PAN).',
@@ -125,8 +125,8 @@ export const PAN_SERVICES: PanServiceGuide[] = [
       poa: ['Not required for tracking'],
       pod: ['Applicant Date of Birth (for UTIITSL verification)'],
     },
-    proteanUrl: 'https://tin.tin.proteantech.in/pantan/StatusTrack.html',
-    utiitslUrl: 'https://www.trackpan.utiitsl.com/PANONLINE/trackApp',
+    proteanUrl: 'https://www.protean-tinpan.com',
+    utiitslUrl: 'https://www.pan.utiitsl.com',
     fees: 'Free of cost.',
     steps: [
       'Step 1: Identify whether your receipt is from Protean (NSDL) or UTIITSL.',

@@ -480,9 +480,9 @@ export const PanMasterHub: React.FC<PanMasterHubProps> = ({
                       <div className="text-[10px] text-slate-500 font-mono">
                         {(() => {
                           try {
-                            return new URL(selectedService.proteanUrl || 'https://proteantech.in').hostname;
+                            return new URL(selectedService.proteanUrl || 'https://www.protean-tinpan.com').hostname;
                           } catch {
-                            return 'proteantech.in';
+                            return 'www.protean-tinpan.com';
                           }
                         })()}
                       </div>

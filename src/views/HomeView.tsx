@@ -10,10 +10,8 @@ import {
   Camera,
   CreditCard,
   FileText,
-  ArrowRight,
+  BookOpen,
   ShieldCheck,
-  HelpCircle,
-  Headphones,
   Unlock,
 } from 'lucide-react';
 import { ToolItem } from '../types';
@@ -21,12 +19,6 @@ import { PDF_TOOLS } from '../data/pdfTools';
 import { IMAGE_TOOLS } from '../data/imageTools';
 import { SPECIAL_TOOLS } from '../data/specialTools';
 import { PanMasterHeroCard } from '../components/PanMasterHeroCard';
-import {
-  PassportIllustrationSvg,
-  IdCardIllustrationSvg,
-  PdfSuiteIllustrationSvg,
-  SupportHelpIllustrationSvg,
-} from '../components/ServiceIllustrationsSvg';
 import { AosLogoSvg } from '../components/AosLogoSvg';
 import { ToolRequestSection } from '../components/ToolRequestSection';
 import { LanguageCode, TRANSLATIONS, getTranslatedTool } from '../utils/translations';
@@ -144,7 +136,7 @@ export const HomeView: React.FC<HomeViewProps> = ({
   };
 
   return (
-    <div className="space-y-10 w-full max-w-6xl mx-auto pb-16 animate-in fade-in duration-200">
+    <div className="space-y-8 w-full max-w-6xl mx-auto pb-12 animate-in fade-in duration-200">
       
       {/* =========================================================================
           HERO SECTION (Anis Online Services Deep Navy Corporate Styling)
@@ -240,12 +232,12 @@ export const HomeView: React.FC<HomeViewProps> = ({
             </div>
 
             {/* Quick Studio Launch CTA Buttons */}
-            <div className="flex flex-wrap items-center gap-3 pt-1">
+            <div className="flex flex-wrap items-center gap-2.5 pt-1">
               <button
                 onClick={handleLaunchPassport}
                 className="flex items-center gap-2 px-4 py-2.5 rounded-xl bg-gradient-to-r from-[#0284c7] to-[#0d4775] hover:from-[#38bdf8] hover:to-[#0284c7] text-white font-bold text-xs shadow-lg shadow-sky-500/25 transition-all cursor-pointer active:scale-95"
               >
-                <Camera className="w-4 h-4" />
+                <Camera className="w-4 h-4 shrink-0" />
                 <span>{t.passportStudioTitle || 'Passport Photo Studio'}</span>
               </button>
 
@@ -253,7 +245,7 @@ export const HomeView: React.FC<HomeViewProps> = ({
                 onClick={handleLaunchIdStudio}
                 className="flex items-center gap-2 px-4 py-2.5 rounded-xl liquid-glass-sub hover:border-[#0284c7] text-slate-700 dark:text-slate-100 font-bold text-xs transition-all cursor-pointer active:scale-95 shadow-xs"
               >
-                <CreditCard className="w-4 h-4 text-[#0284c7] dark:text-sky-300" />
+                <CreditCard className="w-4 h-4 text-[#0284c7] dark:text-sky-300 shrink-0" />
                 <span>{t.smartIdTitle || 'Smart ID Card Studio'}</span>
               </button>
 
@@ -261,8 +253,19 @@ export const HomeView: React.FC<HomeViewProps> = ({
                 onClick={() => setActiveTab('pdf')}
                 className="flex items-center gap-2 px-4 py-2.5 rounded-xl liquid-glass-sub hover:border-[#0284c7] text-slate-700 dark:text-slate-100 font-bold text-xs transition-all cursor-pointer active:scale-95 shadow-xs"
               >
-                <FileText className="w-4 h-4 text-[#0284c7] dark:text-sky-300" />
+                <FileText className="w-4 h-4 text-[#0284c7] dark:text-sky-300 shrink-0" />
                 <span>{t.pdf || '19 PDF Tools'}</span>
+              </button>
+
+              <button
+                onClick={() => setActiveTab('khata')}
+                className="flex items-center gap-2 px-4 py-2.5 rounded-xl liquid-glass-sub hover:border-[#0284c7] text-slate-700 dark:text-slate-100 font-bold text-xs transition-all cursor-pointer active:scale-95 shadow-xs"
+              >
+                <BookOpen className="w-4 h-4 text-[#0284c7] dark:text-sky-300 shrink-0" />
+                <span>{t.khataDiaryTitle || 'Client Diary'}</span>
+                {isClientDiaryLocked && (
+                  <Lock className="w-3 h-3 text-[#0284c7] dark:text-sky-300 shrink-0" />
+                )}
               </button>
             </div>
 
@@ -305,154 +308,6 @@ export const HomeView: React.FC<HomeViewProps> = ({
                   if (photoTool) onSelectTool(getTranslatedTool(photoTool, lang));
                 }}
               />
-            </div>
-          </div>
-
-        </div>
-      </section>
-
-      {/* =========================================================================
-          SPECIALIZED PRODUCTION TOOLS (Liquid Glass Cards)
-          ========================================================================= */}
-      <section className="space-y-4">
-        <div className="flex items-center justify-between">
-          <div>
-            <div className="flex items-center gap-2 text-xs font-bold text-[#0284c7] uppercase tracking-wider">
-              <Sparkles className="w-3.5 h-3.5" />
-              <span>{t.specializedSub || 'Flagship Creative & Document Suites'}</span>
-            </div>
-            <h2 className="text-xl sm:text-2xl font-black text-slate-900 dark:text-white tracking-tight mt-0.5">
-              {t.specializedHeader || 'Specialized Production Tools'}
-            </h2>
-          </div>
-          <button
-            onClick={() => setActiveTab('tools')}
-            className="text-xs font-bold text-[#0284c7] hover:text-[#0369a1] dark:hover:text-sky-300 flex items-center gap-1 transition-colors cursor-pointer group"
-          >
-            <span>{t.viewAll || 'View All 50+ Tools'}</span>
-            <ArrowRight className="w-3.5 h-3.5 group-hover:translate-x-1 transition-transform" />
-          </button>
-        </div>
-
-        <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-4">
-          
-          {/* Studio Card 1: Passport Photo Studio */}
-          <div
-            onClick={handleLaunchPassport}
-            className="rounded-2xl liquid-glass liquid-glass-hover p-5 cursor-pointer group hover:-translate-y-1 flex flex-col justify-between"
-          >
-            <div className="space-y-4">
-              <div className="flex items-center justify-between gap-2">
-                <div className="w-14 h-14 rounded-2xl liquid-glass-sub flex items-center justify-center p-1 group-hover:scale-105 transition-transform shrink-0">
-                  <PassportIllustrationSvg className="w-full h-full" />
-                </div>
-                <span className="text-[10px] px-2.5 py-0.5 rounded-md bg-[#0284c7]/15 text-[#0284c7] dark:text-sky-300 border border-[#0284c7]/30 font-bold whitespace-nowrap shrink-0 inline-flex items-center">
-                  STUDIO CROP &amp; PRINT
-                </span>
-              </div>
-              <div>
-                <h3 className="font-extrabold text-base text-slate-900 dark:text-white group-hover:text-[#0284c7] dark:group-hover:text-sky-300 transition-colors">
-                  {t.passportStudioTitle || 'Passport Photo Studio'}
-                </h3>
-                <p className="text-xs text-slate-600 dark:text-slate-300 mt-1.5 leading-relaxed line-clamp-3">
-                  {t.passportStudioDesc || 'Generate 4×6 (8 or 6 photos) and A4 (30 or 36) studio sheets. SSC, UPSC, and Police exam standard DOP & Candidate name printing with red laser cut guides.'}
-                </p>
-              </div>
-            </div>
-            <div className="pt-4 mt-4 border-t border-slate-100 dark:border-white/10 flex items-center justify-between text-xs font-bold text-[#0284c7] dark:text-sky-400 group-hover:text-[#0369a1] dark:group-hover:text-sky-300">
-              <span>{t.openTool || 'Open Studio'}</span>
-              <ArrowRight className="w-3.5 h-3.5 group-hover:translate-x-1 transition-transform" />
-            </div>
-          </div>
-
-          {/* Studio Card 2: Smart ID Card Studio */}
-          <div
-            onClick={handleLaunchIdStudio}
-            className="rounded-2xl liquid-glass liquid-glass-hover p-5 cursor-pointer group hover:-translate-y-1 flex flex-col justify-between"
-          >
-            <div className="space-y-4">
-              <div className="flex items-center justify-between gap-2">
-                <div className="w-14 h-14 rounded-2xl liquid-glass-sub flex items-center justify-center p-1 group-hover:scale-105 transition-transform shrink-0">
-                  <IdCardIllustrationSvg className="w-full h-full" />
-                </div>
-                <span className="text-[10px] px-2.5 py-0.5 rounded-md bg-sky-600/20 text-sky-600 dark:text-sky-400 border border-sky-500/30 font-bold whitespace-nowrap shrink-0 inline-flex items-center">
-                  CR80 300 DPI
-                </span>
-              </div>
-              <div>
-                <h3 className="font-extrabold text-base text-slate-900 dark:text-white group-hover:text-[#0284c7] dark:group-hover:text-sky-300 transition-colors">
-                  {t.smartIdTitle || 'Smart ID Card Studio'}
-                </h3>
-                <p className="text-xs text-slate-600 dark:text-slate-300 mt-1.5 leading-relaxed line-clamp-3">
-                  {t.smartIdDesc || 'Design official CR80 PVC identity cards (85.6 × 54 mm). Live QR code generator, candidate photo & signature, custom headers, and print sheets.'}
-                </p>
-              </div>
-            </div>
-            <div className="pt-4 mt-4 border-t border-slate-100 dark:border-white/10 flex items-center justify-between text-xs font-bold text-[#0284c7] dark:text-sky-400 group-hover:text-[#0369a1] dark:group-hover:text-sky-300">
-              <span>{t.launchTool || 'Launch Studio'}</span>
-              <ArrowRight className="w-3.5 h-3.5 group-hover:translate-x-1 transition-transform" />
-            </div>
-          </div>
-
-          {/* Studio Card 3: 19 PDF Tools Suite */}
-          <div
-            onClick={() => setActiveTab('pdf')}
-            className="rounded-2xl liquid-glass liquid-glass-hover p-5 cursor-pointer group hover:-translate-y-1 flex flex-col justify-between"
-          >
-            <div className="space-y-4">
-              <div className="flex items-center justify-between gap-2">
-                <div className="w-14 h-14 rounded-2xl liquid-glass-sub flex items-center justify-center p-1 group-hover:scale-105 transition-transform shrink-0">
-                  <PdfSuiteIllustrationSvg className="w-full h-full" />
-                </div>
-                <span className="text-[10px] px-2.5 py-0.5 rounded-md bg-indigo-600/20 text-indigo-600 dark:text-indigo-400 border border-indigo-500/30 font-bold whitespace-nowrap shrink-0 inline-flex items-center">
-                  19 UTILITIES
-                </span>
-              </div>
-              <div>
-                <h3 className="font-extrabold text-base text-slate-900 dark:text-white group-hover:text-[#0284c7] dark:group-hover:text-sky-300 transition-colors">
-                  {t.pdfPowerSuiteTitle || '19+ PDF Power Suite'}
-                </h3>
-                <p className="text-xs text-slate-600 dark:text-slate-300 mt-1.5 leading-relaxed line-clamp-3">
-                  {t.pdfPowerSuiteDesc || 'Merge, Split, Compress, Rotate, Watermark, Page Numbering, AES Encrypt, Unlock, PDF to JPG/Word, and Booklet imposition — entirely offline.'}
-                </p>
-              </div>
-            </div>
-            <div className="pt-4 mt-4 border-t border-slate-100 dark:border-white/10 flex items-center justify-between text-xs font-bold text-[#0284c7] dark:text-sky-400 group-hover:text-[#0369a1] dark:group-hover:text-sky-300">
-              <span>{t.viewAll || 'Explore All 19'}</span>
-              <ArrowRight className="w-3.5 h-3.5 group-hover:translate-x-1 transition-transform" />
-            </div>
-          </div>
-
-          {/* Studio Card 4: Client Diary */}
-          <div
-            onClick={() => setActiveTab('khata')}
-            className="rounded-2xl liquid-glass liquid-glass-hover p-5 cursor-pointer group hover:-translate-y-1 flex flex-col justify-between"
-          >
-            <div className="space-y-4">
-              <div className="flex items-center justify-between gap-2">
-                <div className="w-14 h-14 rounded-2xl liquid-glass-sub flex items-center justify-center p-1 group-hover:scale-105 transition-transform shrink-0">
-                  <SupportHelpIllustrationSvg className="w-full h-full" />
-                </div>
-                <span className="text-[10px] px-2.5 py-0.5 rounded-md bg-[#0284c7]/15 text-[#0284c7] dark:text-sky-300 border border-[#0284c7]/30 font-bold whitespace-nowrap shrink-0 inline-flex items-center gap-1">
-                  {isClientDiaryLocked && <Lock className="w-3 h-3" />}
-                  <span>{isClientDiaryLocked ? 'SIGN-IN GATE' : 'CLIENT DIARY'}</span>
-                </span>
-              </div>
-              <div>
-                <h3 className="font-extrabold text-base text-slate-900 dark:text-white group-hover:text-[#0284c7] dark:group-hover:text-sky-300 transition-colors">
-                  {t.khataDiaryTitle || 'Client Diary'}
-                </h3>
-                <p className="text-xs text-slate-600 dark:text-slate-300 mt-1.5 leading-relaxed line-clamp-3">
-                  {t.khataDiaryDesc || 'Store customer credit/debit records, send instant WhatsApp payment reminders, search transactions, and export ledger sheets securely.'}
-                </p>
-              </div>
-            </div>
-            <div className="pt-4 mt-4 border-t border-slate-100 dark:border-white/10 flex items-center justify-between text-xs font-bold text-[#0284c7] dark:text-sky-400 group-hover:text-[#0369a1] dark:group-hover:text-sky-300">
-              <span className="inline-flex items-center gap-1.5">
-                {isClientDiaryLocked && <Lock className="w-3.5 h-3.5" />}
-                <span>{isClientDiaryLocked ? 'Sign In to Open Client Diary' : 'Open Client Diary'}</span>
-              </span>
-              <ArrowRight className="w-3.5 h-3.5 group-hover:translate-x-1 transition-transform" />
             </div>
           </div>
 
