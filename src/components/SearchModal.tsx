@@ -1,19 +1,23 @@
-import React, { useState, useEffect, useMemo } from 'react';
-import { Search, X, ArrowRight, Mic, MicOff } from 'lucide-react';
+import React, { useState, useEffect, useMemo, useCallback } from 'react';
+import { Search, X, Mic, MicOff, Sparkles } from 'lucide-react';
 import { ToolItem } from '../types';
-import { PDF_TOOLS } from '../data/pdfTools';
-import { IMAGE_TOOLS } from '../data/imageTools';
-import { SPECIAL_TOOLS } from '../data/specialTools';
-import { DynamicIcon } from './DynamicIcon';
-import { LanguageCode, TRANSLATIONS, getTranslatedTool } from '../utils/translations';
-import { matchesMultilingualQuery } from '../utils/multilingualSearch';
+import { LanguageCode, TRANSLATIONS } from '../utils/translations';
 import { useVoiceSearch } from '../hooks/useVoiceSearch';
 import { useDebouncedValue } from '../hooks/useDebouncedValue';
+import { useAuthSecurity } from '../context/AuthSecurityContext';
+import {
+  buildUniversalIndex,
+  getUniversalKindCounts,
+  searchUniversalIndex,
+  UniversalResultKind,
+} from '../utils/universalSearchIndex';
+import { UniversalSearchResults } from './UniversalSearchResults';
 
 interface SearchModalProps {
   isOpen: boolean;
   onClose: () => void;
   onSelectTool: (tool: ToolItem) => void;
+  onNavigateTab?: (tab: string) => void;
   lang?: LanguageCode;
 }
 
@@ -21,26 +25,109 @@ export const SearchModal: React.FC<SearchModalProps> = ({
   isOpen,
   onClose,
   onSelectTool,
+  onNavigateTab,
   lang = 'en',
 }) => {
   const [query, setQuery] = useState('');
-  const debouncedQuery = useDebouncedValue(query, 150);
+  const [kindFilter, setKindFilter] = useState<'all' | UniversalResultKind>('all');
+  const [activeIndex, setActiveIndex] = useState(0);
+  const debouncedQuery = useDebouncedValue(query, 130);
   const t = TRANSLATIONS[lang] || TRANSLATIONS.en;
-  const { isSupported: voiceSupported, isListening, startListening } = useVoiceSearch(
+
+  const { user, isToolCurrentlyLocked } = useAuthSecurity();
+  const isDiaryLocked = isToolCurrentlyLocked('khata-diary');
+
+  const { isSupported: voiceSupported, isListening, voiceError, startListening } = useVoiceSearch(
     lang,
     (transcript) => setQuery(transcript)
   );
 
+  const universalIndex = useMemo(
+    () =>
+      buildUniversalIndex({
+        lang,
+        userId: user?.uid || null,
+        isToolLocked: isToolCurrentlyLocked,
+      }),
+    [lang, user?.uid, isToolCurrentlyLocked]
+  );
+
+  const counts = useMemo(
+    () => getUniversalKindCounts(universalIndex, debouncedQuery),
+    [universalIndex, debouncedQuery]
+  );
+
+  const results = useMemo(
+    () => searchUniversalIndex(universalIndex, debouncedQuery, kindFilter, 30),
+    [universalIndex, debouncedQuery, kindFilter]
+  );
+
   useEffect(() => {
-    const handleKeyDown = (e: KeyboardEvent) => {
-      if (e.key === 'Escape' && isOpen) {
+    setActiveIndex(0);
+  }, [debouncedQuery, kindFilter, isOpen]);
+
+  const handleNavigateSafe = useCallback(
+    (tab: string) => {
+      onNavigateTab?.(tab);
+    },
+    [onNavigateTab]
+  );
+
+  const triggerActiveResult = useCallback(() => {
+    const selected = results[activeIndex];
+    if (!selected) return;
+    const { item, resolvedPortalUrl } = selected;
+    if (item.kind === 'tool' && item.tool) {
+      onSelectTool(item.tool);
+      onClose();
+      return;
+    }
+    if (item.kind === 'portal') {
+      if (item.isLocked && item.targetTab) {
+        handleNavigateSafe(item.targetTab);
         onClose();
+      } else if (resolvedPortalUrl) {
+        const anchor = document.createElement('a');
+        anchor.href = resolvedPortalUrl;
+        anchor.target = '_blank';
+        anchor.rel = 'noopener noreferrer';
+        anchor.click();
+        onClose();
+      }
+      return;
+    }
+    if (item.kind === 'utility') {
+      if (item.tool) onSelectTool(item.tool);
+      else if (item.targetTab) handleNavigateSafe(item.targetTab);
+      onClose();
+      return;
+    }
+    if (item.kind === 'diary' && item.targetTab) {
+      handleNavigateSafe(item.targetTab);
+      onClose();
+    }
+  }, [results, activeIndex, onSelectTool, onClose, handleNavigateSafe]);
+
+  useEffect(() => {
+    if (!isOpen) return;
+    const handleKeyDown = (e: KeyboardEvent) => {
+      if (e.key === 'Escape') {
+        onClose();
+      } else if (e.key === 'ArrowDown') {
+        e.preventDefault();
+        setActiveIndex((prev) => (results.length > 0 ? (prev + 1) % results.length : 0));
+      } else if (e.key === 'ArrowUp') {
+        e.preventDefault();
+        setActiveIndex((prev) =>
+          results.length > 0 ? (prev - 1 + results.length) % results.length : 0
+        );
+      } else if (e.key === 'Enter' && results.length > 0) {
+        e.preventDefault();
+        triggerActiveResult();
       }
     };
     const handlePopState = () => {
-      if (isOpen) {
-        onClose();
-      }
+      onClose();
     };
     window.addEventListener('keydown', handleKeyDown);
     window.addEventListener('popstate', handlePopState);
@@ -48,50 +135,42 @@ export const SearchModal: React.FC<SearchModalProps> = ({
       window.removeEventListener('keydown', handleKeyDown);
       window.removeEventListener('popstate', handlePopState);
     };
-  }, [isOpen, onClose]);
-
-  const rawTools = useMemo(() => {
-    return [...PDF_TOOLS, ...IMAGE_TOOLS, ...SPECIAL_TOOLS];
-  }, []);
-
-  const allTools = useMemo(() => {
-    return rawTools.map((tool) => getTranslatedTool(tool, lang));
-  }, [rawTools, lang]);
-
-  const filtered = useMemo(() => {
-    if (!debouncedQuery.trim()) return allTools.slice(0, 10);
-    return allTools.filter((tool) =>
-      matchesMultilingualQuery(debouncedQuery, [
-        tool.name,
-        tool.shortDesc,
-        tool.category,
-        tool.id,
-        tool.badge,
-      ])
-    );
-  }, [allTools, debouncedQuery]);
+  }, [isOpen, onClose, results.length, triggerActiveResult]);
 
   if (!isOpen) return null;
 
   return (
-    <div className="fixed inset-0 z-50 overflow-y-auto bg-black/75 md:backdrop-blur-md flex items-start justify-center p-4 sm:pt-20">
-      <div className="relative w-full max-w-xl liquid-glass rounded-2xl shadow-2xl overflow-hidden border border-slate-200 dark:border-sky-500/30">
-        <div className="flex items-center px-4 py-3.5 border-b border-slate-200 dark:border-white/10 liquid-glass-sub">
-          <Search className="w-5 h-5 text-slate-400 shrink-0 mr-3" />
+    <div
+      className="fixed inset-0 z-50 overflow-y-auto bg-slate-950/80 md:backdrop-blur-md flex items-start justify-center p-3 sm:p-4 sm:pt-16 animate-in fade-in duration-150"
+      onClick={(e) => {
+        if (e.target === e.currentTarget) onClose();
+      }}
+      role="dialog"
+      aria-modal="true"
+      aria-label="AOS Universal Search Palette"
+    >
+      <div className="relative w-full max-w-2xl rounded-2xl bg-white dark:bg-[#0B192C] border border-slate-200 dark:border-sky-400/30 shadow-2xl overflow-hidden">
+        {/* Futuristic Deep Blue Search Input Header */}
+        <div className="flex items-center gap-2 px-4 py-3.5 border-b border-slate-200 dark:border-sky-500/25 bg-slate-50 dark:bg-[#071322]">
+          <Search className="w-5 h-5 text-[#0284c7] dark:text-sky-400 shrink-0" />
           <input
             type="text"
             autoFocus
             value={query}
             onChange={(e) => setQuery(e.target.value)}
-            placeholder={t.searchBarPlaceholder || `Search across all ${allTools.length} working tools...`}
-            className="w-full text-sm bg-transparent text-slate-900 dark:text-white placeholder-slate-400 focus:outline-none"
+            placeholder={
+              t.searchBarPlaceholder ||
+              'Search tools, TNPDS, portals, calculators, or Client Diary...'
+            }
+            className="w-full text-sm bg-transparent text-slate-900 dark:text-white placeholder-slate-400 focus:outline-none min-w-0"
           />
           {voiceSupported && (
             <button
               type="button"
               onClick={startListening}
               aria-label={isListening ? 'Stop voice search' : 'Start voice search'}
-              className={`p-1.5 rounded-lg mr-1.5 cursor-pointer transition-colors ${
+              title="Voice Search (Multi-language)"
+              className={`min-h-[36px] min-w-[36px] rounded-xl flex items-center justify-center cursor-pointer transition-colors shrink-0 ${
                 isListening
                   ? 'bg-red-500 text-white animate-pulse'
                   : 'bg-[#0284c7]/15 text-[#0284c7] dark:text-sky-300 hover:bg-[#0284c7]/25'
@@ -102,59 +181,57 @@ export const SearchModal: React.FC<SearchModalProps> = ({
           )}
           {query && (
             <button
+              type="button"
               onClick={() => setQuery('')}
-              className="p-1 text-slate-400 hover:text-slate-900 dark:hover:text-white mr-1 cursor-pointer"
+              aria-label="Clear search"
+              className="min-h-[36px] min-w-[36px] rounded-xl flex items-center justify-center text-slate-400 hover:text-slate-900 dark:hover:text-white cursor-pointer shrink-0"
             >
               <X className="w-4 h-4" />
             </button>
           )}
-          <kbd className="px-1.5 py-0.5 text-[10px] text-slate-500 dark:text-slate-400 bg-slate-100 dark:bg-black/40 rounded border border-slate-200 dark:border-white/10">
+          <button
+            type="button"
+            onClick={onClose}
+            aria-label="Close search"
+            className="px-2 py-1 text-[10px] font-mono font-bold text-slate-500 dark:text-sky-200 bg-white dark:bg-[#0B192C] rounded-lg border border-slate-200 dark:border-sky-500/25 cursor-pointer shrink-0"
+          >
             ESC
-          </kbd>
+          </button>
         </div>
 
-        <div className="max-h-96 overflow-y-auto p-2 divide-y divide-slate-100 dark:divide-white/5">
-          {filtered.length === 0 ? (
-            <div className="p-8 text-center text-xs text-slate-500 dark:text-slate-400">
-              No matching tools found for "{query}". Try "Merge", "Compress", "Signature", or "Passport".
-            </div>
-          ) : (
-            filtered.map((tool) => (
-              <div
-                key={tool.id}
-                onClick={() => {
-                  onSelectTool(tool);
-                  onClose();
-                }}
-                className="flex items-center justify-between p-3 hover:bg-slate-100 dark:hover:bg-white/10 rounded-xl transition-colors cursor-pointer group"
-              >
-                <div className="flex items-center gap-3">
-                  <div className="w-8 h-8 rounded-lg liquid-glass-sub text-[#0284c7] dark:text-sky-400 flex items-center justify-center shrink-0 group-hover:scale-105 transition-transform">
-                    <DynamicIcon name={tool.iconName} className="w-4 h-4" />
-                  </div>
-                  <div>
-                    <h4 className="text-xs font-semibold text-slate-900 dark:text-white group-hover:text-[#0284c7] dark:group-hover:text-sky-300 transition-colors">
-                      {tool.name}
-                    </h4>
-                    <p className="text-[11px] text-slate-600 dark:text-slate-300 line-clamp-1">
-                      {tool.shortDesc}
-                    </p>
-                  </div>
-                </div>
-                <div className="flex items-center gap-2">
-                  <span className="text-[10px] font-mono uppercase text-slate-400">
-                    {tool.category}
-                  </span>
-                  <ArrowRight className="w-3.5 h-3.5 text-slate-400 group-hover:text-[#0284c7] dark:group-hover:text-sky-300 group-hover:translate-x-0.5 transition-all" />
-                </div>
-              </div>
-            ))
-          )}
-        </div>
+        {voiceError && (
+          <div className="px-4 py-1.5 bg-amber-50 dark:bg-amber-950/40 text-[11px] text-amber-700 dark:text-amber-300 border-b border-amber-200 dark:border-amber-500/25">
+            {voiceError}
+          </div>
+        )}
 
-        <div className="px-4 py-2 liquid-glass-sub border-t border-slate-200 dark:border-white/10 text-[11px] text-slate-500 dark:text-slate-400 flex justify-between">
-          <span>{allTools.length} {t.allTools || 'Total Working Tools'}</span>
-          <span>100% In-browser local execution</span>
+        {/* Universal Multi-Index Results */}
+        <UniversalSearchResults
+          results={results}
+          query={debouncedQuery}
+          activeFilter={kindFilter}
+          onChangeFilter={setKindFilter}
+          counts={counts}
+          activeIndex={activeIndex}
+          onSelectTool={onSelectTool}
+          onNavigateTab={handleNavigateSafe}
+          onAfterSelect={onClose}
+          maxHeightClass="max-h-[60vh]"
+          showDiaryTab={!isDiaryLocked}
+        />
+
+        {/* Crisp Operational Footer */}
+        <div className="px-4 py-2.5 bg-slate-50 dark:bg-[#071322] border-t border-slate-200 dark:border-sky-500/20 text-[11px] text-slate-500 dark:text-sky-200/75 flex flex-wrap items-center justify-between gap-2">
+          <div className="flex items-center gap-1.5">
+            <Sparkles className="w-3.5 h-3.5 text-[#0284c7] dark:text-sky-400 shrink-0" />
+            <span className="tabular-nums">
+              {universalIndex.length} indexed across Tools, 61 Portals, Guides
+              {!isDiaryLocked ? ' & Client Diary' : ''}
+            </span>
+          </div>
+          <span className="hidden sm:inline font-mono text-[10px]">
+            ↑↓ Navigate · ↵ Open · / or Ctrl+K
+          </span>
         </div>
       </div>
     </div>

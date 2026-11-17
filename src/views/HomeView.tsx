@@ -1,4 +1,4 @@
-import React, { useState, useRef, useEffect, useMemo, lazy, Suspense } from 'react';
+import React, { useState, useRef, useEffect, useMemo, useCallback, lazy, Suspense } from 'react';
 import {
   Search,
   Zap,
@@ -13,6 +13,7 @@ import {
   Mic,
   MicOff,
   Calculator,
+  X,
 } from 'lucide-react';
 import { ToolItem } from '../types';
 import { PDF_TOOLS } from '../data/pdfTools';
@@ -21,9 +22,15 @@ import { SPECIAL_TOOLS } from '../data/specialTools';
 import { PanMasterHeroCard } from '../components/PanMasterHeroCard';
 import { LanguageCode, TRANSLATIONS, getTranslatedTool } from '../utils/translations';
 import { useAuthSecurity } from '../context/AuthSecurityContext';
-import { matchesMultilingualQuery } from '../utils/multilingualSearch';
 import { useVoiceSearch } from '../hooks/useVoiceSearch';
 import { useDebouncedValue } from '../hooks/useDebouncedValue';
+import {
+  buildUniversalIndex,
+  getUniversalKindCounts,
+  searchUniversalIndex,
+  UniversalResultKind,
+} from '../utils/universalSearchIndex';
+import { UniversalSearchResults } from '../components/UniversalSearchResults';
 
 const LiveStatusNoticeWidget = lazy(() =>
   import('../components/LiveStatusNoticeWidget').then((m) => ({
@@ -49,35 +56,32 @@ export const HomeView: React.FC<HomeViewProps> = ({
   lang = 'en',
 }) => {
   const [searchQuery, setSearchQuery] = useState('');
+  const [isHeroDropdownOpen, setIsHeroDropdownOpen] = useState(false);
+  const [heroKindFilter, setHeroKindFilter] = useState<'all' | UniversalResultKind>('all');
+  const [heroActiveIndex, setHeroActiveIndex] = useState(0);
+
   const searchInputRef = useRef<HTMLInputElement>(null);
+  const heroSearchContainerRef = useRef<HTMLDivElement>(null);
   const isSearchStatePushedRef = useRef(false);
-  const { isToolCurrentlyLocked } = useAuthSecurity();
+
+  const { user, isToolCurrentlyLocked } = useAuthSecurity();
   const isClientDiaryLocked = isToolCurrentlyLocked('khata-diary');
   const isPortalsLocked = isToolCurrentlyLocked('gov-portals');
   const t = TRANSLATIONS[lang] || TRANSLATIONS.en;
+
   const { isSupported: voiceSupported, isListening, startListening } = useVoiceSearch(
     lang,
-    (transcript) => setSearchQuery(transcript)
+    (transcript) => {
+      setSearchQuery(transcript);
+      setIsHeroDropdownOpen(true);
+    }
   );
 
-  // Browser back handling on mobile so pressing back closes suggestions or keyboard instead of exiting website
-  const handleSearchFocus = () => {
-    if (!isSearchStatePushedRef.current) {
-      window.history.pushState({ heroSearchActive: true }, '');
-      isSearchStatePushedRef.current = true;
+  const closeSearchSuggestions = useCallback((clearInput = false) => {
+    setIsHeroDropdownOpen(false);
+    if (clearInput) {
+      setSearchQuery('');
     }
-  };
-
-  const handleSearchChange = (val: string) => {
-    setSearchQuery(val);
-    if (val.trim() && !isSearchStatePushedRef.current) {
-      window.history.pushState({ heroSearchActive: true }, '');
-      isSearchStatePushedRef.current = true;
-    }
-  };
-
-  const closeSearchSuggestions = () => {
-    setSearchQuery('');
     if (searchInputRef.current) {
       searchInputRef.current.blur();
     }
@@ -87,12 +91,31 @@ export const HomeView: React.FC<HomeViewProps> = ({
         window.history.back();
       }
     }
+  }, []);
+
+  // Browser back handling on mobile so pressing back closes suggestions or keyboard instead of exiting website
+  const handleSearchFocus = () => {
+    setIsHeroDropdownOpen(true);
+    if (!isSearchStatePushedRef.current) {
+      window.history.pushState({ heroSearchActive: true }, '');
+      isSearchStatePushedRef.current = true;
+    }
+  };
+
+  const handleSearchChange = (val: string) => {
+    setSearchQuery(val);
+    setIsHeroDropdownOpen(true);
+    if (val.trim() && !isSearchStatePushedRef.current) {
+      window.history.pushState({ heroSearchActive: true }, '');
+      isSearchStatePushedRef.current = true;
+    }
   };
 
   useEffect(() => {
-    const handlePopState = (e: PopStateEvent) => {
+    const handlePopState = () => {
       if (isSearchStatePushedRef.current) {
         isSearchStatePushedRef.current = false;
+        setIsHeroDropdownOpen(false);
         setSearchQuery('');
         if (searchInputRef.current) {
           searchInputRef.current.blur();
@@ -100,32 +123,90 @@ export const HomeView: React.FC<HomeViewProps> = ({
       }
     };
 
+    const handleClickOutside = (event: MouseEvent) => {
+      if (
+        heroSearchContainerRef.current &&
+        !heroSearchContainerRef.current.contains(event.target as Node)
+      ) {
+        setIsHeroDropdownOpen(false);
+      }
+    };
+
     window.addEventListener('popstate', handlePopState);
-    return () => window.removeEventListener('popstate', handlePopState);
+    document.addEventListener('mousedown', handleClickOutside);
+    return () => {
+      window.removeEventListener('popstate', handlePopState);
+      document.removeEventListener('mousedown', handleClickOutside);
+    };
   }, []);
 
-  const debouncedSearchQuery = useDebouncedValue(searchQuery, 150);
+  const debouncedSearchQuery = useDebouncedValue(searchQuery, 130);
 
-  const allTools = useMemo(
+  const universalIndex = useMemo(
     () =>
-      [...PDF_TOOLS, ...IMAGE_TOOLS, ...SPECIAL_TOOLS].map((tool) =>
-        getTranslatedTool(tool, lang)
-      ),
-    [lang]
+      isHeroDropdownOpen || debouncedSearchQuery.trim().length > 0
+        ? buildUniversalIndex({
+            lang,
+            userId: user?.uid || null,
+            isToolLocked: isToolCurrentlyLocked,
+          })
+        : [],
+    [isHeroDropdownOpen, debouncedSearchQuery, lang, user?.uid, isToolCurrentlyLocked]
   );
 
-  const filteredTools = useMemo(() => {
-    if (!debouncedSearchQuery.trim()) return [];
-    return allTools.filter((tool) =>
-      matchesMultilingualQuery(debouncedSearchQuery, [
-        tool.name,
-        tool.shortDesc,
-        tool.category,
-        tool.id,
-        tool.badge,
-      ])
-    );
-  }, [allTools, debouncedSearchQuery]);
+  const heroCounts = useMemo(
+    () => getUniversalKindCounts(universalIndex, debouncedSearchQuery),
+    [universalIndex, debouncedSearchQuery]
+  );
+
+  const heroResults = useMemo(
+    () => searchUniversalIndex(universalIndex, debouncedSearchQuery, heroKindFilter, 20),
+    [universalIndex, debouncedSearchQuery, heroKindFilter]
+  );
+
+  useEffect(() => {
+    setHeroActiveIndex(0);
+  }, [debouncedSearchQuery, heroKindFilter]);
+
+  const finishHeroSelection = useCallback(() => {
+    isSearchStatePushedRef.current = false;
+    setIsHeroDropdownOpen(false);
+    setSearchQuery('');
+  }, []);
+
+  const triggerHeroActiveItem = useCallback(() => {
+    const selected = heroResults[heroActiveIndex];
+    if (!selected) return;
+    const { item, resolvedPortalUrl } = selected;
+    if (item.kind === 'tool' && item.tool) {
+      onSelectTool(item.tool);
+      finishHeroSelection();
+      return;
+    }
+    if (item.kind === 'portal') {
+      if (item.isLocked && item.targetTab) {
+        setActiveTab(item.targetTab);
+      } else if (resolvedPortalUrl) {
+        const anchor = document.createElement('a');
+        anchor.href = resolvedPortalUrl;
+        anchor.target = '_blank';
+        anchor.rel = 'noopener noreferrer';
+        anchor.click();
+      }
+      finishHeroSelection();
+      return;
+    }
+    if (item.kind === 'utility') {
+      if (item.tool) onSelectTool(item.tool);
+      else if (item.targetTab) setActiveTab(item.targetTab);
+      finishHeroSelection();
+      return;
+    }
+    if (item.kind === 'diary' && item.targetTab) {
+      setActiveTab(item.targetTab);
+      finishHeroSelection();
+    }
+  }, [heroResults, heroActiveIndex, onSelectTool, setActiveTab, finishHeroSelection]);
 
   // Direct launcher helpers
   const handleLaunchPassport = () => {
@@ -174,10 +255,12 @@ export const HomeView: React.FC<HomeViewProps> = ({
       {/* =========================================================================
           HERO SECTION (Anis Online Services Deep Navy Corporate Styling)
           ========================================================================= */}
-      <section className="relative rounded-3xl liquid-glass p-6 sm:p-10 shadow-xl overflow-hidden border border-slate-200 dark:border-sky-500/20">
+      <section className="relative z-20 rounded-3xl liquid-glass p-6 sm:p-10 shadow-xl border border-slate-200 dark:border-sky-500/20">
         {/* Ambient atmospheric glows (desktop-only for smooth mobile GPU performance) */}
-        <div className="hidden md:block absolute top-0 right-1/4 w-96 h-96 bg-[#0284c7]/15 rounded-full blur-3xl pointer-events-none" />
-        <div className="hidden md:block absolute bottom-0 left-10 w-80 h-80 bg-[#0d4775]/20 rounded-full blur-3xl pointer-events-none" />
+        <div className="hidden md:block absolute inset-0 rounded-3xl overflow-hidden pointer-events-none">
+          <div className="absolute top-0 right-1/4 w-96 h-96 bg-[#0284c7]/15 rounded-full blur-3xl" />
+          <div className="absolute bottom-0 left-10 w-80 h-80 bg-[#0d4775]/20 rounded-full blur-3xl" />
+        </div>
 
         <div className="grid grid-cols-1 lg:grid-cols-12 gap-8 items-stretch relative z-10">
           
@@ -202,79 +285,108 @@ export const HomeView: React.FC<HomeViewProps> = ({
               </p>
             </div>
 
-            {/* Search Input Bar with Corporate Sapphire Circular Button */}
-            <div className="relative">
+            {/* Universal Search Input Bar with Deep Blue Glassmorphism Live Index Dropdown */}
+            <div className="relative" ref={heroSearchContainerRef}>
               <div className="relative flex items-center">
                 <input
                   ref={searchInputRef}
                   type="text"
-                  placeholder={t.searchBarPlaceholder || 'Search for tools... (e.g. Passport Photo, Smart ID, PDF to Word)'}
+                  placeholder="Search tools, portals (TNPDS, UTIITSL), calculators, or Client Diary..."
                   value={searchQuery}
                   onFocus={handleSearchFocus}
                   onChange={(e) => handleSearchChange(e.target.value)}
                   onKeyDown={(e) => {
                     if (e.key === 'Escape') {
-                      closeSearchSuggestions();
-                    } else if (e.key === 'Enter' && onOpenSearch) {
-                      onOpenSearch();
+                      closeSearchSuggestions(true);
+                    } else if (e.key === 'ArrowDown' && heroResults.length > 0) {
+                      e.preventDefault();
+                      setIsHeroDropdownOpen(true);
+                      setHeroActiveIndex((prev) => (prev + 1) % heroResults.length);
+                    } else if (e.key === 'ArrowUp' && heroResults.length > 0) {
+                      e.preventDefault();
+                      setIsHeroDropdownOpen(true);
+                      setHeroActiveIndex(
+                        (prev) => (prev - 1 + heroResults.length) % heroResults.length
+                      );
+                    } else if (e.key === 'Enter') {
+                      if (isHeroDropdownOpen && heroResults.length > 0) {
+                        e.preventDefault();
+                        triggerHeroActiveItem();
+                      } else if (onOpenSearch) {
+                        onOpenSearch();
+                      }
                     }
                   }}
-                  className="w-full liquid-glass-sub hover:border-slate-300 dark:hover:border-sky-500/50 focus:border-[#0284c7] text-slate-900 dark:text-white placeholder-slate-400 rounded-2xl py-3.5 pl-5 pr-24 text-xs sm:text-sm focus:outline-none transition-all shadow-inner"
+                  aria-label="Universal Search"
+                  className="w-full liquid-glass-sub hover:border-slate-300 dark:hover:border-sky-500/50 focus:border-[#0284c7] text-slate-900 dark:text-white placeholder-slate-400 rounded-2xl py-3.5 pl-5 pr-32 text-xs sm:text-sm focus:outline-none transition-all shadow-inner"
                 />
-                {voiceSupported && (
+                <div className="absolute right-2 flex items-center gap-1.5">
+                  {searchQuery && (
+                    <button
+                      type="button"
+                      onClick={() => {
+                        setSearchQuery('');
+                        setIsHeroDropdownOpen(true);
+                        searchInputRef.current?.focus();
+                      }}
+                      aria-label="Clear search query"
+                      className="w-7 h-7 rounded-full flex items-center justify-center text-slate-400 hover:text-slate-800 dark:hover:text-white cursor-pointer transition-colors"
+                    >
+                      <X className="w-3.5 h-3.5" />
+                    </button>
+                  )}
+                  {voiceSupported && (
+                    <button
+                      type="button"
+                      onClick={startListening}
+                      aria-label={isListening ? 'Stop voice search' : 'Voice search'}
+                      title={isListening ? 'Listening... tap to stop' : 'Voice Search (Multi-language)'}
+                      className={`w-9 h-9 rounded-full flex items-center justify-center transition-all cursor-pointer ${
+                        isListening
+                          ? 'bg-red-500 text-white animate-pulse'
+                          : 'bg-[#0284c7]/15 text-[#0284c7] dark:text-sky-300 hover:bg-[#0284c7]/25'
+                      }`}
+                    >
+                      {isListening ? <MicOff className="w-4 h-4" /> : <Mic className="w-4 h-4" />}
+                    </button>
+                  )}
                   <button
                     type="button"
-                    onClick={startListening}
-                    aria-label={isListening ? 'Stop voice search' : 'Voice search'}
-                    title={isListening ? 'Listening... tap to stop' : 'Voice Search (Multi-language)'}
-                    className={`absolute right-14 w-9 h-9 rounded-full flex items-center justify-center transition-all cursor-pointer ${
-                      isListening
-                        ? 'bg-red-500 text-white animate-pulse'
-                        : 'bg-[#0284c7]/15 text-[#0284c7] dark:text-sky-300 hover:bg-[#0284c7]/25'
-                    }`}
+                    onClick={() => {
+                      if (onOpenSearch) onOpenSearch();
+                      else setIsHeroDropdownOpen(true);
+                    }}
+                    aria-label="Open Universal Search Palette"
+                    title="Open Universal Search Palette (/ or Ctrl+K)"
+                    className="w-10 h-10 bg-gradient-to-r from-[#0284c7] to-[#0d4775] hover:from-[#38bdf8] hover:to-[#0284c7] text-white rounded-full flex items-center justify-center transition-all cursor-pointer shadow-md shadow-sky-500/25 active:scale-95"
                   >
-                    {isListening ? <MicOff className="w-4 h-4" /> : <Mic className="w-4 h-4" />}
+                    <Search className="w-4 h-4 stroke-[2.5]" />
                   </button>
-                )}
-                <button
-                  onClick={() => {
-                    if (onOpenSearch) onOpenSearch();
-                  }}
-                  aria-label="Search Tools"
-                  className="absolute right-2 w-10 h-10 bg-gradient-to-r from-[#0284c7] to-[#0d4775] hover:from-[#38bdf8] hover:to-[#0284c7] text-white rounded-full flex items-center justify-center transition-all cursor-pointer shadow-md shadow-sky-500/25 active:scale-95"
-                >
-                  <Search className="w-4 h-4 stroke-[2.5]" />
-                </button>
+                </div>
               </div>
 
-              {/* Quick search dropdown if user typed in hero input */}
-              {searchQuery.trim() && (
-                <div className="absolute top-full left-0 right-0 mt-2 liquid-glass rounded-2xl p-2 shadow-2xl z-30 max-h-64 overflow-y-auto space-y-1">
-                  {filteredTools.length > 0 ? (
-                    filteredTools.slice(0, 6).map((tool) => (
-                      <button
-                        key={tool.id}
-                        onClick={() => {
-                          onSelectTool(tool);
-                          isSearchStatePushedRef.current = false;
-                          setSearchQuery('');
-                        }}
-                        className="w-full flex items-center justify-between p-2.5 rounded-xl text-left hover:bg-slate-100 dark:hover:bg-white/10 transition-colors cursor-pointer text-xs"
-                      >
-                        <div>
-                          <div className="font-bold text-slate-900 dark:text-white">{tool.name}</div>
-                          <div className="text-[11px] text-slate-500 dark:text-slate-400 line-clamp-1">{tool.shortDesc}</div>
-                        </div>
-                        <span className="text-[10px] px-2 py-0.5 rounded-md bg-[#0284c7]/15 text-[#0284c7] dark:text-sky-300 border border-[#0284c7]/30 font-medium">
-                          {tool.category}
-                        </span>
-                      </button>
-                    ))
-                  ) : (
-                    <div className="p-3 text-center text-xs text-slate-500 dark:text-slate-400">
-                      No tools found for "{debouncedSearchQuery}".
-                    </div>
-                  )}
+              {/* Universal Multi-Index Search Dropdown (Tools, Portals, Utilities, Client Diary) */}
+              {isHeroDropdownOpen && (
+                <div className="absolute top-full left-0 right-0 mt-2 rounded-2xl bg-white dark:bg-[#0B192C]/96 md:backdrop-blur-xl border border-slate-200 dark:border-sky-400/30 shadow-2xl overflow-hidden z-40">
+                  <UniversalSearchResults
+                    results={heroResults}
+                    query={debouncedSearchQuery}
+                    activeFilter={heroKindFilter}
+                    onChangeFilter={setHeroKindFilter}
+                    counts={heroCounts}
+                    activeIndex={heroActiveIndex}
+                    onSelectTool={(tool) => {
+                      onSelectTool(tool);
+                      finishHeroSelection();
+                    }}
+                    onNavigateTab={(tab) => {
+                      setActiveTab(tab);
+                      finishHeroSelection();
+                    }}
+                    onAfterSelect={finishHeroSelection}
+                    maxHeightClass="max-h-80"
+                    showDiaryTab={!isClientDiaryLocked}
+                  />
                 </div>
               )}
             </div>

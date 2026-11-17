@@ -349,9 +349,14 @@ export default function App() {
     }
   }, []);
 
-  // Global keyboard shortcut for search
+  // Global keyboard shortcut for Universal Search (/ or Cmd/Ctrl+K)
   useEffect(() => {
     const handleKeyDown = (e: KeyboardEvent) => {
+      if ((e.metaKey || e.ctrlKey) && e.key.toLowerCase() === 'k') {
+        e.preventDefault();
+        handleOpenSearchModal();
+        return;
+      }
       if (
         e.key === '/' &&
         !['INPUT', 'TEXTAREA', 'SELECT'].includes((e.target as HTMLElement)?.tagName)
@@ -382,6 +387,7 @@ export default function App() {
       <Header
         activeTab={activeTab}
         setActiveTab={handleNavigateTab}
+        onSelectTool={handleSelectTool}
         isDark={isDark}
         onToggleTheme={handleToggleTheme}
         templateId={templateId}
@@ -503,6 +509,7 @@ export default function App() {
             isOpen={isSearchOpen}
             onClose={handleCloseSearchModal}
             onSelectTool={handleSelectTool}
+            onNavigateTab={handleNavigateTab}
             lang={lang}
           />
         </Suspense>
