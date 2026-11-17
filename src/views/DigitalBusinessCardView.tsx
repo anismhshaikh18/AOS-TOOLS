@@ -116,9 +116,9 @@ export const DigitalBusinessCardView: React.FC<DigitalBusinessCardViewProps> = (
         <button
           type="button"
           onClick={onBackHome}
-          className="inline-flex items-center gap-2 px-3.5 py-2 rounded-xl bg-white dark:bg-[#072642] border border-slate-200 dark:border-sky-500/25 text-xs font-bold text-slate-700 dark:text-sky-200 hover:border-[#0284c7] cursor-pointer transition-colors"
+          className="aos-btn-soft inline-flex items-center gap-2 px-4 py-2 min-h-[40px] text-xs font-bold cursor-pointer"
         >
-          <ArrowLeft className="w-4 h-4" />
+          <ArrowLeft className="w-4 h-4 text-[#0284c7] dark:text-sky-300" />
           <span>Back to AOS Tools</span>
         </button>
 
@@ -164,7 +164,7 @@ export const DigitalBusinessCardView: React.FC<DigitalBusinessCardViewProps> = (
                 href={whatsappDirectUrl}
                 target="_blank"
                 rel="noopener noreferrer"
-                className="py-3 px-4 rounded-xl bg-emerald-600 hover:bg-emerald-700 text-white text-xs font-bold flex items-center justify-center gap-2 shadow-md transition-colors"
+                className="aos-btn-emerald min-h-[44px] py-3 px-4 text-xs font-bold flex items-center justify-center gap-2"
               >
                 <MessageCircle className="w-4 h-4" />
                 <span>WhatsApp</span>
@@ -172,7 +172,7 @@ export const DigitalBusinessCardView: React.FC<DigitalBusinessCardViewProps> = (
 
               <a
                 href={`tel:${PHONE_E164}`}
-                className="py-3 px-4 rounded-xl bg-gradient-to-r from-[#0284c7] to-[#0d4775] hover:brightness-110 text-white text-xs font-bold flex items-center justify-center gap-2 shadow-md transition-all"
+                className="aos-btn-primary min-h-[44px] py-3 px-4 text-xs font-bold flex items-center justify-center gap-2"
               >
                 <Phone className="w-4 h-4" />
                 <span>Call Now</span>
@@ -249,7 +249,7 @@ export const DigitalBusinessCardView: React.FC<DigitalBusinessCardViewProps> = (
               <button
                 type="button"
                 onClick={handleDownloadVCard}
-                className="flex-1 min-w-[160px] py-2.5 px-4 rounded-xl bg-[#0B192C] dark:bg-[#0284c7] hover:brightness-110 text-white text-xs font-bold flex items-center justify-center gap-2 shadow-sm cursor-pointer transition-all"
+                className="aos-btn-primary flex-1 min-w-[160px] min-h-[44px] py-2.5 px-5 text-xs font-bold flex items-center justify-center gap-2 cursor-pointer"
               >
                 <Download className="w-4 h-4" />
                 <span>Save Contact (.vcf)</span>
@@ -258,12 +258,12 @@ export const DigitalBusinessCardView: React.FC<DigitalBusinessCardViewProps> = (
               <button
                 type="button"
                 onClick={() => void handleCopyCardLink()}
-                className="py-2.5 px-3.5 rounded-xl bg-slate-100 dark:bg-[#072642] border border-slate-200 dark:border-sky-500/25 text-xs font-bold text-slate-700 dark:text-sky-200 flex items-center gap-1.5 cursor-pointer"
+                className="aos-btn-soft min-h-[42px] py-2.5 px-4 text-xs font-bold flex items-center gap-1.5 cursor-pointer"
               >
                 {copiedLink ? (
                   <Check className="w-3.5 h-3.5 text-emerald-500" />
                 ) : (
-                  <Copy className="w-3.5 h-3.5" />
+                  <Copy className="w-3.5 h-3.5 text-[#0284c7] dark:text-sky-300" />
                 )}
                 <span>{copiedLink ? 'Copied' : 'Copy URL'}</span>
               </button>
@@ -272,7 +272,7 @@ export const DigitalBusinessCardView: React.FC<DigitalBusinessCardViewProps> = (
                 href={shareCardOnWhatsApp}
                 target="_blank"
                 rel="noopener noreferrer"
-                className="py-2.5 px-3.5 rounded-xl bg-emerald-50 dark:bg-emerald-950/50 border border-emerald-200 dark:border-emerald-500/30 text-xs font-bold text-emerald-700 dark:text-emerald-300 flex items-center gap-1.5"
+                className="aos-btn-soft min-h-[42px] py-2.5 px-4 text-xs font-bold text-emerald-700 dark:text-emerald-300 flex items-center gap-1.5"
               >
                 <Share2 className="w-3.5 h-3.5" />
                 <span>Share Card</span>

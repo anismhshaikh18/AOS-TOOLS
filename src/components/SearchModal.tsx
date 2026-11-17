@@ -170,10 +170,10 @@ export const SearchModal: React.FC<SearchModalProps> = ({
               onClick={startListening}
               aria-label={isListening ? 'Stop voice search' : 'Start voice search'}
               title="Voice Search (Multi-language)"
-              className={`min-h-[36px] min-w-[36px] rounded-xl flex items-center justify-center cursor-pointer transition-colors shrink-0 ${
+              className={`min-h-[36px] min-w-[36px] rounded-full flex items-center justify-center cursor-pointer transition-colors shrink-0 ${
                 isListening
                   ? 'bg-red-500 text-white animate-pulse'
-                  : 'bg-[#0284c7]/15 text-[#0284c7] dark:text-sky-300 hover:bg-[#0284c7]/25'
+                  : 'aos-btn-icon text-[#0284c7] dark:text-sky-300'
               }`}
             >
               {isListening ? <MicOff className="w-4 h-4" /> : <Mic className="w-4 h-4" />}
@@ -184,7 +184,7 @@ export const SearchModal: React.FC<SearchModalProps> = ({
               type="button"
               onClick={() => setQuery('')}
               aria-label="Clear search"
-              className="min-h-[36px] min-w-[36px] rounded-xl flex items-center justify-center text-slate-400 hover:text-slate-900 dark:hover:text-white cursor-pointer shrink-0"
+              className="aos-btn-icon min-h-[36px] min-w-[36px] cursor-pointer shrink-0"
             >
               <X className="w-4 h-4" />
             </button>
@@ -193,7 +193,7 @@ export const SearchModal: React.FC<SearchModalProps> = ({
             type="button"
             onClick={onClose}
             aria-label="Close search"
-            className="px-2 py-1 text-[10px] font-mono font-bold text-slate-500 dark:text-sky-200 bg-white dark:bg-[#0B192C] rounded-lg border border-slate-200 dark:border-sky-500/25 cursor-pointer shrink-0"
+            className="aos-btn-soft px-3 py-1.5 text-[10px] font-mono font-bold cursor-pointer shrink-0"
           >
             ESC
           </button>

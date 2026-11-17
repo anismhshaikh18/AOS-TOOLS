@@ -138,34 +138,28 @@ export const PanMasterHeroCard: React.FC<PanMasterHeroCardProps> = ({
         </button>
       </div>
 
-      {/* Mini Tab Switcher */}
-      <div className="grid grid-cols-3 gap-1 liquid-glass-sub p-1 rounded-xl text-xs border border-slate-200 dark:border-white/10">
+      {/* Mini Soft-UI Tab Switcher */}
+      <div className="grid grid-cols-3 gap-1.5 aos-segmented-track p-1 text-xs">
         <button
           onClick={() => setActiveTab('services')}
-          className={`py-1.5 px-2 rounded-lg font-bold text-center transition-all cursor-pointer ${
-            activeTab === 'services'
-              ? 'bg-[#0284c7] text-white shadow-sm shadow-[#0284c7]/30'
-              : 'text-slate-700 dark:text-slate-300 hover:text-slate-900 dark:hover:text-white'
+          className={`min-h-[36px] py-1.5 px-2.5 font-bold text-center cursor-pointer whitespace-nowrap ${
+            activeTab === 'services' ? 'aos-btn-soft-active' : 'aos-btn-soft-tab'
           }`}
         >
           Forms &amp; Apply
         </button>
         <button
           onClick={() => setActiveTab('compressor')}
-          className={`py-1.5 px-2 rounded-lg font-bold text-center transition-all cursor-pointer flex items-center justify-center gap-1 ${
-            activeTab === 'compressor'
-              ? 'bg-[#0284c7] text-white shadow-sm shadow-[#0284c7]/30'
-              : 'text-slate-700 dark:text-slate-300 hover:text-slate-900 dark:hover:text-white'
+          className={`min-h-[36px] py-1.5 px-2.5 font-bold text-center cursor-pointer flex items-center justify-center gap-1 whitespace-nowrap ${
+            activeTab === 'compressor' ? 'aos-btn-soft-active' : 'aos-btn-soft-tab'
           }`}
         >
           <span>&lt;300KB PDF</span>
         </button>
         <button
           onClick={() => setActiveTab('specs')}
-          className={`py-1.5 px-2 rounded-lg font-bold text-center transition-all cursor-pointer ${
-            activeTab === 'specs'
-              ? 'bg-[#0284c7] text-white shadow-sm shadow-[#0284c7]/30'
-              : 'text-slate-700 dark:text-slate-300 hover:text-slate-900 dark:hover:text-white'
+          className={`min-h-[36px] py-1.5 px-2.5 font-bold text-center cursor-pointer whitespace-nowrap ${
+            activeTab === 'specs' ? 'aos-btn-soft-active' : 'aos-btn-soft-tab'
           }`}
         >
           Photo &amp; Sign
@@ -193,19 +187,19 @@ export const PanMasterHeroCard: React.FC<PanMasterHeroCardProps> = ({
                 href="https://www.protean-tinpan.com"
                 target="_blank"
                 rel="noopener noreferrer"
-                className="flex-1 py-1.5 px-2 rounded-lg liquid-glass-sub hover:bg-slate-100 dark:hover:bg-white/10 text-center font-bold text-slate-900 dark:text-slate-100 flex items-center justify-center gap-1 transition-colors border border-slate-200 dark:border-white/10"
+                className="aos-btn-soft flex-1 min-h-[38px] py-2 px-3 text-center font-bold flex items-center justify-center gap-1.5 whitespace-nowrap"
               >
                 <span>Protean (NSDL)</span>
-                <ExternalLink className="w-3 h-3 text-[#0284c7] dark:text-cyan-400" />
+                <ExternalLink className="w-3 h-3 text-[#0284c7] dark:text-sky-300 shrink-0" />
               </a>
               <a
                 href="https://www.utiitsl.com"
                 target="_blank"
                 rel="noopener noreferrer"
-                className="flex-1 py-1.5 px-2 rounded-lg liquid-glass-sub hover:bg-slate-100 dark:hover:bg-white/10 text-center font-bold text-slate-900 dark:text-slate-100 flex items-center justify-center gap-1 transition-colors border border-slate-200 dark:border-white/10"
+                className="aos-btn-soft flex-1 min-h-[38px] py-2 px-3 text-center font-bold flex items-center justify-center gap-1.5 whitespace-nowrap"
               >
                 <span>UTIITSL</span>
-                <ExternalLink className="w-3 h-3 text-[#0284c7] dark:text-cyan-400" />
+                <ExternalLink className="w-3 h-3 text-[#0284c7] dark:text-sky-300 shrink-0" />
               </a>
             </div>
           </div>
@@ -227,19 +221,19 @@ export const PanMasterHeroCard: React.FC<PanMasterHeroCardProps> = ({
                 href="https://www.protean-tinpan.com"
                 target="_blank"
                 rel="noopener noreferrer"
-                className="flex-1 py-1.5 px-2 rounded-lg liquid-glass-sub hover:bg-slate-100 dark:hover:bg-white/10 text-center font-bold text-slate-900 dark:text-slate-100 flex items-center justify-center gap-1 transition-colors border border-slate-200 dark:border-white/10"
+                className="aos-btn-soft flex-1 min-h-[38px] py-2 px-3 text-center font-bold flex items-center justify-center gap-1.5 whitespace-nowrap"
               >
                 <span>Apply Correction</span>
-                <ExternalLink className="w-3 h-3 text-[#0284c7] dark:text-cyan-400" />
+                <ExternalLink className="w-3 h-3 text-[#0284c7] dark:text-sky-300 shrink-0" />
               </a>
               <a
                 href="https://www.incometax.gov.in"
                 target="_blank"
                 rel="noopener noreferrer"
-                className="flex-1 py-1.5 px-2 rounded-lg liquid-glass-sub hover:bg-slate-100 dark:hover:bg-white/10 text-center font-bold text-slate-900 dark:text-slate-100 flex items-center justify-center gap-1 transition-colors border border-slate-200 dark:border-white/10"
+                className="aos-btn-soft flex-1 min-h-[38px] py-2 px-3 text-center font-bold flex items-center justify-center gap-1.5 whitespace-nowrap"
               >
                 <span>Link Aadhaar</span>
-                <ExternalLink className="w-3 h-3 text-[#0284c7] dark:text-cyan-400" />
+                <ExternalLink className="w-3 h-3 text-[#0284c7] dark:text-sky-300 shrink-0" />
               </a>
             </div>
           </div>
@@ -293,7 +287,7 @@ export const PanMasterHeroCard: React.FC<PanMasterHeroCardProps> = ({
               <a
                 href={compressResult.url}
                 download={compressResult.fileName}
-                className="w-full py-2 rounded-lg bg-emerald-600 hover:bg-emerald-500 text-white font-bold text-xs flex items-center justify-center gap-1.5 shadow-md transition-colors"
+                className="aos-btn-emerald w-full min-h-[42px] py-2 px-4 font-bold text-xs flex items-center justify-center gap-1.5"
               >
                 <Download className="w-3.5 h-3.5" />
                 <span>Download &lt;300 KB PDF</span>
@@ -303,10 +297,10 @@ export const PanMasterHeroCard: React.FC<PanMasterHeroCardProps> = ({
             <button
               onClick={handleRunCompress}
               disabled={!panFile || isCompressing}
-              className={`w-full py-2.5 rounded-xl font-bold text-xs flex items-center justify-center gap-1.5 transition-all cursor-pointer ${
+              className={`w-full min-h-[42px] py-2.5 px-4 font-bold text-xs flex items-center justify-center gap-1.5 ${
                 panFile && !isCompressing
-                  ? 'bg-[#0284c7] hover:bg-[#0369a1] text-white shadow-md shadow-[#0284c7]/30'
-                  : 'bg-slate-200 dark:bg-white/10 text-slate-400 dark:text-slate-500 cursor-not-allowed'
+                  ? 'aos-btn-primary cursor-pointer'
+                  : 'rounded-full bg-slate-200 dark:bg-white/10 text-slate-400 dark:text-slate-500 cursor-not-allowed border border-slate-300 dark:border-white/10'
               }`}
             >
               {isCompressing ? (
@@ -365,9 +359,9 @@ export const PanMasterHeroCard: React.FC<PanMasterHeroCardProps> = ({
           {onLaunchImageResize && (
             <button
               onClick={onLaunchImageResize}
-              className="w-full py-2 rounded-xl liquid-glass-sub hover:border-[#0284c7] font-bold text-xs text-[#0284c7] dark:text-sky-300 hover:text-[#0369a1] dark:hover:text-white flex items-center justify-center gap-1.5 transition-colors cursor-pointer border border-slate-200 dark:border-white/10"
+              className="aos-btn-soft w-full min-h-[42px] py-2 px-4 font-bold text-xs text-[#0284c7] dark:text-sky-300 flex items-center justify-center gap-1.5 cursor-pointer"
             >
-              <Camera className="w-3.5 h-3.5" />
+              <Camera className="w-3.5 h-3.5 shrink-0" />
               <span>Launch Govt Photo &amp; Signature Resizer</span>
             </button>
           )}
@@ -375,7 +369,7 @@ export const PanMasterHeroCard: React.FC<PanMasterHeroCardProps> = ({
       )}
 
       {/* Bottom Action Footer */}
-      <div className="pt-2 border-t border-slate-200 dark:border-white/10 flex items-center justify-between">
+      <div className="pt-2 border-t border-slate-200 dark:border-white/10 flex items-center justify-between gap-2">
         <div className="flex items-center gap-1 text-[10px] text-slate-600 dark:text-slate-300">
           <ShieldCheck className="w-3.5 h-3.5 text-emerald-600 dark:text-emerald-400 shrink-0" />
           <span>100% In-Browser Privacy</span>
@@ -383,11 +377,11 @@ export const PanMasterHeroCard: React.FC<PanMasterHeroCardProps> = ({
 
         <button
           onClick={onOpenFullHub}
-          className="inline-flex items-center gap-1.5 px-3 py-1.5 rounded-lg bg-[#0284c7] hover:bg-[#0369a1] text-white font-bold text-xs shadow-md shadow-[#0284c7]/30 transition-all cursor-pointer active:scale-95"
+          className="aos-btn-primary inline-flex items-center gap-1.5 px-4 py-2 min-h-[38px] font-bold text-xs cursor-pointer whitespace-nowrap"
         >
           {isPanLocked && <Lock className="w-3.5 h-3.5 shrink-0" />}
           <span>{isPanLocked ? 'Sign In for Full PAN Hub' : 'Open Full PAN Master Hub'}</span>
-          <ArrowRight className="w-3.5 h-3.5" />
+          <ArrowRight className="w-3.5 h-3.5 shrink-0" />
         </button>
       </div>
 

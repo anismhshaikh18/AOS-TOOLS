@@ -134,18 +134,18 @@ export const AboutView: React.FC<AboutViewProps> = ({ onExploreTools, lang = 'en
               href="https://anis-online-services.pages.dev/"
               target="_blank"
               rel="noopener noreferrer"
-              className="inline-flex items-center gap-2 px-5 py-2.5 rounded-xl bg-gradient-to-r from-[#0284c7] to-[#0d4775] hover:from-[#38bdf8] hover:to-[#0284c7] text-white text-xs font-bold transition-all shadow-md shadow-sky-500/25 cursor-pointer"
+              className="aos-btn-primary min-h-[44px] px-5 py-2.5 text-xs"
             >
               <span>Explore Services</span>
-              <ExternalLink className="w-4 h-4" />
+              <ExternalLink className="w-4 h-4 shrink-0" />
             </a>
 
             <button
               onClick={onExploreTools}
-              className="inline-flex items-center gap-2 px-4 py-2.5 rounded-xl liquid-glass-sub hover:border-[#0284c7]/50 text-slate-700 dark:text-slate-200 text-xs font-semibold transition-all cursor-pointer"
+              className="aos-btn-soft min-h-[44px] px-4 py-2.5 text-xs"
             >
               <span>{t.viewAll || 'Explore All 50+ Working Tools'}</span>
-              <ArrowRight className="w-3.5 h-3.5" />
+              <ArrowRight className="w-3.5 h-3.5 shrink-0" />
             </button>
           </div>
         </div>

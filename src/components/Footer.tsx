@@ -103,9 +103,9 @@ export const Footer: React.FC<FooterProps> = ({
           {onOpenRequestModal && (
             <button
               onClick={onOpenRequestModal}
-              className="hover:text-[#0284c7] dark:hover:text-sky-300 font-bold text-[#0284c7] dark:text-sky-400 transition-colors cursor-pointer flex items-center gap-1.5"
+              className="aos-btn-soft min-h-[36px] px-3.5 py-1.5 text-xs text-[#0284c7] dark:text-sky-300"
             >
-              <Lightbulb className="w-3.5 h-3.5" />
+              <Lightbulb className="w-3.5 h-3.5 shrink-0" />
               <span>Request a Tool</span>
             </button>
           )}

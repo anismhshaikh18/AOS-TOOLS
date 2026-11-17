@@ -70,10 +70,8 @@ export const WhatsAppConsultationWidget: React.FC<WhatsAppConsultationWidgetProp
                   key={tpl.label}
                   type="button"
                   onClick={() => setMessage(tpl.text)}
-                  className={`px-2.5 py-1 rounded-lg text-[11px] font-semibold border transition-colors cursor-pointer ${
-                    message === tpl.text
-                      ? 'bg-[#0284c7] text-white border-[#0284c7]'
-                      : 'bg-slate-100 dark:bg-[#072642] text-slate-700 dark:text-slate-200 border-slate-200 dark:border-sky-500/25 hover:border-[#0284c7]'
+                  className={`px-3 py-1.5 text-[11px] font-bold cursor-pointer ${
+                    message === tpl.text ? 'aos-btn-soft-active' : 'aos-btn-soft'
                   }`}
                 >
                   {tpl.label}
@@ -98,7 +96,7 @@ export const WhatsAppConsultationWidget: React.FC<WhatsAppConsultationWidgetProp
                 href={whatsappUrl}
                 target="_blank"
                 rel="noopener noreferrer"
-                className="flex-1 py-2.5 px-3 rounded-xl bg-emerald-600 hover:bg-emerald-700 text-white text-xs font-bold flex items-center justify-center gap-1.5 shadow-md transition-colors"
+                className="aos-btn-emerald flex-1 min-h-[42px] py-2.5 px-4 text-xs font-bold flex items-center justify-center gap-1.5"
               >
                 <Send className="w-3.5 h-3.5" />
                 <span>Chat on WhatsApp</span>
@@ -107,7 +105,7 @@ export const WhatsAppConsultationWidget: React.FC<WhatsAppConsultationWidgetProp
                 href="tel:+919342337626"
                 aria-label="Call Anis Online Services"
                 title="Call +91 9342337626"
-                className="p-2.5 rounded-xl bg-[#072642] hover:bg-[#0d4775] text-white border border-sky-400/30 transition-colors"
+                className="aos-btn-primary w-10 h-10 flex items-center justify-center shrink-0"
               >
                 <Phone className="w-4 h-4" />
               </a>
@@ -120,7 +118,7 @@ export const WhatsAppConsultationWidget: React.FC<WhatsAppConsultationWidgetProp
                   setIsOpen(false);
                   onOpenDigitalCard();
                 }}
-                className="w-full py-2 px-3 rounded-xl bg-slate-100 dark:bg-[#072642] hover:bg-slate-200 dark:hover:bg-[#0d4775]/60 border border-slate-200 dark:border-sky-500/20 text-xs font-bold text-[#0284c7] dark:text-sky-300 flex items-center justify-center gap-1.5 cursor-pointer transition-colors"
+                className="aos-btn-soft w-full min-h-[40px] py-2 px-3 text-xs font-bold text-[#0284c7] dark:text-sky-300 flex items-center justify-center gap-1.5 cursor-pointer"
               >
                 <CreditCard className="w-3.5 h-3.5" />
                 <span>Open AOS Digital Business Card (/card)</span>
@@ -130,13 +128,13 @@ export const WhatsAppConsultationWidget: React.FC<WhatsAppConsultationWidgetProp
         </div>
       )}
 
-      {/* Floating Toggle Button */}
+      {/* Floating Soft-UI Toggle Button */}
       <button
         type="button"
         onClick={() => setIsOpen((v) => !v)}
         aria-label={isOpen ? 'Close WhatsApp consultation' : 'Open Direct WhatsApp Consultation'}
         title="Direct WhatsApp Consultation (+91 9342337626)"
-        className="h-12 sm:h-13 px-4 rounded-full bg-gradient-to-r from-[#0B192C] via-[#072642] to-emerald-600 hover:brightness-110 text-white border border-emerald-400/50 shadow-2xl flex items-center gap-2 cursor-pointer transition-all active:scale-95"
+        className="h-12 sm:h-13 px-4 rounded-full bg-gradient-to-r from-[#0B192C] via-[#0d4775] to-emerald-600 hover:brightness-110 text-white border border-emerald-300/45 shadow-2xl flex items-center gap-2 cursor-pointer transition-all active:scale-95"
       >
         {isOpen ? (
           <X className="w-5 h-5 shrink-0" />

@@ -108,13 +108,13 @@ const PortalCard: React.FC<PortalCardProps> = React.memo(
               {isExpanded ? <ChevronUp className="w-3 h-3" /> : <ChevronDown className="w-3 h-3" />}
             </button>
 
-            <div className="flex items-center gap-1.5 shrink-0">
+            <div className="flex items-center gap-2 shrink-0">
               <button
                 type="button"
                 onClick={() => onCopyUrl(portal.id, route.primaryUrl)}
                 aria-label={`Copy official URL for ${portal.name}`}
                 title="Copy verified portal URL"
-                className="p-2 rounded-lg text-slate-600 dark:text-slate-300 hover:text-[#0284c7] dark:hover:text-sky-300 bg-slate-100 dark:bg-[#071322] border border-slate-200 dark:border-sky-500/25 cursor-pointer transition-colors"
+                className="aos-btn-icon w-9 h-9 cursor-pointer"
               >
                 {isCopied ? (
                   <Check className="w-3.5 h-3.5 text-emerald-500" />
@@ -127,10 +127,10 @@ const PortalCard: React.FC<PortalCardProps> = React.memo(
                 href={route.primaryUrl}
                 target="_blank"
                 rel="noopener noreferrer"
-                className="inline-flex items-center gap-1.5 px-4 py-2 text-xs font-bold text-white bg-gradient-to-r from-[#0284c7] to-[#0d4775] hover:from-[#38bdf8] hover:to-[#0284c7] rounded-xl transition-all shadow-sm whitespace-nowrap shrink-0"
+                className="aos-btn-primary inline-flex items-center gap-1.5 px-4 py-2 min-h-[38px] text-xs font-bold whitespace-nowrap shrink-0"
               >
                 <span>Open Portal</span>
-                <ExternalLink className="w-3.5 h-3.5" />
+                <ExternalLink className="w-3.5 h-3.5 shrink-0" />
               </a>
             </div>
           </div>
@@ -317,7 +317,7 @@ export const GovernmentPortals: React.FC = () => {
           <div
             role="tablist"
             aria-label="Portal service categories"
-            className="flex flex-wrap items-center gap-1.5 p-1 rounded-xl bg-slate-100 dark:bg-[#071322] border border-slate-200 dark:border-sky-500/20"
+            className="aos-segmented-track flex flex-wrap items-center gap-1 p-1.5"
           >
             {CATEGORY_TABS.map((tab) => {
               const Icon = tab.icon;
@@ -329,10 +329,8 @@ export const GovernmentPortals: React.FC = () => {
                   aria-selected={isActive}
                   type="button"
                   onClick={() => setActiveCategory(tab.id)}
-                  className={`inline-flex items-center gap-1.5 px-3.5 py-2 rounded-lg text-xs font-bold whitespace-nowrap shrink-0 transition-all cursor-pointer ${
-                    isActive
-                      ? 'bg-gradient-to-r from-[#0284c7] to-[#0d4775] text-white shadow-sm'
-                      : 'text-slate-700 dark:text-slate-200 hover:text-slate-950 dark:hover:text-white hover:bg-white/70 dark:hover:bg-white/5'
+                  className={`inline-flex items-center gap-1.5 px-3.5 py-2 min-h-[36px] text-xs font-bold whitespace-nowrap shrink-0 cursor-pointer ${
+                    isActive ? 'aos-btn-soft-active' : 'aos-btn-soft-tab'
                   }`}
                 >
                   <Icon className="w-3.5 h-3.5 shrink-0" />
@@ -355,7 +353,7 @@ export const GovernmentPortals: React.FC = () => {
               aria-label="Filter by state"
               value={selectedState}
               onChange={(e) => setSelectedState(e.target.value)}
-              className="px-3 py-2 text-xs font-medium bg-white dark:bg-[#071322] rounded-xl text-slate-900 dark:text-white border border-slate-300 dark:border-sky-500/30 cursor-pointer focus:outline-none focus:ring-2 focus:ring-[#0284c7]"
+              className="px-3.5 py-2 min-h-[38px] text-xs font-semibold bg-white dark:bg-[#071322] rounded-full text-slate-900 dark:text-white border border-slate-300 dark:border-sky-500/30 cursor-pointer focus:outline-none focus:ring-2 focus:ring-[#0284c7]"
             >
               {availableStates.map((st) => (
                 <option key={st} value={st} className="bg-white dark:bg-[#0B192C]">
@@ -367,9 +365,9 @@ export const GovernmentPortals: React.FC = () => {
             <button
               type="button"
               onClick={() => setSortBy((s) => (s === 'featured' ? 'name' : 'featured'))}
-              className="inline-flex items-center gap-1.5 px-3 py-2 text-xs font-semibold text-slate-700 dark:text-slate-100 bg-slate-50 dark:bg-[#071322] rounded-xl border border-slate-300 dark:border-sky-500/30 hover:border-[#0284c7] whitespace-nowrap shrink-0 cursor-pointer transition-colors"
+              className="aos-btn-soft inline-flex items-center gap-1.5 px-4 py-2 min-h-[38px] text-xs font-bold whitespace-nowrap shrink-0 cursor-pointer"
             >
-              <ArrowUpDown className="w-3.5 h-3.5 text-[#0284c7] dark:text-sky-400 shrink-0" />
+              <ArrowUpDown className="w-3.5 h-3.5 text-[#0284c7] dark:text-sky-300 shrink-0" />
               <span>{sortBy === 'featured' ? 'Sort: Featured' : 'Sort: A–Z'}</span>
             </button>
           </div>
@@ -378,23 +376,23 @@ export const GovernmentPortals: React.FC = () => {
         {/* Live Multilingual & Voice Search Input */}
         <div className="space-y-1.5">
           <div className="relative">
-            <Search className="absolute left-3.5 top-3 w-4 h-4 text-slate-400 dark:text-sky-300/75" />
+            <Search className="absolute left-4 top-1/2 -translate-y-1/2 w-4 h-4 text-slate-400 dark:text-sky-300/75" />
             <input
               type="text"
               value={query}
               onChange={(e) => setQuery(e.target.value)}
               placeholder="Search in English, हिंदी, தமிழ், తెలుగు, मराठी or speak (e.g., राशन, TNPDS, Smart Card, पैन, RBI)..."
-              className="w-full pl-10 pr-20 py-2.5 text-xs sm:text-sm bg-slate-50 dark:bg-[#071322] rounded-xl text-slate-900 dark:text-white placeholder-slate-400 dark:placeholder-slate-400 border border-slate-300 dark:border-sky-500/30 focus:outline-none focus:ring-2 focus:ring-[#0284c7]"
+              className="w-full pl-10 pr-24 py-2.5 text-xs sm:text-sm bg-slate-50 dark:bg-[#071322] rounded-full text-slate-900 dark:text-white placeholder-slate-400 dark:placeholder-slate-400 border border-slate-300 dark:border-sky-500/30 focus:outline-none focus:ring-2 focus:ring-[#0284c7]"
             />
-            <div className="absolute right-2.5 top-1/2 -translate-y-1/2 flex items-center gap-1">
+            <div className="absolute right-2 top-1/2 -translate-y-1/2 flex items-center gap-1.5">
               {query && (
                 <button
                   type="button"
                   onClick={() => setQuery('')}
                   aria-label="Clear search query"
-                  className="p-1.5 rounded-lg text-slate-400 hover:text-slate-700 dark:hover:text-white cursor-pointer"
+                  className="aos-btn-icon w-7 h-7 cursor-pointer"
                 >
-                  <X className="w-4 h-4" />
+                  <X className="w-3.5 h-3.5" />
                 </button>
               )}
               {voiceSupported && (
@@ -403,13 +401,13 @@ export const GovernmentPortals: React.FC = () => {
                   onClick={startListening}
                   aria-label={isListening ? 'Stop voice search' : 'Start voice search'}
                   title={isListening ? 'Listening... tap to stop' : 'Voice Search (Multi-language)'}
-                  className={`p-1.5 rounded-lg transition-colors cursor-pointer ${
+                  className={`w-8 h-8 rounded-full flex items-center justify-center transition-colors cursor-pointer ${
                     isListening
                       ? 'bg-red-500 text-white animate-pulse'
-                      : 'bg-[#0284c7]/15 text-[#0284c7] dark:text-sky-300 hover:bg-[#0284c7]/25'
+                      : 'aos-btn-icon text-[#0284c7] dark:text-sky-300'
                   }`}
                 >
-                  {isListening ? <MicOff className="w-4 h-4" /> : <Mic className="w-4 h-4" />}
+                  {isListening ? <MicOff className="w-3.5 h-3.5" /> : <Mic className="w-3.5 h-3.5" />}
                 </button>
               )}
             </div>
@@ -444,18 +442,18 @@ export const GovernmentPortals: React.FC = () => {
               href={utiitslRoute.primaryUrl}
               target="_blank"
               rel="noopener noreferrer"
-              className="inline-flex items-center gap-2 px-5 py-2.5 text-xs font-bold text-white bg-gradient-to-r from-[#0284c7] to-[#0369a1] hover:from-[#38bdf8] hover:to-[#0284c7] rounded-xl shadow-md shadow-sky-500/25 whitespace-nowrap shrink-0 transition-all"
+              className="aos-btn-primary inline-flex items-center gap-2 px-5 py-2.5 min-h-[42px] text-xs font-bold whitespace-nowrap shrink-0"
             >
               <span>Open UTIITSL Portal</span>
-              <ExternalLink className="w-3.5 h-3.5" />
+              <ExternalLink className="w-3.5 h-3.5 shrink-0" />
             </a>
             <a
               href="https://www.pan.utiitsl.com/PAN/"
               target="_blank"
               rel="noopener noreferrer"
-              className="inline-flex items-center gap-1.5 px-4 py-2.5 text-xs font-semibold text-sky-100 bg-white/10 hover:bg-white/15 border border-sky-400/30 rounded-xl whitespace-nowrap shrink-0 transition-colors"
+              className="inline-flex items-center gap-1.5 px-4 py-2.5 min-h-[42px] text-xs font-bold text-sky-100 bg-white/10 hover:bg-white/20 border border-sky-300/35 rounded-full whitespace-nowrap shrink-0 transition-all shadow-sm"
             >
-              <Route className="w-3.5 h-3.5 text-sky-300" />
+              <Route className="w-3.5 h-3.5 text-sky-300 shrink-0" />
               <span>PAN Online (/PAN/)</span>
             </a>
           </div>
@@ -488,7 +486,7 @@ export const GovernmentPortals: React.FC = () => {
           <button
             type="button"
             onClick={resetFilters}
-            className="inline-flex items-center gap-1.5 px-4 py-2 text-xs font-bold text-white bg-[#0284c7] hover:bg-[#0369a1] rounded-xl cursor-pointer transition-colors"
+            className="aos-btn-primary inline-flex items-center gap-1.5 px-5 py-2.5 min-h-[40px] text-xs font-bold cursor-pointer"
           >
             <RotateCcw className="w-3.5 h-3.5" />
             <span>Reset Filters</span>

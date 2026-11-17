@@ -181,16 +181,14 @@ export const ToolRequestSection: React.FC<ToolRequestSectionProps> = ({
             </p>
           </div>
 
-          {/* Tab Switcher - Only shown if user has actually submitted a request */}
+          {/* Soft-UI Tab Switcher - Only shown if user has actually submitted a request */}
           {requests.length > 0 && (
-            <div className="flex items-center p-1 rounded-xl bg-slate-100 dark:bg-[#072642] border border-slate-200 dark:border-sky-900/40 shrink-0 self-start sm:self-center">
+            <div className="aos-segmented-track flex items-center gap-1 p-1 shrink-0 self-start sm:self-center">
               <button
                 type="button"
                 onClick={() => setActiveTab('form')}
-                className={`px-3.5 py-1.5 rounded-lg text-xs font-bold transition-all cursor-pointer ${
-                  activeTab === 'form'
-                    ? 'bg-[#0284c7] text-white shadow-md'
-                    : 'text-slate-600 dark:text-slate-400 hover:text-slate-900 dark:hover:text-white'
+                className={`px-3.5 py-1.5 min-h-[34px] text-xs font-bold cursor-pointer ${
+                  activeTab === 'form' ? 'aos-btn-soft-active' : 'aos-btn-soft-tab'
                 }`}
               >
                 Submit Request
@@ -198,16 +196,12 @@ export const ToolRequestSection: React.FC<ToolRequestSectionProps> = ({
               <button
                 type="button"
                 onClick={() => setActiveTab('my_requests')}
-                className={`px-3.5 py-1.5 rounded-lg text-xs font-bold transition-all cursor-pointer flex items-center gap-1.5 ${
-                  activeTab === 'my_requests'
-                    ? 'bg-[#0284c7] text-white shadow-md'
-                    : 'text-slate-600 dark:text-slate-400 hover:text-slate-900 dark:hover:text-white'
+                className={`px-3.5 py-1.5 min-h-[34px] text-xs font-bold cursor-pointer flex items-center gap-1.5 ${
+                  activeTab === 'my_requests' ? 'aos-btn-soft-active' : 'aos-btn-soft-tab'
                 }`}
               >
                 <span>My Requests</span>
-                <span className="px-1.5 py-0.2 rounded-full text-[10px] bg-sky-200 dark:bg-sky-900/60 text-sky-800 dark:text-sky-200">
-                  {requests.length}
-                </span>
+                <span className="font-mono text-[10px] opacity-85">({requests.length})</span>
               </button>
             </div>
           )}
@@ -302,19 +296,17 @@ export const ToolRequestSection: React.FC<ToolRequestSectionProps> = ({
               <label className="block text-xs font-bold text-slate-800 dark:text-slate-200">
                 Priority / Work Impact
               </label>
-              <div className="flex items-center gap-2 pt-0.5">
+              <div className="aos-segmented-track flex items-center gap-1 p-1">
                 {(['high', 'medium', 'normal'] as const).map((lvl) => (
                   <button
                     key={lvl}
                     type="button"
                     onClick={() => setPriority(lvl)}
-                    className={`flex-1 py-2 rounded-xl text-[11px] font-bold capitalize transition-all cursor-pointer border ${
-                      priority === lvl
-                        ? 'bg-[#0284c7] text-white border-[#0284c7] shadow-xs'
-                        : 'bg-white dark:bg-[#072642] text-slate-700 dark:text-slate-300 border-slate-200 dark:border-sky-800/40 hover:bg-slate-50'
+                    className={`flex-1 py-2 min-h-[36px] text-[11px] font-bold capitalize cursor-pointer ${
+                      priority === lvl ? 'aos-btn-soft-active' : 'aos-btn-soft-tab'
                     }`}
                   >
-                    {lvl === 'high' ? '🔥 High Priority' : lvl === 'medium' ? '⚡ Medium' : 'Standard'}
+                    {lvl === 'high' ? 'High Priority' : lvl === 'medium' ? 'Medium' : 'Standard'}
                   </button>
                 ))}
               </div>
@@ -323,13 +315,13 @@ export const ToolRequestSection: React.FC<ToolRequestSectionProps> = ({
 
           <div className="pt-2 flex flex-col sm:flex-row items-center justify-between gap-3">
             <span className="text-[11px] text-slate-500 dark:text-slate-400">
-              🔒 Submissions are evaluated directly by the AOS Tools engineering team.
+              Submissions are evaluated directly by the AOS Tools engineering team.
             </span>
 
             <button
               type="submit"
               disabled={isSubmitting}
-              className="w-full sm:w-auto px-6 py-2.5 rounded-xl bg-gradient-to-r from-[#0284c7] to-[#0d4775] hover:from-[#38bdf8] hover:to-[#0284c7] text-white font-bold text-xs flex items-center justify-center gap-2 shadow-lg shadow-sky-500/25 transition-all cursor-pointer active:scale-95 disabled:opacity-50"
+              className="aos-btn-primary w-full sm:w-auto min-h-[44px] px-6 py-2.5 font-bold text-xs flex items-center justify-center gap-2 cursor-pointer disabled:opacity-50"
             >
               {isSubmitting ? (
                 <>

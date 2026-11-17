@@ -170,10 +170,10 @@ export const LiveStatusNoticeWidget: React.FC = () => {
           <button
             type="button"
             onClick={() => void handleEnablePushAlerts()}
-            className={`px-3 py-1.5 rounded-xl text-[11px] font-bold flex items-center gap-1.5 cursor-pointer transition-colors ${
+            className={`px-3.5 py-2 min-h-[38px] rounded-full text-[11px] font-bold flex items-center gap-1.5 cursor-pointer transition-all shadow-sm ${
               notifPermission === 'granted'
-                ? 'bg-emerald-500/20 text-emerald-200 border border-emerald-400/40'
-                : 'bg-white/10 hover:bg-white/20 text-sky-100 border border-sky-400/30'
+                ? 'bg-emerald-500/25 text-emerald-100 border border-emerald-400/50'
+                : 'bg-white/10 hover:bg-white/20 text-sky-100 border border-sky-300/35'
             }`}
           >
             {notifPermission === 'granted' ? (
@@ -192,7 +192,7 @@ export const LiveStatusNoticeWidget: React.FC = () => {
           <button
             type="button"
             onClick={() => setIsComposerOpen((v) => !v)}
-            className="px-3 py-1.5 rounded-xl bg-[#0284c7] hover:bg-sky-500 text-white text-[11px] font-bold flex items-center gap-1.5 shadow-sm cursor-pointer transition-colors"
+            className="aos-btn-primary px-4 py-2 min-h-[38px] text-[11px] font-bold flex items-center gap-1.5 cursor-pointer"
           >
             <Plus className="w-3.5 h-3.5" />
             <span>Post Notice</span>
@@ -247,13 +247,13 @@ export const LiveStatusNoticeWidget: React.FC = () => {
               <button
                 type="button"
                 onClick={() => setIsComposerOpen(false)}
-                className="px-3 py-1.5 rounded-lg text-xs font-semibold text-slate-600 dark:text-slate-300 hover:bg-slate-200 dark:hover:bg-white/10 cursor-pointer"
+                className="aos-btn-soft px-4 py-2 min-h-[38px] text-xs font-bold cursor-pointer"
               >
                 Cancel
               </button>
               <button
                 type="submit"
-                className="px-4 py-1.5 rounded-lg bg-[#0284c7] hover:bg-[#0369a1] text-white text-xs font-bold cursor-pointer"
+                className="aos-btn-primary px-5 py-2 min-h-[38px] text-xs font-bold cursor-pointer"
               >
                 Publish Notice
               </button>
@@ -348,7 +348,7 @@ export const LiveStatusNoticeWidget: React.FC = () => {
             <button
               type="button"
               onClick={handleResetDefaults}
-              className="inline-flex items-center gap-1.5 px-3 py-1.5 rounded-lg bg-[#0284c7] text-white text-xs font-bold cursor-pointer"
+              className="aos-btn-primary inline-flex items-center gap-1.5 px-4 py-2 min-h-[40px] text-xs font-bold cursor-pointer"
             >
               <RotateCcw className="w-3.5 h-3.5" />
               <span>Restore Default Advisories</span>

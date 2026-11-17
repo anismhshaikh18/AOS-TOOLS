@@ -104,12 +104,12 @@ export const ToolCard: React.FC<ToolCardProps> = React.memo(({ tool, onSelect })
         </p>
       </div>
 
-      <div className="pt-3.5 border-t border-slate-100 dark:border-white/10 flex items-center justify-between">
+      <div className="pt-3.5 border-t border-slate-100 dark:border-white/10 flex items-center justify-between gap-2">
         <span
-          className={`text-xs font-bold group-hover:translate-x-1 transition-all duration-150 flex items-center gap-1.5 ${
+          className={`px-3.5 py-1.5 text-[11px] font-bold flex items-center gap-1.5 ${
             isLocked
-              ? 'text-amber-600 dark:text-amber-300'
-              : 'text-[#0284c7] dark:text-sky-400'
+              ? 'aos-btn-soft text-amber-600 dark:text-amber-300'
+              : 'aos-btn-soft text-[#0284c7] dark:text-sky-300 group-hover:translate-x-0.5'
           }`}
         >
           {isLocked ? (
@@ -120,11 +120,11 @@ export const ToolCard: React.FC<ToolCardProps> = React.memo(({ tool, onSelect })
           ) : (
             <>
               <span>Open Tool</span>
-              <ArrowRight className="w-3.5 h-3.5 text-[#0284c7] dark:text-sky-400 group-hover:translate-x-0.5 transition-transform" />
+              <ArrowRight className="w-3.5 h-3.5 text-[#0284c7] dark:text-sky-300 group-hover:translate-x-0.5 transition-transform" />
             </>
           )}
         </span>
-        <span className="theme-badge text-[10px] font-mono font-semibold px-2 py-0.5 rounded-md">
+        <span className="text-[11px] font-mono font-semibold text-slate-500 dark:text-sky-300/80">
           {isLocked ? 'Protected' : '₹0 Free'}
         </span>
       </div>

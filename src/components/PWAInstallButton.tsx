@@ -36,10 +36,10 @@ export const PWAInstallButton: React.FC<PWAInstallButtonProps> = ({
         aria-label="Install AOS Tools App"
         className={`${
           fullWidth
-            ? 'w-full p-2.5 rounded-xl text-xs font-bold flex items-center justify-center gap-2 bg-gradient-to-r from-[#0284c7] to-[#0B192C] text-white shadow-sm'
+            ? 'w-full min-h-[44px] px-4 py-2.5 text-xs font-bold flex items-center justify-center gap-2 aos-btn-primary'
             : compact
-            ? 'h-9 px-2.5 lg:px-3 rounded-full bg-[#0284c7]/15 hover:bg-[#0284c7]/25 border border-[#0284c7]/35 text-[#0284c7] dark:text-sky-300 text-xs font-bold flex items-center justify-center gap-1.5 transition-all shrink-0'
-            : 'px-3.5 py-2 rounded-xl bg-gradient-to-r from-[#0284c7] to-[#0d4775] text-white text-xs font-bold flex items-center gap-1.5 shadow-sm'
+            ? 'aos-btn-soft h-9 px-2.5 lg:px-3.5 text-[#0284c7] dark:text-sky-300 text-xs font-bold flex items-center justify-center gap-1.5 shrink-0'
+            : 'min-h-[40px] px-4 py-2 aos-btn-primary text-xs font-bold flex items-center gap-1.5'
         } cursor-pointer whitespace-nowrap`}
       >
         <Download className="w-3.5 h-3.5 shrink-0" />

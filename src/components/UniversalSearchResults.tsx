@@ -76,39 +76,39 @@ export const UniversalSearchResults: React.FC<UniversalSearchResultsProps> = Rea
 
     return (
       <div className="flex flex-col min-w-0">
-        {/* Segmented Filter Tabs */}
-        <div
-          role="tablist"
-          aria-label="Universal search category filter"
-          className="flex items-center gap-1 px-3 py-2 border-b border-slate-200 dark:border-sky-500/20 bg-slate-50/90 dark:bg-[#071322]/90 overflow-x-auto scrollbar-none"
-        >
-          {visibleTabs.map((tab) => {
-            const isActive = activeFilter === tab.id;
-            const count = counts[tab.id] || 0;
-            return (
-              <button
-                key={tab.id}
-                type="button"
-                role="tab"
-                aria-selected={isActive}
-                onClick={() => onChangeFilter(tab.id)}
-                className={`px-2.5 py-1.5 rounded-lg text-[11px] font-bold whitespace-nowrap shrink-0 flex items-center gap-1.5 transition-colors cursor-pointer ${
-                  isActive
-                    ? 'bg-gradient-to-r from-[#0284c7] to-[#0d4775] text-white shadow-xs'
-                    : 'text-slate-600 dark:text-slate-300 hover:text-slate-900 dark:hover:text-white hover:bg-slate-200/70 dark:hover:bg-white/10'
-                }`}
-              >
-                <span>{tab.label}</span>
-                <span
-                  className={`font-mono text-[10px] tabular-nums ${
-                    isActive ? 'text-sky-100' : 'text-slate-400 dark:text-sky-300/70'
+        {/* Segmented Soft-UI Filter Tabs */}
+        <div className="px-3 py-2 border-b border-slate-200 dark:border-sky-500/20 bg-slate-50/90 dark:bg-[#071322]/90 overflow-x-auto scrollbar-none">
+          <div
+            role="tablist"
+            aria-label="Universal search category filter"
+            className="aos-segmented-track inline-flex items-center gap-1 p-1 min-w-max"
+          >
+            {visibleTabs.map((tab) => {
+              const isActive = activeFilter === tab.id;
+              const count = counts[tab.id] || 0;
+              return (
+                <button
+                  key={tab.id}
+                  type="button"
+                  role="tab"
+                  aria-selected={isActive}
+                  onClick={() => onChangeFilter(tab.id)}
+                  className={`px-3 py-1.5 min-h-[32px] text-[11px] font-bold whitespace-nowrap shrink-0 flex items-center gap-1.5 cursor-pointer ${
+                    isActive ? 'aos-btn-soft-active' : 'aos-btn-soft-tab'
                   }`}
                 >
-                  {count}
-                </span>
-              </button>
-            );
-          })}
+                  <span>{tab.label}</span>
+                  <span
+                    className={`font-mono text-[10px] tabular-nums ${
+                      isActive ? 'text-sky-100' : 'text-slate-400 dark:text-sky-300/70'
+                    }`}
+                  >
+                    {count}
+                  </span>
+                </button>
+              );
+            })}
+          </div>
         </div>
 
         {/* Results Feed */}
@@ -180,7 +180,7 @@ export const UniversalSearchResults: React.FC<UniversalSearchResultsProps> = Rea
                           onNavigateTab('portals');
                           onAfterSelect?.();
                         }}
-                        className="px-2 py-1.5 rounded-lg text-[10px] font-bold text-slate-600 dark:text-sky-200 hover:text-[#0284c7] dark:hover:text-white bg-slate-100 dark:bg-[#0B192C] border border-slate-200 dark:border-sky-500/25 cursor-pointer whitespace-nowrap hidden sm:inline-flex"
+                        className="aos-btn-soft px-3 py-1.5 text-[10px] font-bold cursor-pointer whitespace-nowrap hidden sm:inline-flex"
                       >
                         In Hub
                       </button>
@@ -190,7 +190,7 @@ export const UniversalSearchResults: React.FC<UniversalSearchResultsProps> = Rea
                         rel="noopener noreferrer"
                         onClick={() => onAfterSelect?.()}
                         aria-label={`Open ${item.title}`}
-                        className="p-2 rounded-lg bg-[#0284c7] hover:bg-[#0369a1] text-white transition-colors shrink-0 inline-flex items-center justify-center"
+                        className="aos-btn-primary w-8 h-8 shrink-0 inline-flex items-center justify-center"
                       >
                         <ExternalLink className="w-3.5 h-3.5" />
                       </a>

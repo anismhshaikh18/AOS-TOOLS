@@ -295,10 +295,10 @@ export const ToolsDirectoryView: React.FC<ToolsDirectoryViewProps> = ({
                 onClick={startListening}
                 aria-label={isListening ? 'Stop voice search' : 'Start voice search'}
                 title={isListening ? 'Listening...' : 'Voice Search'}
-                className={`absolute right-2.5 p-2 rounded-full transition-colors cursor-pointer ${
+                className={`absolute right-1.5 w-9 h-9 rounded-full flex items-center justify-center transition-colors cursor-pointer ${
                   isListening
                     ? 'bg-red-500 text-white animate-pulse'
-                    : 'bg-[#0284c7]/15 text-[#0284c7] dark:text-sky-300 hover:bg-[#0284c7]/25'
+                    : 'aos-btn-icon text-[#0284c7] dark:text-sky-300'
                 }`}
               >
                 {isListening ? <MicOff className="w-3.5 h-3.5" /> : <Mic className="w-3.5 h-3.5" />}
@@ -371,18 +371,16 @@ export const ToolsDirectoryView: React.FC<ToolsDirectoryViewProps> = ({
             </span>
           </div>
 
-          {/* Filter Pills */}
-          <div className="flex items-center gap-1.5 overflow-x-auto pb-1 scrollbar-none">
+          {/* Soft-UI Segmented Filter Pills */}
+          <div className="aos-segmented-track inline-flex items-center gap-1 p-1 overflow-x-auto max-w-full scrollbar-none">
             {filterTabs.map((tab) => {
               const isSelected = selectedFilter === tab.id;
               return (
                 <button
                   key={tab.id}
                   onClick={() => setSelectedFilter(tab.id)}
-                  className={`px-3.5 py-1.5 rounded-full text-xs font-semibold whitespace-nowrap transition-all cursor-pointer ${
-                    isSelected
-                      ? 'bg-gradient-to-r from-[#0284c7] to-[#0d4775] text-white shadow-md shadow-sky-500/20'
-                      : 'liquid-glass-sub text-slate-700 dark:text-slate-300 hover:text-slate-900 dark:hover:text-white hover:border-[#0284c7]/40'
+                  className={`px-3.5 py-1.5 min-h-[36px] text-xs font-bold whitespace-nowrap shrink-0 cursor-pointer ${
+                    isSelected ? 'aos-btn-soft-active' : 'aos-btn-soft-tab'
                   }`}
                 >
                   {tab.label}
@@ -423,12 +421,12 @@ export const ToolsDirectoryView: React.FC<ToolsDirectoryViewProps> = ({
                   </p>
                 </div>
 
-                <div className="pt-4 mt-4 border-t border-slate-100 dark:border-white/10 flex items-center justify-between">
+                <div className="pt-4 mt-4 border-t border-slate-100 dark:border-white/10 flex items-center justify-between gap-2">
                   <span
-                    className={`text-xs font-semibold group-hover:translate-x-0.5 transition-transform flex items-center gap-1 ${
+                    className={`px-3.5 py-1.5 text-[11px] font-bold group-hover:translate-x-0.5 flex items-center gap-1.5 ${
                       locked
-                        ? 'text-amber-600 dark:text-amber-300'
-                        : 'text-[#0284c7] dark:text-sky-400'
+                        ? 'aos-btn-soft text-amber-600 dark:text-amber-300'
+                        : 'aos-btn-soft text-[#0284c7] dark:text-sky-300'
                     }`}
                   >
                     {locked ? (
