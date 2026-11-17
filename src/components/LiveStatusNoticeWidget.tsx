@@ -247,13 +247,13 @@ export const LiveStatusNoticeWidget: React.FC = () => {
               <button
                 type="button"
                 onClick={() => setIsComposerOpen(false)}
-                className="aos-btn-soft px-4 py-2 min-h-[38px] text-xs font-bold cursor-pointer"
+                className="aos-btn-soft inline-flex items-center justify-center gap-1.5 px-4 py-2 min-h-[38px] text-xs font-bold cursor-pointer whitespace-nowrap"
               >
                 Cancel
               </button>
               <button
                 type="submit"
-                className="aos-btn-primary px-5 py-2 min-h-[38px] text-xs font-bold cursor-pointer"
+                className="aos-btn-primary inline-flex items-center justify-center gap-1.5 px-5 py-2 min-h-[38px] text-xs font-bold cursor-pointer whitespace-nowrap"
               >
                 Publish Notice
               </button>

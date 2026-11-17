@@ -187,11 +187,11 @@ export const Header: React.FC<HeaderProps> = ({
     SUPPORTED_LANGUAGES.find((l) => l.code === lang) || SUPPORTED_LANGUAGES[0];
 
   const primaryNavItems = [
-    { id: 'home', label: t.home || 'Home' },
-    { id: 'tools', label: t.allTools || 'Tools' },
-    { id: 'portals', label: 'Government Portals Hub' },
-    { id: 'about', label: t.about || 'About' },
-    { id: 'privacy', label: t.privacy || 'Privacy' },
+    { id: 'home', label: t.home || 'Home', mobileLabel: t.home || 'Home' },
+    { id: 'tools', label: t.allTools || 'Tools', mobileLabel: t.allTools || 'Tools' },
+    { id: 'portals', label: 'Portals Hub', mobileLabel: 'Government Portals Hub' },
+    { id: 'about', label: t.about || 'About', mobileLabel: t.about || 'About' },
+    { id: 'privacy', label: t.privacy || 'Privacy', mobileLabel: t.privacy || 'Privacy' },
   ];
 
   const hasLocksConfigured =
@@ -201,8 +201,8 @@ export const Header: React.FC<HeaderProps> = ({
 
   return (
     <header className="sticky top-0 z-40 w-full md:backdrop-blur-xl bg-white/95 dark:bg-[#0B192C]/96 border-b border-slate-200 dark:border-sky-500/20 transition-colors shadow-sm dark:shadow-lg dark:shadow-black/30">
-      <div className="max-w-7xl mx-auto px-3.5 sm:px-6 lg:px-8">
-        <div className="flex items-center justify-between gap-3 h-16 sm:h-[68px]">
+      <div className="max-w-7xl mx-auto px-3 sm:px-5 lg:px-6">
+        <div className="flex items-center justify-between gap-3 lg:gap-4 h-16 min-w-0">
           {/* Left: Balanced Brand Mark */}
           <div
             onClick={() => {
@@ -224,10 +224,10 @@ export const Header: React.FC<HeaderProps> = ({
               <AosLogoSvg className="w-full h-full aspect-square object-contain shrink-0" />
             </div>
             <div className="flex items-baseline tracking-tight whitespace-nowrap">
-              <span className="text-base sm:text-xl font-black text-slate-900 dark:text-white">
+              <span className="text-[15px] sm:text-xl font-black text-slate-900 dark:text-white">
                 AOS
               </span>
-              <span className="text-base sm:text-xl font-black text-[#0284c7] ml-1">
+              <span className="text-[15px] sm:text-xl font-black text-[#0284c7] ml-1">
                 TOOLS
               </span>
             </div>
@@ -236,7 +236,7 @@ export const Header: React.FC<HeaderProps> = ({
           {/* Center: Desktop Soft-UI Segmented Nav Bar */}
           <nav
             aria-label="Primary navigation"
-            className="hidden md:flex items-center gap-1 p-1 aos-segmented-track shrink-0"
+            className="hidden lg:flex items-center gap-1 p-1 aos-segmented-track shrink-0"
           >
             {primaryNavItems.map((item) => {
               const isSelected = activeTab === item.id;
@@ -244,7 +244,8 @@ export const Header: React.FC<HeaderProps> = ({
                 <button
                   key={item.id}
                   onClick={() => setActiveTab(item.id)}
-                  className={`px-3 lg:px-4 h-8 rounded-full text-xs font-semibold cursor-pointer whitespace-nowrap shrink-0 flex items-center ${
+                  title={item.mobileLabel}
+                  className={`px-3 xl:px-3.5 h-8 rounded-full text-xs font-semibold cursor-pointer whitespace-nowrap shrink-0 flex items-center ${
                     isSelected ? 'aos-btn-soft-active font-bold' : 'aos-btn-soft-tab'
                   }`}
                 >
@@ -257,7 +258,7 @@ export const Header: React.FC<HeaderProps> = ({
           {/* Right: Clean Uniform Soft-UI Action Toolbar */}
           <div className="flex items-center gap-1.5 sm:gap-2 shrink-0">
             {/* PWA App Install Button */}
-            <div className="hidden sm:block">
+            <div className="hidden sm:flex shrink-0">
               <PWAInstallButton compact />
             </div>
 
@@ -269,16 +270,16 @@ export const Header: React.FC<HeaderProps> = ({
                 onClick={onOpenSearch}
                 aria-label="Search tools, portals, and records"
                 title="Universal Search (/ or Ctrl+K)"
-                className="xl:hidden aos-btn-soft h-9 w-9 sm:w-auto sm:px-3.5 cursor-pointer flex items-center justify-center gap-1.5 shrink-0"
+                className="xl:hidden aos-btn-soft h-9 w-9 md:w-auto md:px-3 lg:w-9 lg:px-0 cursor-pointer flex items-center justify-center gap-1.5 shrink-0"
               >
                 <Search className="w-4 h-4 text-[#0284c7] dark:text-sky-300 shrink-0" />
-                <span className="hidden sm:inline text-[11px] font-semibold">
+                <span className="hidden md:inline lg:hidden text-[11px] font-semibold">
                   Search...
                 </span>
               </button>
 
               {/* Desktop Live Type-Ahead Universal Search Bar */}
-              <div className="hidden xl:flex items-center relative w-56 2xl:w-64">
+              <div className="hidden xl:flex items-center relative w-48 2xl:w-56">
                 <Search className="w-3.5 h-3.5 text-[#0284c7] dark:text-sky-400 absolute left-3 pointer-events-none" />
                 <input
                   type="text"
@@ -400,17 +401,17 @@ export const Header: React.FC<HeaderProps> = ({
             </button>
 
             {/* Language Selector Dropdown (sm+ in bar; compact inside menu on <sm) */}
-            <div className="relative hidden sm:block" ref={langDropdownRef}>
+            <div className="relative hidden sm:block shrink-0" ref={langDropdownRef}>
               <button
                 onClick={() => setIsLangOpen(!isLangOpen)}
                 aria-label="Select language"
-                className="aos-btn-soft h-9 px-2.5 lg:px-3.5 text-xs font-semibold cursor-pointer flex items-center gap-1.5 shrink-0"
+                className="aos-btn-soft h-9 px-2.5 2xl:px-3 text-xs font-semibold cursor-pointer flex items-center gap-1 shrink-0"
               >
                 <Globe className="w-3.5 h-3.5 text-[#0284c7] dark:text-sky-300 shrink-0" />
-                <span className="hidden lg:inline text-[11px] font-semibold whitespace-nowrap">
+                <span className="hidden 2xl:inline text-[11px] font-semibold whitespace-nowrap">
                   {currentLangObj.nativeName}
                 </span>
-                <span className="lg:hidden text-[10px] font-bold uppercase">
+                <span className="2xl:hidden text-[10px] font-bold uppercase">
                   {currentLangObj.code.slice(0, 2)}
                 </span>
                 <ChevronDown
@@ -492,7 +493,9 @@ export const Header: React.FC<HeaderProps> = ({
               aria-label={user ? `Account: ${user.displayName}` : 'Sign in with Google'}
               title={user ? `${user.displayName} (${user.role})` : 'Google Sign-In & Session'}
               className={`h-9 ${
-                user ? 'w-9 lg:w-auto lg:px-3 aos-btn-soft' : 'w-9 sm:w-auto sm:px-3.5 aos-btn-primary'
+                user
+                  ? 'w-9 xl:w-auto xl:px-3 aos-btn-soft'
+                  : 'w-9 md:w-auto md:px-3 lg:w-9 lg:px-0 xl:w-auto xl:px-3.5 aos-btn-primary'
               } cursor-pointer flex items-center justify-center gap-1.5 shrink-0`}
             >
               {user ? (
@@ -509,34 +512,34 @@ export const Header: React.FC<HeaderProps> = ({
                       {(user.displayName || 'A').charAt(0).toUpperCase()}
                     </span>
                   )}
-                  <span className="hidden lg:inline text-[11px] font-bold max-w-[92px] truncate">
+                  <span className="hidden xl:inline text-[11px] font-bold max-w-[88px] truncate">
                     {user.displayName.split(' ')[0]}
                   </span>
                 </>
               ) : (
                 <>
                   <LogIn className="w-4 h-4 shrink-0" />
-                  <span className="hidden sm:inline text-[11px] font-bold whitespace-nowrap">
+                  <span className="hidden md:inline lg:hidden xl:inline text-[11px] font-bold whitespace-nowrap">
                     Sign In
                   </span>
                 </>
               )}
             </button>
 
-            {/* Mobile Hamburger Button */}
+            {/* Mobile & Tablet Hamburger Button */}
             <button
               onClick={() => setIsMobileMenuOpen(!isMobileMenuOpen)}
               aria-label={isMobileMenuOpen ? 'Close menu' : 'Open menu'}
-              className="md:hidden aos-btn-icon h-9 w-9 cursor-pointer shrink-0"
+              className="lg:hidden aos-btn-icon h-9 w-9 cursor-pointer shrink-0"
             >
               {isMobileMenuOpen ? <X className="w-4 h-4" /> : <Menu className="w-4 h-4" />}
             </button>
           </div>
         </div>
 
-        {/* Mobile Dropdown Drawer */}
+        {/* Mobile & Tablet Dropdown Drawer */}
         {isMobileMenuOpen && (
-          <div className="md:hidden py-4 border-t border-slate-200 dark:border-sky-500/20 space-y-3 animate-in fade-in duration-150">
+          <div className="lg:hidden py-4 border-t border-slate-200 dark:border-sky-500/20 space-y-3 animate-in fade-in duration-150">
             {/* Navigation */}
             <div className="grid grid-cols-2 gap-2.5">
               {primaryNavItems.map((item) => (
@@ -552,7 +555,7 @@ export const Header: React.FC<HeaderProps> = ({
                     activeTab === item.id ? 'aos-btn-soft-active' : 'aos-btn-soft'
                   }`}
                 >
-                  {item.label}
+                  {item.mobileLabel}
                 </button>
               ))}
             </div>

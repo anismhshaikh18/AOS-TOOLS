@@ -57,53 +57,53 @@ export const Footer: React.FC<FooterProps> = ({
         </div>
 
         {/* Secondary Navigation Links */}
-        <div className="pt-4 border-t border-slate-200 dark:border-white/10 flex flex-wrap items-center justify-center sm:justify-start gap-4 sm:gap-6 text-xs text-slate-500 dark:text-slate-400">
+        <div className="pt-4 border-t border-slate-200 dark:border-white/10 flex flex-wrap items-center justify-center sm:justify-start gap-x-4 gap-y-2.5 sm:gap-x-6 text-xs text-slate-500 dark:text-slate-400">
           <button
             onClick={() => setActiveTab('home')}
-            className="hover:text-slate-900 dark:hover:text-white transition-colors cursor-pointer"
+            className="hover:text-slate-900 dark:hover:text-white transition-colors cursor-pointer whitespace-nowrap"
           >
             {t.home || 'Home'}
           </button>
           <button
             onClick={() => setActiveTab('tools')}
-            className="hover:text-slate-900 dark:hover:text-white transition-colors cursor-pointer"
+            className="hover:text-slate-900 dark:hover:text-white transition-colors cursor-pointer whitespace-nowrap"
           >
             {t.allTools || 'All Tools'}
           </button>
           <button
             onClick={() => setActiveTab('portals')}
-            className="hover:text-slate-900 dark:hover:text-white transition-colors cursor-pointer"
+            className="hover:text-slate-900 dark:hover:text-white transition-colors cursor-pointer whitespace-nowrap"
           >
             Government Portals Hub
           </button>
           <button
             onClick={() => setActiveTab('card')}
-            className="hover:text-slate-900 dark:hover:text-white transition-colors cursor-pointer font-semibold text-[#0284c7] dark:text-sky-300"
+            className="hover:text-slate-900 dark:hover:text-white transition-colors cursor-pointer font-semibold text-[#0284c7] dark:text-sky-300 whitespace-nowrap"
           >
             Digital Card (/card)
           </button>
           <button
             onClick={() => setActiveTab('about')}
-            className="hover:text-slate-900 dark:hover:text-white transition-colors cursor-pointer"
+            className="hover:text-slate-900 dark:hover:text-white transition-colors cursor-pointer whitespace-nowrap"
           >
             {t.about || 'About Us'}
           </button>
           <button
             onClick={() => setActiveTab('privacy')}
-            className="hover:text-slate-900 dark:hover:text-white transition-colors cursor-pointer"
+            className="hover:text-slate-900 dark:hover:text-white transition-colors cursor-pointer whitespace-nowrap"
           >
             {t.privacy || 'Privacy Policy'}
           </button>
           <button
             onClick={onOpenFreePolicy}
-            className="hover:text-slate-900 dark:hover:text-white transition-colors cursor-pointer"
+            className="hover:text-slate-900 dark:hover:text-white transition-colors cursor-pointer whitespace-nowrap"
           >
             Strict ₹0-Cost Policy
           </button>
           {onOpenRequestModal && (
             <button
               onClick={onOpenRequestModal}
-              className="aos-btn-soft min-h-[36px] px-3.5 py-1.5 text-xs text-[#0284c7] dark:text-sky-300"
+              className="aos-btn-soft inline-flex items-center justify-center gap-1.5 min-h-[36px] px-4 py-1.5 text-xs font-bold text-[#0284c7] dark:text-sky-300 cursor-pointer whitespace-nowrap shrink-0"
             >
               <Lightbulb className="w-3.5 h-3.5 shrink-0" />
               <span>Request a Tool</span>

@@ -38,12 +38,12 @@ export const PWAInstallButton: React.FC<PWAInstallButtonProps> = ({
           fullWidth
             ? 'w-full min-h-[44px] px-4 py-2.5 text-xs font-bold flex items-center justify-center gap-2 aos-btn-primary'
             : compact
-            ? 'aos-btn-soft h-9 px-2.5 lg:px-3.5 text-[#0284c7] dark:text-sky-300 text-xs font-bold flex items-center justify-center gap-1.5 shrink-0'
+            ? 'aos-btn-soft h-9 w-9 2xl:w-auto 2xl:px-3.5 text-[#0284c7] dark:text-sky-300 text-xs font-bold flex items-center justify-center gap-1.5 shrink-0'
             : 'min-h-[40px] px-4 py-2 aos-btn-primary text-xs font-bold flex items-center gap-1.5'
         } cursor-pointer whitespace-nowrap`}
       >
-        <Download className="w-3.5 h-3.5 shrink-0" />
-        <span className={compact ? 'hidden xl:inline' : ''}>Install App</span>
+        <Download className="w-4 h-4 shrink-0" />
+        <span className={compact ? 'hidden 2xl:inline' : ''}>Install App</span>
       </button>
 
       {showGuideModal && (
