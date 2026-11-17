@@ -14,6 +14,11 @@ import {
   CreditCard,
   Mic,
   MicOff,
+  Home,
+  LayoutGrid,
+  Landmark,
+  Info,
+  ShieldCheck,
 } from 'lucide-react';
 import { ToolItem } from '../types';
 import {
@@ -187,11 +192,16 @@ export const Header: React.FC<HeaderProps> = ({
     SUPPORTED_LANGUAGES.find((l) => l.code === lang) || SUPPORTED_LANGUAGES[0];
 
   const primaryNavItems = [
-    { id: 'home', label: t.home || 'Home', mobileLabel: t.home || 'Home' },
-    { id: 'tools', label: t.allTools || 'Tools', mobileLabel: t.allTools || 'Tools' },
-    { id: 'portals', label: 'Portals Hub', mobileLabel: 'Government Portals Hub' },
-    { id: 'about', label: t.about || 'About', mobileLabel: t.about || 'About' },
-    { id: 'privacy', label: t.privacy || 'Privacy', mobileLabel: t.privacy || 'Privacy' },
+    { id: 'home', label: t.home || 'Home', mobileLabel: t.home || 'Home', icon: Home },
+    { id: 'tools', label: t.allTools || 'Tools', mobileLabel: t.allTools || 'All Tools', icon: LayoutGrid },
+    {
+      id: 'portals',
+      label: 'Portals Hub',
+      mobileLabel: 'Government Portals Hub',
+      icon: Landmark,
+    },
+    { id: 'about', label: t.about || 'About', mobileLabel: t.about || 'About', icon: Info },
+    { id: 'privacy', label: t.privacy || 'Privacy', mobileLabel: t.privacy || 'Privacy', icon: ShieldCheck },
   ];
 
   const hasLocksConfigured =
@@ -537,97 +547,117 @@ export const Header: React.FC<HeaderProps> = ({
           </div>
         </div>
 
-        {/* Mobile & Tablet Dropdown Drawer */}
+        {/* Compact Horizontal Pill-Style Menu Drawer (Mobile & Tablet) */}
         {isMobileMenuOpen && (
-          <div className="lg:hidden py-4 border-t border-slate-200 dark:border-sky-500/20 space-y-3 animate-in fade-in duration-150">
-            {/* Navigation */}
-            <div className="grid grid-cols-2 gap-2.5">
-              {primaryNavItems.map((item) => (
-                <button
-                  key={item.id}
-                  onClick={() => {
-                    setActiveTab(item.id);
-                    setIsMobileMenuOpen(false);
-                  }}
-                  className={`min-h-[44px] px-4 py-2.5 text-xs font-bold text-center cursor-pointer flex items-center justify-center ${
-                    item.id === 'portals' ? 'col-span-2' : ''
-                  } ${
-                    activeTab === item.id ? 'aos-btn-soft-active' : 'aos-btn-soft'
-                  }`}
-                >
-                  {item.mobileLabel}
-                </button>
-              ))}
-            </div>
+          <div className="lg:hidden py-3 border-t border-slate-200 dark:border-sky-500/20 space-y-2.5 animate-in fade-in duration-150">
+            {/* Primary Navigation Pills inside Soft-UI Recessed Track */}
+            <nav
+              aria-label="Mobile and tablet navigation"
+              className="aos-segmented-track rounded-2xl p-1.5 flex flex-wrap items-center gap-1.5"
+            >
+              {primaryNavItems.map((item) => {
+                const Icon = item.icon;
+                const isSelected = activeTab === item.id;
+                return (
+                  <button
+                    key={item.id}
+                    onClick={() => {
+                      setActiveTab(item.id);
+                      setIsMobileMenuOpen(false);
+                    }}
+                    className={`min-h-[38px] px-3.5 py-1.5 text-xs font-semibold inline-flex items-center justify-center gap-1.5 cursor-pointer whitespace-nowrap shrink-0 ${
+                      isSelected ? 'aos-btn-soft-active font-bold' : 'aos-btn-soft-tab'
+                    }`}
+                  >
+                    <Icon
+                      className={`w-3.5 h-3.5 shrink-0 ${
+                        isSelected ? 'text-white' : 'text-[#0284c7] dark:text-sky-300'
+                      }`}
+                    />
+                    <span>{item.mobileLabel}</span>
+                  </button>
+                );
+              })}
+            </nav>
 
-            {/* Auth & Tool Locks */}
-            <div className="grid grid-cols-2 gap-2.5">
+            {/* Streamlined Quick Action Pills Row */}
+            <div className="flex flex-wrap items-center gap-2">
               <button
                 onClick={() => {
                   setIsMobileMenuOpen(false);
                   openAuthModal('account');
                 }}
-                className="min-h-[44px] px-3 py-2.5 text-xs font-bold flex items-center justify-center gap-1.5 aos-btn-primary cursor-pointer"
+                className="aos-btn-soft min-h-[38px] px-3.5 py-1.5 text-xs font-bold inline-flex items-center justify-center gap-1.5 cursor-pointer whitespace-nowrap shrink-0"
               >
-                <LogIn className="w-3.5 h-3.5 shrink-0" />
-                <span className="truncate">
-                  {user ? user.displayName.split(' ')[0] : 'Google Sign-In'}
+                {user ? (
+                  <span className="w-4 h-4 rounded-full bg-[#0284c7] text-white text-[9px] font-black inline-flex items-center justify-center shrink-0">
+                    {(user.displayName || 'A').charAt(0).toUpperCase()}
+                  </span>
+                ) : (
+                  <LogIn className="w-3.5 h-3.5 text-[#0284c7] dark:text-sky-300 shrink-0" />
+                )}
+                <span className="max-w-[110px] truncate">
+                  {user ? user.displayName.split(' ')[0] : 'Sign In'}
                 </span>
               </button>
+
               <button
                 onClick={() => {
                   setIsMobileMenuOpen(false);
                   openAuthModal('locks');
                 }}
-                className="min-h-[44px] px-3 py-2.5 text-xs font-bold flex items-center justify-center gap-1.5 aos-btn-soft cursor-pointer"
+                className="aos-btn-soft min-h-[38px] px-3.5 py-1.5 text-xs font-bold inline-flex items-center justify-center gap-1.5 cursor-pointer whitespace-nowrap shrink-0"
               >
                 <Shield className="w-3.5 h-3.5 text-[#0284c7] dark:text-sky-300 shrink-0" />
                 <span>Tool Locks &amp; PIN</span>
               </button>
-            </div>
 
-            <div className="grid grid-cols-2 gap-2.5">
               <button
                 onClick={() => {
                   setActiveTab('card');
                   setIsMobileMenuOpen(false);
                 }}
-                className="min-h-[44px] px-3 py-2.5 text-xs font-bold flex items-center justify-center gap-1.5 aos-btn-soft cursor-pointer"
+                className={`min-h-[38px] px-3.5 py-1.5 text-xs font-bold inline-flex items-center justify-center gap-1.5 cursor-pointer whitespace-nowrap shrink-0 ${
+                  activeTab === 'card' ? 'aos-btn-soft-active' : 'aos-btn-soft'
+                }`}
               >
-                <CreditCard className="w-3.5 h-3.5 text-[#0284c7] dark:text-sky-300 shrink-0" />
+                <CreditCard
+                  className={`w-3.5 h-3.5 shrink-0 ${
+                    activeTab === 'card' ? 'text-white' : 'text-[#0284c7] dark:text-sky-300'
+                  }`}
+                />
                 <span>Digital Card</span>
               </button>
+
               <PWAInstallButton
-                fullWidth
+                inlinePill
                 onActionComplete={() => setIsMobileMenuOpen(false)}
               />
             </div>
 
-            {/* Quick Language Bar for <sm phones */}
-            <div className="sm:hidden pt-1.5 border-t border-slate-200 dark:border-sky-500/15 space-y-2">
-              <div className="flex items-center gap-1.5 text-[10px] font-bold uppercase tracking-wider text-slate-400">
+            {/* Ultra-Compact Horizontal Language Strip on Narrow Phones (<sm) */}
+            <div className="sm:hidden pt-1 border-t border-slate-200 dark:border-sky-500/15 flex items-center gap-1.5 overflow-x-auto">
+              <span className="inline-flex items-center gap-1 text-[10px] font-bold uppercase tracking-wider text-slate-400 pr-1 shrink-0">
                 <Globe className="w-3 h-3 text-[#0284c7]" />
-                <span>{t.langTitle || 'Language'}</span>
-              </div>
-              <div className="grid grid-cols-3 gap-2">
-                {SUPPORTED_LANGUAGES.map((langItem) => {
-                  const isCurrent = lang === langItem.code;
-                  return (
-                    <button
-                      key={langItem.code}
-                      onClick={() => {
-                        setLang(langItem.code as LanguageCode);
-                        setIsMobileMenuOpen(false);
-                      }}
-                      className={`min-h-[40px] px-2.5 py-2 text-[11px] font-semibold text-center cursor-pointer truncate ${
-                        isCurrent ? 'aos-btn-soft-active font-bold' : 'aos-btn-soft'
-                      }`}
-                    >
-                      {langItem.nativeName}
-                    </button>
-                  );
-                })}
-              </div>
+                <span>Lang</span>
+              </span>
+              {SUPPORTED_LANGUAGES.map((langItem) => {
+                const isCurrent = lang === langItem.code;
+                return (
+                  <button
+                    key={langItem.code}
+                    onClick={() => {
+                      setLang(langItem.code as LanguageCode);
+                      setIsMobileMenuOpen(false);
+                    }}
+                    className={`min-h-[34px] px-3 py-1 text-[11px] font-semibold inline-flex items-center justify-center cursor-pointer whitespace-nowrap shrink-0 ${
+                      isCurrent ? 'aos-btn-soft-active font-bold' : 'aos-btn-soft'
+                    }`}
+                  >
+                    {langItem.nativeName}
+                  </button>
+                );
+              })}
             </div>
           </div>
         )}

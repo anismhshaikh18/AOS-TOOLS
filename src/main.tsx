@@ -7,8 +7,13 @@ import './index.css';
 
 if (typeof window !== 'undefined' && 'serviceWorker' in navigator) {
   if (import.meta.env.PROD) {
-    registerSW({
+    const updateSW = registerSW({
       immediate: true,
+      onNeedRefresh() {
+        window.dispatchEvent(
+          new CustomEvent('aos-pwa-need-refresh', { detail: { updateSW } })
+        );
+      },
       onOfflineReady() {
         window.dispatchEvent(new CustomEvent('aos-pwa-offline-ready'));
       },

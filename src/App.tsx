@@ -9,6 +9,7 @@ import { SPECIAL_TOOLS } from './data/specialTools';
 import { LanguageCode, TemplateId, getTranslatedTool } from './utils/translations';
 import { SiteBackgroundSvg } from './components/SiteBackgroundSvg';
 import { OfflineSyncIndicator } from './components/OfflineSyncIndicator';
+import { notifyPwaInteraction } from './hooks/usePWAInstall';
 import { useAuthSecurity, getGateToolForTab } from './context/AuthSecurityContext';
 import {
   CloudBackupPayload,
@@ -85,6 +86,11 @@ const WhatsAppConsultationWidget = lazy(() =>
     default: m.WhatsAppConsultationWidget,
   }))
 );
+const PWAInstallPromptBanner = lazy(() =>
+  import('./components/PWAInstallPromptBanner').then((m) => ({
+    default: m.PWAInstallPromptBanner,
+  }))
+);
 
 const CLIENT_DIARY_TOOL_ITEM: ToolItem = {
   id: 'khata-diary',
@@ -108,8 +114,19 @@ const ViewLoadingFallback: React.FC = () => (
 
 export default function App() {
   const [activeTab, setActiveTab] = useState<string>(() => {
-    if (typeof window !== 'undefined' && window.location.pathname.replace(/\/+$/, '') === '/card') {
-      return 'card';
+    if (typeof window !== 'undefined') {
+      if (window.location.pathname.replace(/\/+$/, '') === '/card') {
+        return 'card';
+      }
+      const viewParam = new URLSearchParams(window.location.search).get('view');
+      if (
+        viewParam &&
+        ['tools', 'portals', 'khata', 'pan', 'about', 'privacy', 'pdf', 'image', 'special'].includes(
+          viewParam
+        )
+      ) {
+        return viewParam;
+      }
     }
     return 'home';
   });
@@ -288,6 +305,9 @@ export default function App() {
 
   const handleNavigateTab = useCallback(
     (tab: string) => {
+      if (tab !== 'home') {
+        notifyPwaInteraction();
+      }
       const tabGate = getGateToolForTab(tab);
       if (tabGate && isToolCurrentlyLocked(tabGate.id)) {
         setPendingGate({
@@ -304,6 +324,7 @@ export default function App() {
 
   const launchToolDirectly = useCallback(
     (tool: ToolItem) => {
+      notifyPwaInteraction();
       if (tool.id === 'khata-diary') {
         navigateTabDirectly('khata');
         return;
@@ -338,6 +359,7 @@ export default function App() {
   }, []);
 
   const handleOpenSearchModal = useCallback(() => {
+    notifyPwaInteraction();
     setIsSearchOpen(true);
     window.history.pushState({ tab: activeTab, isSearchModal: true }, '');
   }, [activeTab]);
@@ -568,6 +590,11 @@ export default function App() {
 
       {/* Offline Status & Cloud Sync Queue Indicator */}
       <OfflineSyncIndicator />
+
+      {/* Post-Interaction Floating PWA Install Prompt */}
+      <Suspense fallback={null}>
+        <PWAInstallPromptBanner />
+      </Suspense>
 
       {/* Lazy Direct WhatsApp Consultation Floating Widget */}
       <Suspense fallback={null}>

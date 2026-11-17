@@ -5,12 +5,14 @@ import { usePWAInstall } from '../hooks/usePWAInstall';
 interface PWAInstallButtonProps {
   compact?: boolean;
   fullWidth?: boolean;
+  inlinePill?: boolean;
   onActionComplete?: () => void;
 }
 
 export const PWAInstallButton: React.FC<PWAInstallButtonProps> = ({
   compact = false,
   fullWidth = false,
+  inlinePill = false,
   onActionComplete,
 }) => {
   const { canInstall, isInstalled, isIOS, promptInstall } = usePWAInstall();
@@ -37,12 +39,14 @@ export const PWAInstallButton: React.FC<PWAInstallButtonProps> = ({
         className={`${
           fullWidth
             ? 'w-full min-h-[44px] px-4 py-2.5 text-xs font-bold flex items-center justify-center gap-2 aos-btn-primary'
+            : inlinePill
+            ? 'aos-btn-primary min-h-[38px] px-3.5 py-1.5 text-xs font-bold inline-flex items-center justify-center gap-1.5 shrink-0'
             : compact
             ? 'aos-btn-soft h-9 w-9 2xl:w-auto 2xl:px-3.5 text-[#0284c7] dark:text-sky-300 text-xs font-bold flex items-center justify-center gap-1.5 shrink-0'
             : 'min-h-[40px] px-4 py-2 aos-btn-primary text-xs font-bold flex items-center gap-1.5'
         } cursor-pointer whitespace-nowrap`}
       >
-        <Download className="w-4 h-4 shrink-0" />
+        <Download className="w-3.5 h-3.5 shrink-0" />
         <span className={compact ? 'hidden 2xl:inline' : ''}>Install App</span>
       </button>
 

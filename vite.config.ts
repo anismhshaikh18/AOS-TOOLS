@@ -65,10 +65,12 @@ export default defineConfig(({ command }) => {
               'manifest.json',
             ],
             workbox: {
-              globPatterns: ['**/*.{js,css,html,ico,png,svg,woff2,json}'],
+              globPatterns: ['**/*.{js,css,html,ico,png,svg,woff,woff2,json}'],
               globIgnores: ['**/standalone-index.html'],
               maximumFileSizeToCacheInBytes: 6 * 1024 * 1024,
               cleanupOutdatedCaches: true,
+              navigateFallback: '/index.html',
+              navigateFallbackDenylist: [/^\/api\//],
               runtimeCaching: [
                 {
                   urlPattern: ({ request }) => request.destination === 'document',
@@ -94,8 +96,39 @@ export default defineConfig(({ command }) => {
                   options: {
                     cacheName: 'aos-images-cache',
                     expiration: {
-                      maxEntries: 60,
+                      maxEntries: 80,
                       maxAgeSeconds: 30 * 24 * 60 * 60,
+                    },
+                    cacheableResponse: {
+                      statuses: [0, 200],
+                    },
+                  },
+                },
+                {
+                  urlPattern: /^https:\/\/fonts\.googleapis\.com\/.*/i,
+                  handler: 'CacheFirst',
+                  options: {
+                    cacheName: 'aos-google-fonts-styles',
+                    expiration: {
+                      maxEntries: 10,
+                      maxAgeSeconds: 60 * 60 * 24 * 365,
+                    },
+                    cacheableResponse: {
+                      statuses: [0, 200],
+                    },
+                  },
+                },
+                {
+                  urlPattern: /^https:\/\/fonts\.gstatic\.com\/.*/i,
+                  handler: 'CacheFirst',
+                  options: {
+                    cacheName: 'aos-google-fonts-webfonts',
+                    expiration: {
+                      maxEntries: 20,
+                      maxAgeSeconds: 60 * 60 * 24 * 365,
+                    },
+                    cacheableResponse: {
+                      statuses: [0, 200],
                     },
                   },
                 },

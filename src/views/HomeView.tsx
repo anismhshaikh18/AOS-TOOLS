@@ -8,8 +8,6 @@ import {
   CreditCard,
   FileText,
   BookOpen,
-  ShieldCheck,
-  Unlock,
   Mic,
   MicOff,
   Calculator,
@@ -20,6 +18,7 @@ import { PDF_TOOLS } from '../data/pdfTools';
 import { IMAGE_TOOLS } from '../data/imageTools';
 import { SPECIAL_TOOLS } from '../data/specialTools';
 import { PanMasterHeroCard } from '../components/PanMasterHeroCard';
+import { AosPromoBanner } from '../components/AosPromoBanner';
 import { LanguageCode, TRANSLATIONS, getTranslatedTool } from '../utils/translations';
 import { useAuthSecurity } from '../context/AuthSecurityContext';
 import { useVoiceSearch } from '../hooks/useVoiceSearch';
@@ -36,9 +35,6 @@ const LiveStatusNoticeWidget = lazy(() =>
   import('../components/LiveStatusNoticeWidget').then((m) => ({
     default: m.LiveStatusNoticeWidget,
   }))
-);
-const ToolRequestSection = lazy(() =>
-  import('../components/ToolRequestSection').then((m) => ({ default: m.ToolRequestSection }))
 );
 
 interface HomeViewProps {
@@ -228,15 +224,6 @@ export const HomeView: React.FC<HomeViewProps> = ({
       onSelectTool(getTranslatedTool(idTool, lang));
     } else {
       setActiveTab('special');
-    }
-  };
-
-  const handleLaunchUnlockPdf = () => {
-    const unlockTool = PDF_TOOLS.find((item) => item.id === 'unlock-pdf');
-    if (unlockTool) {
-      onSelectTool(getTranslatedTool(unlockTool, lang));
-    } else {
-      setActiveTab('pdf');
     }
   };
 
@@ -490,81 +477,15 @@ export const HomeView: React.FC<HomeViewProps> = ({
       </Suspense>
 
       {/* =========================================================================
-          CITIZEN HELPDESK & QUALITY ASSURANCE SECTION
+          AOS TOOLS PROMOTIONAL ECOSYSTEM BANNER
           ========================================================================= */}
-      <section className="rounded-3xl liquid-glass p-6 sm:p-8 shadow-xl space-y-6 border border-slate-200 dark:border-sky-500/20">
-        <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-4 border-b border-slate-200 dark:border-white/10 pb-5">
-          <div className="flex items-center gap-3">
-            <div className="w-10 h-10 rounded-2xl bg-[#0284c7]/20 border border-[#0284c7]/30 flex items-center justify-center text-[#0284c7] dark:text-sky-300">
-              <ShieldCheck className="w-5 h-5" />
-            </div>
-            <div>
-              <h3 className="text-lg font-bold text-slate-900 dark:text-white">{t.privacyGuaranteeTitle || 'Privacy & Local Execution Guarantee'}</h3>
-              <p className="text-xs text-slate-600 dark:text-slate-300">{t.privacyGuaranteeDesc || 'Every photo, ID card, and PDF stays entirely in your device\'s memory.'}</p>
-            </div>
-          </div>
-          <div className="flex flex-wrap items-center gap-2.5">
-            <button
-              onClick={() => setActiveTab('privacy')}
-              className="aos-btn-soft min-h-[40px] text-xs font-bold px-4 py-2 cursor-pointer whitespace-nowrap"
-            >
-              {t.readPrivacyPolicy || 'Read Privacy Policy'}
-            </button>
-            <button
-              onClick={() => setActiveTab('portals')}
-              className="aos-btn-primary min-h-[40px] text-xs font-bold px-4 py-2 inline-flex items-center gap-1.5 cursor-pointer whitespace-nowrap"
-            >
-              {isPortalsLocked && <Lock className="w-3 h-3 shrink-0" />}
-              <span>Government Portals Hub</span>
-            </button>
-          </div>
-        </div>
-
-        <div className="grid grid-cols-1 sm:grid-cols-3 gap-4 text-xs text-slate-600 dark:text-slate-300">
-          <div className="p-4 rounded-xl liquid-glass-sub space-y-1.5">
-            <div className="font-bold text-slate-900 dark:text-white flex items-center gap-2">
-              <Camera className="w-3.5 h-3.5 text-[#0284c7] dark:text-sky-400" />
-              <span>{t.photoRulesTitle || 'SSC / UPSC Photo Rules'}</span>
-            </div>
-            <p className="text-[11px] text-slate-600 dark:text-slate-300 leading-relaxed">
-              {t.photoRulesDesc || 'Standard 35×45mm dimensions with candidate full name and date of photo (DOP) printed automatically with zero distortion.'}
-            </p>
-          </div>
-
-          <div className="p-4 rounded-xl liquid-glass-sub space-y-1.5">
-            <div className="font-bold text-slate-900 dark:text-white flex items-center gap-2">
-              <CreditCard className="w-3.5 h-3.5 text-[#0284c7] dark:text-sky-400" />
-              <span>{t.pvcPrecisionTitle || 'CR80 PVC Precision'}</span>
-            </div>
-            <p className="text-[11px] text-slate-600 dark:text-slate-300 leading-relaxed">
-              {t.pvcPrecisionDesc || 'Exact 85.6 × 54 mm card standard with dual-sided print sheets, 300 DPI vector exports, dynamic live QR, and digital signatures.'}
-            </p>
-          </div>
-
-          <div
-            onClick={handleLaunchUnlockPdf}
-            className="p-4 rounded-xl liquid-glass-sub hover:border-emerald-500/60 transition-all cursor-pointer group space-y-1.5"
-          >
-            <div className="font-bold text-slate-900 dark:text-white flex items-center justify-between">
-              <div className="flex items-center gap-2">
-                <Unlock className="w-3.5 h-3.5 text-emerald-600 dark:text-emerald-400" />
-                <span>{t.pdfUnlockerTitle || 'PDF Security Unlocker'}</span>
-              </div>
-              <span className="text-[10px] text-emerald-600 dark:text-emerald-400 font-bold group-hover:translate-x-0.5 transition-transform">Launch →</span>
-            </div>
-            <p className="text-[11px] text-slate-600 dark:text-slate-300 leading-relaxed">
-              {t.pdfUnlockerDesc || 'Remove password restrictions, printing limits, and decryption locks securely 100% in-browser in seconds.'}
-            </p>
-          </div>
-        </div>
-      </section>
-
-      {/* =========================================================================
-          COMMUNITY FEEDBACK & REQUEST A NEW TOOL SECTION
-          ========================================================================= */}
-      <Suspense fallback={null}>
-        <ToolRequestSection />
-      </Suspense>
+      <AosPromoBanner
+        onOpenPortals={() => setActiveTab('portals')}
+        onOpenDiary={() => setActiveTab('khata')}
+        onOpenUtilities={() => setActiveTab('tools')}
+        isPortalsLocked={isPortalsLocked}
+        isDiaryLocked={isClientDiaryLocked}
+      />
 
     </div>
   );
