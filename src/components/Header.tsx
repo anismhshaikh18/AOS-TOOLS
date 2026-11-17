@@ -3,11 +3,9 @@ import {
   Search,
   Sun,
   Moon,
-  ChevronDown,
   Globe,
   Menu,
   X,
-  Check,
   Shield,
   Lock,
   LogIn,
@@ -19,6 +17,7 @@ import {
   Landmark,
   Info,
   ShieldCheck,
+  ChevronRight,
 } from 'lucide-react';
 import { ToolItem } from '../types';
 import {
@@ -64,7 +63,6 @@ export const Header: React.FC<HeaderProps> = ({
   setLang,
   onOpenSearch,
 }) => {
-  const [isLangOpen, setIsLangOpen] = useState(false);
   const [isMobileMenuOpen, setIsMobileMenuOpen] = useState(false);
   const [headerQuery, setHeaderQuery] = useState('');
   const [isHeaderDropdownOpen, setIsHeaderDropdownOpen] = useState(false);
@@ -72,7 +70,6 @@ export const Header: React.FC<HeaderProps> = ({
   const [headerActiveIndex, setHeaderActiveIndex] = useState(0);
 
   const debouncedHeaderQuery = useDebouncedValue(headerQuery, 140);
-  const langDropdownRef = useRef<HTMLDivElement>(null);
   const headerSearchRef = useRef<HTMLDivElement>(null);
   const {
     user,
@@ -173,13 +170,10 @@ export const Header: React.FC<HeaderProps> = ({
     }
   }, [headerResults, headerActiveIndex, handleHeaderSelectTool, setActiveTab]);
 
-  // Close dropdowns when clicking outside
+  // Close desktop search dropdown when clicking outside
   useEffect(() => {
     const handleClickOutside = (event: MouseEvent) => {
       const targetNode = event.target as Node;
-      if (langDropdownRef.current && !langDropdownRef.current.contains(targetNode)) {
-        setIsLangOpen(false);
-      }
       if (headerSearchRef.current && !headerSearchRef.current.contains(targetNode)) {
         setIsHeaderDropdownOpen(false);
       }
@@ -188,8 +182,22 @@ export const Header: React.FC<HeaderProps> = ({
     return () => document.removeEventListener('mousedown', handleClickOutside);
   }, []);
 
-  const currentLangObj =
-    SUPPORTED_LANGUAGES.find((l) => l.code === lang) || SUPPORTED_LANGUAGES[0];
+  // Lock background scroll & handle Escape key when slide-out drawer is open
+  useEffect(() => {
+    if (!isMobileMenuOpen) return;
+    const prevOverflow = document.body.style.overflow;
+    document.body.style.overflow = 'hidden';
+    const handleEscape = (e: KeyboardEvent) => {
+      if (e.key === 'Escape') {
+        setIsMobileMenuOpen(false);
+      }
+    };
+    window.addEventListener('keydown', handleEscape);
+    return () => {
+      document.body.style.overflow = prevOverflow;
+      window.removeEventListener('keydown', handleEscape);
+    };
+  }, [isMobileMenuOpen]);
 
   const primaryNavItems = [
     { id: 'home', label: t.home || 'Home', mobileLabel: t.home || 'Home', icon: Home },
@@ -210,458 +218,540 @@ export const Header: React.FC<HeaderProps> = ({
     securityConfig.lockedToolIds.length > 0;
 
   return (
-    <header className="sticky top-0 z-40 w-full md:backdrop-blur-xl bg-white/95 dark:bg-[#0B192C]/96 border-b border-slate-200 dark:border-sky-500/20 transition-colors shadow-sm dark:shadow-lg dark:shadow-black/30">
-      <div className="max-w-7xl mx-auto px-3 sm:px-5 lg:px-6">
-        <div className="flex items-center justify-between gap-3 lg:gap-4 h-16 min-w-0">
-          {/* Left: Balanced Brand Mark */}
-          <div
-            onClick={() => {
-              setActiveTab('home');
-              setIsMobileMenuOpen(false);
-            }}
-            role="button"
-            tabIndex={0}
-            onKeyDown={(e) => {
-              if (e.key === 'Enter' || e.key === ' ') {
-                e.preventDefault();
+    <>
+      <header className="sticky top-0 z-40 w-full md:backdrop-blur-xl bg-white/95 dark:bg-[#0B192C]/96 border-b border-slate-200 dark:border-sky-500/20 transition-colors shadow-sm dark:shadow-lg dark:shadow-black/30">
+        <div className="max-w-7xl mx-auto px-3 sm:px-5 lg:px-6">
+          <div className="flex items-center justify-between gap-3 lg:gap-4 h-16 min-w-0">
+            {/* Left: Official AOS TOOLS Brand Mark */}
+            <div
+              onClick={() => {
                 setActiveTab('home');
                 setIsMobileMenuOpen(false);
-              }
-            }}
-            className="flex items-center gap-2 sm:gap-2.5 cursor-pointer group select-none shrink-0"
-          >
-            <div className="w-9 h-9 sm:w-10 sm:h-10 rounded-full overflow-hidden bg-white ring-2 ring-[#0284c7] group-hover:ring-sky-400 flex items-center justify-center shadow-md dark:shadow-black/40 group-hover:scale-105 transition-all p-0.5 shrink-0 aspect-square">
-              <AosLogoSvg className="w-full h-full aspect-square object-contain shrink-0" />
-            </div>
-            <div className="flex items-baseline tracking-tight whitespace-nowrap">
-              <span className="text-[15px] sm:text-xl font-black text-slate-900 dark:text-white">
-                AOS
-              </span>
-              <span className="text-[15px] sm:text-xl font-black text-[#0284c7] ml-1">
-                TOOLS
-              </span>
-            </div>
-          </div>
-
-          {/* Center: Desktop Soft-UI Segmented Nav Bar */}
-          <nav
-            aria-label="Primary navigation"
-            className="hidden lg:flex items-center gap-1 p-1 aos-segmented-track shrink-0"
-          >
-            {primaryNavItems.map((item) => {
-              const isSelected = activeTab === item.id;
-              return (
-                <button
-                  key={item.id}
-                  onClick={() => setActiveTab(item.id)}
-                  title={item.mobileLabel}
-                  className={`px-3 xl:px-3.5 h-8 rounded-full text-xs font-semibold cursor-pointer whitespace-nowrap shrink-0 flex items-center ${
-                    isSelected ? 'aos-btn-soft-active font-bold' : 'aos-btn-soft-tab'
-                  }`}
-                >
-                  {item.label}
-                </button>
-              );
-            })}
-          </nav>
-
-          {/* Right: Clean Uniform Soft-UI Action Toolbar */}
-          <div className="flex items-center gap-1.5 sm:gap-2 shrink-0">
-            {/* PWA App Install Button */}
-            <div className="hidden sm:flex shrink-0">
-              <PWAInstallButton compact />
-            </div>
-
-            {/* Live Universal Header Search Bar (xl+) & Palette Trigger (<xl) */}
-            <div className="relative shrink-0" ref={headerSearchRef}>
-              {/* Compact Mobile/Tablet Trigger */}
-              <button
-                type="button"
-                onClick={onOpenSearch}
-                aria-label="Search tools, portals, and records"
-                title="Universal Search (/ or Ctrl+K)"
-                className="xl:hidden aos-btn-soft h-9 w-9 md:w-auto md:px-3 lg:w-9 lg:px-0 cursor-pointer flex items-center justify-center gap-1.5 shrink-0"
-              >
-                <Search className="w-4 h-4 text-[#0284c7] dark:text-sky-300 shrink-0" />
-                <span className="hidden md:inline lg:hidden text-[11px] font-semibold">
-                  Search...
-                </span>
-              </button>
-
-              {/* Desktop Live Type-Ahead Universal Search Bar */}
-              <div className="hidden xl:flex items-center relative w-48 2xl:w-56">
-                <Search className="w-3.5 h-3.5 text-[#0284c7] dark:text-sky-400 absolute left-3 pointer-events-none" />
-                <input
-                  type="text"
-                  value={headerQuery}
-                  onFocus={() => setIsHeaderDropdownOpen(true)}
-                  onChange={(e) => {
-                    setHeaderQuery(e.target.value);
-                    setIsHeaderDropdownOpen(true);
-                  }}
-                  onKeyDown={(e) => {
-                    if (e.key === 'Escape') {
-                      setIsHeaderDropdownOpen(false);
-                      (e.currentTarget as HTMLInputElement).blur();
-                    } else if (e.key === 'ArrowDown' && headerResults.length > 0) {
-                      e.preventDefault();
-                      setIsHeaderDropdownOpen(true);
-                      setHeaderActiveIndex((prev) => (prev + 1) % headerResults.length);
-                    } else if (e.key === 'ArrowUp' && headerResults.length > 0) {
-                      e.preventDefault();
-                      setIsHeaderDropdownOpen(true);
-                      setHeaderActiveIndex(
-                        (prev) => (prev - 1 + headerResults.length) % headerResults.length
-                      );
-                    } else if (e.key === 'Enter' && headerResults.length > 0) {
-                      e.preventDefault();
-                      triggerHeaderActiveItem();
-                    }
-                  }}
-                  placeholder="Search tools, portals, diary..."
-                  aria-label="Universal site search"
-                  className="w-full h-9 pl-8 pr-14 rounded-full text-xs bg-slate-100 dark:bg-[#03182b]/90 text-slate-900 dark:text-white placeholder-slate-400 dark:placeholder-sky-200/60 border border-slate-200 dark:border-sky-500/30 focus:outline-none focus:border-[#0284c7] focus:ring-2 focus:ring-[#0284c7]/30 transition-all"
-                />
-                <div className="absolute right-1.5 flex items-center gap-1">
-                  {headerQuery ? (
-                    <button
-                      type="button"
-                      onClick={() => {
-                        setHeaderQuery('');
-                        setIsHeaderDropdownOpen(false);
-                      }}
-                      aria-label="Clear header search"
-                      className="p-1 text-slate-400 hover:text-slate-800 dark:hover:text-white cursor-pointer"
-                    >
-                      <X className="w-3.5 h-3.5" />
-                    </button>
-                  ) : voiceSupported ? (
-                    <button
-                      type="button"
-                      onClick={startListening}
-                      aria-label={isListening ? 'Stop voice search' : 'Voice search'}
-                      title="Voice Search"
-                      className={`p-1 rounded-full cursor-pointer transition-colors ${
-                        isListening
-                          ? 'bg-red-500 text-white animate-pulse'
-                          : 'text-[#0284c7] dark:text-sky-300 hover:bg-[#0284c7]/15'
-                      }`}
-                    >
-                      {isListening ? (
-                        <MicOff className="w-3.5 h-3.5" />
-                      ) : (
-                        <Mic className="w-3.5 h-3.5" />
-                      )}
-                    </button>
-                  ) : null}
-                  <button
-                    type="button"
-                    onClick={onOpenSearch}
-                    title="Open Full Search Palette (/)"
-                    className="text-[10px] font-mono px-1.5 py-0.5 bg-white dark:bg-[#072642] rounded border border-slate-200 dark:border-sky-500/30 text-slate-500 dark:text-sky-200 leading-none cursor-pointer hover:border-[#0284c7]"
-                  >
-                    /
-                  </button>
-                </div>
-              </div>
-
-              {/* Desktop Deep Blue (#0B192C) Glassmorphism Universal Results Dropdown */}
-              {isHeaderDropdownOpen && (
-                <div className="hidden xl:block absolute right-0 top-full mt-2 w-[480px] rounded-2xl bg-white dark:bg-[#0B192C]/96 md:backdrop-blur-xl border border-slate-200 dark:border-sky-400/30 shadow-2xl overflow-hidden z-50">
-                  <UniversalSearchResults
-                    results={headerResults}
-                    query={debouncedHeaderQuery}
-                    activeFilter={headerKindFilter}
-                    onChangeFilter={setHeaderKindFilter}
-                    counts={headerCounts}
-                    activeIndex={headerActiveIndex}
-                    onSelectTool={handleHeaderSelectTool}
-                    onNavigateTab={(tab) => {
-                      setActiveTab(tab);
-                      setHeaderQuery('');
-                      closeHeaderDropdown();
-                    }}
-                    onAfterSelect={() => {
-                      setHeaderQuery('');
-                      closeHeaderDropdown();
-                    }}
-                    maxHeightClass="max-h-[420px]"
-                    showDiaryTab={!isDiaryLocked}
-                  />
-                </div>
-              )}
-            </div>
-
-            {/* Dark / Light Mode Switch */}
-            <button
-              onClick={onToggleTheme}
-              aria-label={
-                isDark
-                  ? t.themeToggleLight || 'Switch to Light Mode'
-                  : t.themeToggleDark || 'Switch to Dark Mode'
-              }
-              title={isDark ? 'Switch to Light Mode' : 'Switch to Dark Mode'}
-              className="aos-btn-icon h-9 w-9 cursor-pointer shrink-0"
-            >
-              {isDark ? (
-                <Sun className="w-4 h-4 text-amber-400" />
-              ) : (
-                <Moon className="w-4 h-4 text-slate-700" />
-              )}
-            </button>
-
-            {/* Language Selector Dropdown (sm+ in bar; compact inside menu on <sm) */}
-            <div className="relative hidden sm:block shrink-0" ref={langDropdownRef}>
-              <button
-                onClick={() => setIsLangOpen(!isLangOpen)}
-                aria-label="Select language"
-                className="aos-btn-soft h-9 px-2.5 2xl:px-3 text-xs font-semibold cursor-pointer flex items-center gap-1 shrink-0"
-              >
-                <Globe className="w-3.5 h-3.5 text-[#0284c7] dark:text-sky-300 shrink-0" />
-                <span className="hidden 2xl:inline text-[11px] font-semibold whitespace-nowrap">
-                  {currentLangObj.nativeName}
-                </span>
-                <span className="2xl:hidden text-[10px] font-bold uppercase">
-                  {currentLangObj.code.slice(0, 2)}
-                </span>
-                <ChevronDown
-                  className={`w-3 h-3 transition-transform shrink-0 ${
-                    isLangOpen ? 'rotate-180' : ''
-                  }`}
-                />
-              </button>
-
-              {isLangOpen && (
-                <div className="absolute right-0 mt-2 w-48 bg-white dark:bg-[#0B192C] border border-slate-200 dark:border-sky-500/30 rounded-2xl shadow-xl dark:shadow-2xl p-1.5 z-50 animate-in fade-in zoom-in-95 duration-150">
-                  <div className="px-2.5 py-1 text-[10px] font-bold uppercase tracking-wider text-slate-400 border-b border-slate-100 dark:border-white/10 mb-1">
-                    {t.langTitle || 'Select Language'}
-                  </div>
-                  {SUPPORTED_LANGUAGES.map((langItem) => {
-                    const isCurrent = lang === langItem.code;
-                    return (
-                      <button
-                        key={langItem.code}
-                        onClick={() => {
-                          setLang(langItem.code as LanguageCode);
-                          setIsLangOpen(false);
-                        }}
-                        className={`w-full flex items-center justify-between px-3 py-1.5 rounded-full text-xs font-medium cursor-pointer text-left ${
-                          isCurrent
-                            ? 'aos-btn-soft-active font-bold'
-                            : 'aos-btn-soft-tab'
-                        }`}
-                      >
-                        <div className="flex flex-col">
-                          <span>{langItem.nativeName}</span>
-                          <span className="text-[10px] opacity-75">{langItem.label}</span>
-                        </div>
-                        {isCurrent && <Check className="w-3.5 h-3.5" />}
-                      </button>
-                    );
-                  })}
-                </div>
-              )}
-            </div>
-
-            {/* Security Lock Shield (sm+ in bar; inside menu on <sm) */}
-            <button
-              onClick={() => {
-                if (securityConfig.pinEnabled && !isSessionLocked) {
-                  lockSessionNow();
-                } else {
-                  openAuthModal('locks');
+              }}
+              role="button"
+              tabIndex={0}
+              onKeyDown={(e) => {
+                if (e.key === 'Enter' || e.key === ' ') {
+                  e.preventDefault();
+                  setActiveTab('home');
+                  setIsMobileMenuOpen(false);
                 }
               }}
-              aria-label={
-                securityConfig.pinEnabled && !isSessionLocked
-                  ? 'Lock session now'
-                  : 'Tool Lock & Security Controls'
-              }
-              title={
-                securityConfig.pinEnabled && !isSessionLocked
-                  ? 'Lock active session now'
-                  : 'Tool Locks & PIN Security'
-              }
-              className={`hidden sm:flex h-9 w-9 rounded-full transition-all cursor-pointer items-center justify-center shrink-0 ${
-                isSessionLocked
-                  ? 'bg-amber-500/20 text-amber-600 dark:text-amber-300 border border-amber-500/40 shadow-sm'
-                  : hasLocksConfigured
-                  ? 'aos-btn-soft text-[#0284c7] dark:text-sky-300'
-                  : 'aos-btn-icon'
-              }`}
+              className="flex items-center gap-2 sm:gap-2.5 cursor-pointer group select-none shrink-0"
             >
-              {isSessionLocked ? (
-                <Lock className="w-4 h-4" />
-              ) : (
-                <Shield className="w-4 h-4" />
-              )}
-            </button>
+              <div className="w-9 h-9 sm:w-10 sm:h-10 rounded-full overflow-hidden bg-white ring-2 ring-[#0284c7] group-hover:ring-sky-400 flex items-center justify-center shadow-md dark:shadow-black/40 group-hover:scale-105 transition-all p-0.5 shrink-0 aspect-square">
+                <AosLogoSvg className="w-full h-full aspect-square object-contain shrink-0" />
+              </div>
+              <div className="flex items-baseline tracking-tight whitespace-nowrap">
+                <span className="text-[16px] sm:text-xl font-black text-slate-900 dark:text-white">
+                  AOS
+                </span>
+                <span className="text-[16px] sm:text-xl font-black text-[#0284c7] ml-1">
+                  TOOLS
+                </span>
+              </div>
+            </div>
 
-            {/* Google Account / Sign In Button */}
-            <button
-              onClick={() => openAuthModal('account')}
-              aria-label={user ? `Account: ${user.displayName}` : 'Sign in with Google'}
-              title={user ? `${user.displayName} (${user.role})` : 'Google Sign-In & Session'}
-              className={`h-9 ${
-                user
-                  ? 'w-9 xl:w-auto xl:px-3 aos-btn-soft'
-                  : 'w-9 md:w-auto md:px-3 lg:w-9 lg:px-0 xl:w-auto xl:px-3.5 aos-btn-primary'
-              } cursor-pointer flex items-center justify-center gap-1.5 shrink-0`}
-            >
-              {user ? (
-                <>
-                  {user.photoURL ? (
-                    <img
-                      src={user.photoURL}
-                      alt={user.displayName}
-                      referrerPolicy="no-referrer"
-                      className="w-6 h-6 rounded-full object-cover ring-1 ring-sky-400 shrink-0"
-                    />
-                  ) : (
-                    <span className="w-6 h-6 rounded-full bg-[#0284c7] text-white text-[11px] font-black flex items-center justify-center shrink-0">
-                      {(user.displayName || 'A').charAt(0).toUpperCase()}
-                    </span>
-                  )}
-                  <span className="hidden xl:inline text-[11px] font-bold max-w-[88px] truncate">
-                    {user.displayName.split(' ')[0]}
-                  </span>
-                </>
-              ) : (
-                <>
-                  <LogIn className="w-4 h-4 shrink-0" />
-                  <span className="hidden md:inline lg:hidden xl:inline text-[11px] font-bold whitespace-nowrap">
-                    Sign In
-                  </span>
-                </>
-              )}
-            </button>
-
-            {/* Mobile & Tablet Hamburger Button */}
-            <button
-              onClick={() => setIsMobileMenuOpen(!isMobileMenuOpen)}
-              aria-label={isMobileMenuOpen ? 'Close menu' : 'Open menu'}
-              className="lg:hidden aos-btn-icon h-9 w-9 cursor-pointer shrink-0"
-            >
-              {isMobileMenuOpen ? <X className="w-4 h-4" /> : <Menu className="w-4 h-4" />}
-            </button>
-          </div>
-        </div>
-
-        {/* Compact Horizontal Pill-Style Menu Drawer (Mobile & Tablet) */}
-        {isMobileMenuOpen && (
-          <div className="lg:hidden py-3 border-t border-slate-200 dark:border-sky-500/20 space-y-2.5 animate-in fade-in duration-150">
-            {/* Primary Navigation Pills inside Soft-UI Recessed Track */}
+            {/* Center: Desktop Soft-UI Segmented Nav Bar */}
             <nav
-              aria-label="Mobile and tablet navigation"
-              className="aos-segmented-track rounded-2xl p-1.5 flex flex-wrap items-center gap-1.5"
+              aria-label="Primary navigation"
+              className="hidden lg:flex items-center gap-1 p-1 aos-segmented-track shrink-0"
             >
               {primaryNavItems.map((item) => {
-                const Icon = item.icon;
                 const isSelected = activeTab === item.id;
                 return (
                   <button
                     key={item.id}
-                    onClick={() => {
-                      setActiveTab(item.id);
-                      setIsMobileMenuOpen(false);
-                    }}
-                    className={`min-h-[38px] px-3.5 py-1.5 text-xs font-semibold inline-flex items-center justify-center gap-1.5 cursor-pointer whitespace-nowrap shrink-0 ${
+                    onClick={() => setActiveTab(item.id)}
+                    title={item.mobileLabel}
+                    className={`px-3 xl:px-3.5 h-8 rounded-full text-xs font-semibold cursor-pointer whitespace-nowrap shrink-0 flex items-center ${
                       isSelected ? 'aos-btn-soft-active font-bold' : 'aos-btn-soft-tab'
                     }`}
                   >
-                    <Icon
-                      className={`w-3.5 h-3.5 shrink-0 ${
-                        isSelected ? 'text-white' : 'text-[#0284c7] dark:text-sky-300'
-                      }`}
-                    />
-                    <span>{item.mobileLabel}</span>
+                    {item.label}
                   </button>
                 );
               })}
             </nav>
 
-            {/* Streamlined Quick Action Pills Row */}
-            <div className="flex flex-wrap items-center gap-2">
+            {/* Right: Minimal Mobile Quick Actions (Search, Account, Hamburger) + Desktop Controls */}
+            <div className="flex items-center gap-2 shrink-0">
+              {/* Desktop PWA App Install Button (moved inside drawer on mobile/tablet) */}
+              <div className="hidden lg:flex shrink-0">
+                <PWAInstallButton compact />
+              </div>
+
+              {/* Universal Search: Compact Icon (<xl) + Live Desktop Input (xl+) */}
+              <div className="relative shrink-0" ref={headerSearchRef}>
+                <button
+                  type="button"
+                  onClick={onOpenSearch}
+                  aria-label="Search tools, portals, and records"
+                  title="Universal Search (/ or Ctrl+K)"
+                  className="xl:hidden aos-btn-icon h-9 w-9 cursor-pointer shrink-0"
+                >
+                  <Search className="w-4 h-4 text-[#0284c7] dark:text-sky-300 shrink-0" />
+                </button>
+
+                {/* Desktop Live Type-Ahead Universal Search Bar */}
+                <div className="hidden xl:flex items-center relative w-52 2xl:w-60">
+                  <Search className="w-3.5 h-3.5 text-[#0284c7] dark:text-sky-400 absolute left-3 pointer-events-none" />
+                  <input
+                    type="text"
+                    value={headerQuery}
+                    onFocus={() => setIsHeaderDropdownOpen(true)}
+                    onChange={(e) => {
+                      setHeaderQuery(e.target.value);
+                      setIsHeaderDropdownOpen(true);
+                    }}
+                    onKeyDown={(e) => {
+                      if (e.key === 'Escape') {
+                        setIsHeaderDropdownOpen(false);
+                        (e.currentTarget as HTMLInputElement).blur();
+                      } else if (e.key === 'ArrowDown' && headerResults.length > 0) {
+                        e.preventDefault();
+                        setIsHeaderDropdownOpen(true);
+                        setHeaderActiveIndex((prev) => (prev + 1) % headerResults.length);
+                      } else if (e.key === 'ArrowUp' && headerResults.length > 0) {
+                        e.preventDefault();
+                        setIsHeaderDropdownOpen(true);
+                        setHeaderActiveIndex(
+                          (prev) => (prev - 1 + headerResults.length) % headerResults.length
+                        );
+                      } else if (e.key === 'Enter' && headerResults.length > 0) {
+                        e.preventDefault();
+                        triggerHeaderActiveItem();
+                      }
+                    }}
+                    placeholder="Search tools, portals, diary..."
+                    aria-label="Universal site search"
+                    className="w-full h-9 pl-8 pr-14 rounded-full text-xs bg-slate-100 dark:bg-[#03182b]/90 text-slate-900 dark:text-white placeholder-slate-400 dark:placeholder-sky-200/60 border border-slate-200 dark:border-sky-500/30 focus:outline-none focus:border-[#0284c7] focus:ring-2 focus:ring-[#0284c7]/30 transition-all"
+                  />
+                  <div className="absolute right-1.5 flex items-center gap-1">
+                    {headerQuery ? (
+                      <button
+                        type="button"
+                        onClick={() => {
+                          setHeaderQuery('');
+                          setIsHeaderDropdownOpen(false);
+                        }}
+                        aria-label="Clear header search"
+                        className="p-1 text-slate-400 hover:text-slate-800 dark:hover:text-white cursor-pointer"
+                      >
+                        <X className="w-3.5 h-3.5" />
+                      </button>
+                    ) : voiceSupported ? (
+                      <button
+                        type="button"
+                        onClick={startListening}
+                        aria-label={isListening ? 'Stop voice search' : 'Voice search'}
+                        title="Voice Search"
+                        className={`p-1 rounded-full cursor-pointer transition-colors ${
+                          isListening
+                            ? 'bg-red-500 text-white animate-pulse'
+                            : 'text-[#0284c7] dark:text-sky-300 hover:bg-[#0284c7]/15'
+                        }`}
+                      >
+                        {isListening ? (
+                          <MicOff className="w-3.5 h-3.5" />
+                        ) : (
+                          <Mic className="w-3.5 h-3.5" />
+                        )}
+                      </button>
+                    ) : null}
+                    <button
+                      type="button"
+                      onClick={onOpenSearch}
+                      title="Open Full Search Palette (/)"
+                      className="text-[10px] font-mono px-1.5 py-0.5 bg-white dark:bg-[#072642] rounded border border-slate-200 dark:border-sky-500/30 text-slate-500 dark:text-sky-200 leading-none cursor-pointer hover:border-[#0284c7]"
+                    >
+                      /
+                    </button>
+                  </div>
+                </div>
+
+                {/* Desktop Deep Blue (#0B192C) Glassmorphism Universal Results Dropdown */}
+                {isHeaderDropdownOpen && (
+                  <div className="hidden xl:block absolute right-0 top-full mt-2 w-[480px] rounded-2xl bg-white dark:bg-[#0B192C]/96 md:backdrop-blur-xl border border-slate-200 dark:border-sky-400/30 shadow-2xl overflow-hidden z-50">
+                    <UniversalSearchResults
+                      results={headerResults}
+                      query={debouncedHeaderQuery}
+                      activeFilter={headerKindFilter}
+                      onChangeFilter={setHeaderKindFilter}
+                      counts={headerCounts}
+                      activeIndex={headerActiveIndex}
+                      onSelectTool={handleHeaderSelectTool}
+                      onNavigateTab={(tab) => {
+                        setActiveTab(tab);
+                        setHeaderQuery('');
+                        closeHeaderDropdown();
+                      }}
+                      onAfterSelect={() => {
+                        setHeaderQuery('');
+                        closeHeaderDropdown();
+                      }}
+                      maxHeightClass="max-h-[420px]"
+                      showDiaryTab={!isDiaryLocked}
+                    />
+                  </div>
+                )}
+              </div>
+
+              {/* Desktop Dark / Light Mode Switch (moved inside drawer on mobile/tablet) */}
               <button
+                type="button"
+                onClick={onToggleTheme}
+                aria-label={
+                  isDark
+                    ? t.themeToggleLight || 'Switch to Light Mode'
+                    : t.themeToggleDark || 'Switch to Dark Mode'
+                }
+                title={isDark ? 'Switch to Light Mode' : 'Switch to Dark Mode'}
+                className="hidden lg:inline-flex aos-btn-icon h-9 w-9 cursor-pointer shrink-0"
+              >
+                {isDark ? (
+                  <Sun className="w-4 h-4 text-amber-400" />
+                ) : (
+                  <Moon className="w-4 h-4 text-slate-700" />
+                )}
+              </button>
+
+              {/* Desktop Security Lock Shield (moved inside drawer on mobile/tablet) */}
+              <button
+                type="button"
+                onClick={() => {
+                  if (securityConfig.pinEnabled && !isSessionLocked) {
+                    lockSessionNow();
+                  } else {
+                    openAuthModal('locks');
+                  }
+                }}
+                aria-label={
+                  securityConfig.pinEnabled && !isSessionLocked
+                    ? 'Lock session now'
+                    : 'Tool Lock & Security Controls'
+                }
+                title={
+                  securityConfig.pinEnabled && !isSessionLocked
+                    ? 'Lock active session now'
+                    : 'Tool Locks & PIN Security'
+                }
+                className={`hidden lg:inline-flex h-9 w-9 rounded-full transition-all cursor-pointer items-center justify-center shrink-0 ${
+                  isSessionLocked
+                    ? 'bg-amber-500/20 text-amber-600 dark:text-amber-300 border border-amber-500/40 shadow-sm'
+                    : hasLocksConfigured
+                    ? 'aos-btn-soft text-[#0284c7] dark:text-sky-300'
+                    : 'aos-btn-icon'
+                }`}
+              >
+                {isSessionLocked ? (
+                  <Lock className="w-4 h-4" />
+                ) : (
+                  <Shield className="w-4 h-4" />
+                )}
+              </button>
+
+              {/* Google Account Avatar / Sign In Button (always cleanly visible, icon/avatar on mobile) */}
+              <button
+                type="button"
+                onClick={() => openAuthModal('account')}
+                aria-label={user ? `Account: ${user.displayName}` : 'Sign in with Google'}
+                title={user ? `${user.displayName} (${user.role})` : 'Google Sign-In & Session'}
+                className={`h-9 ${
+                  user
+                    ? 'w-9 xl:w-auto xl:px-3 aos-btn-soft'
+                    : 'w-9 xl:w-auto xl:px-3.5 aos-btn-primary'
+                } cursor-pointer inline-flex items-center justify-center gap-1.5 shrink-0`}
+              >
+                {user ? (
+                  <>
+                    {user.photoURL ? (
+                      <img
+                        src={user.photoURL}
+                        alt={user.displayName}
+                        referrerPolicy="no-referrer"
+                        className="w-6 h-6 rounded-full object-cover ring-1 ring-sky-400 shrink-0"
+                      />
+                    ) : (
+                      <span className="w-6 h-6 rounded-full bg-[#0284c7] text-white text-[11px] font-black inline-flex items-center justify-center shrink-0">
+                        {(user.displayName || 'A').charAt(0).toUpperCase()}
+                      </span>
+                    )}
+                    <span className="hidden xl:inline text-[11px] font-bold max-w-[88px] truncate">
+                      {user.displayName.split(' ')[0]}
+                    </span>
+                  </>
+                ) : (
+                  <>
+                    <LogIn className="w-4 h-4 shrink-0" />
+                    <span className="hidden xl:inline text-[11px] font-bold whitespace-nowrap">
+                      Sign In
+                    </span>
+                  </>
+                )}
+              </button>
+
+              {/* Mobile & Tablet Hamburger Trigger */}
+              <button
+                type="button"
+                onClick={() => setIsMobileMenuOpen(true)}
+                aria-label="Open navigation menu"
+                aria-expanded={isMobileMenuOpen}
+                aria-controls="aos-mobile-drawer"
+                className="lg:hidden aos-btn-icon h-9 w-9 cursor-pointer shrink-0"
+              >
+                <Menu className="w-4 h-4" />
+              </button>
+            </div>
+          </div>
+        </div>
+      </header>
+
+      {/* Off-Canvas Slide-Out "More" Drawer (Mobile & Tablet < lg) */}
+      {isMobileMenuOpen && (
+        <div className="fixed inset-0 z-50 lg:hidden flex justify-end">
+          {/* Dimmed Backdrop */}
+          <div
+            onClick={() => setIsMobileMenuOpen(false)}
+            aria-hidden="true"
+            className="fixed inset-0 bg-slate-950/65 backdrop-blur-sm transition-opacity"
+          />
+
+          {/* Deep Blue (#0B192C) Soft-UI Slide-Out Panel */}
+          <aside
+            id="aos-mobile-drawer"
+            role="dialog"
+            aria-modal="true"
+            aria-label="AOS Tools Navigation Menu"
+            className="relative z-10 w-[86vw] max-w-[332px] h-full bg-white dark:bg-[#0B192C] border-l border-slate-200 dark:border-sky-400/25 shadow-2xl flex flex-col"
+          >
+            {/* Drawer Header */}
+            <div className="px-4 h-16 border-b border-slate-200 dark:border-sky-500/20 flex items-center justify-between gap-2 shrink-0">
+              <div className="flex items-center gap-2.5">
+                <div className="w-8 h-8 rounded-full overflow-hidden bg-white ring-2 ring-[#0284c7] flex items-center justify-center p-0.5 shrink-0 aspect-square">
+                  <AosLogoSvg className="w-full h-full aspect-square object-contain shrink-0" />
+                </div>
+                <div className="leading-tight">
+                  <div className="flex items-baseline text-sm font-black tracking-tight">
+                    <span className="text-slate-900 dark:text-white">AOS</span>
+                    <span className="text-[#0284c7] ml-1">TOOLS</span>
+                  </div>
+                  <p className="text-[10px] font-semibold text-slate-500 dark:text-sky-300/75">
+                    Navigation &amp; Preferences
+                  </p>
+                </div>
+              </div>
+
+              <button
+                type="button"
+                onClick={() => setIsMobileMenuOpen(false)}
+                aria-label="Close navigation menu"
+                className="aos-btn-icon h-9 w-9 cursor-pointer shrink-0"
+              >
+                <X className="w-4 h-4" />
+              </button>
+            </div>
+
+            {/* Drawer Scrollable Content */}
+            <div className="flex-1 overflow-y-auto p-4 space-y-5">
+              {/* Section 1: Main Navigation */}
+              <div className="space-y-2">
+                <p className="px-1 text-[10px] font-bold uppercase tracking-wider text-slate-500 dark:text-sky-300/75">
+                  Explore Ecosystem
+                </p>
+                <nav aria-label="Drawer navigation" className="space-y-2">
+                  {primaryNavItems.map((item) => {
+                    const Icon = item.icon;
+                    const isSelected = activeTab === item.id;
+                    return (
+                      <button
+                        key={item.id}
+                        type="button"
+                        onClick={() => {
+                          setActiveTab(item.id);
+                          setIsMobileMenuOpen(false);
+                        }}
+                        className={`w-full min-h-[42px] px-4 py-2 text-xs font-bold inline-flex items-center justify-between gap-2.5 cursor-pointer text-left ${
+                          isSelected ? 'aos-btn-soft-active' : 'aos-btn-soft'
+                        }`}
+                      >
+                        <span className="inline-flex items-center gap-2.5 min-w-0">
+                          <Icon
+                            className={`w-4 h-4 shrink-0 ${
+                              isSelected ? 'text-white' : 'text-[#0284c7] dark:text-sky-300'
+                            }`}
+                          />
+                          <span className="truncate">{item.mobileLabel}</span>
+                        </span>
+                        <ChevronRight
+                          className={`w-3.5 h-3.5 shrink-0 ${
+                            isSelected ? 'text-white/90' : 'text-slate-400 dark:text-sky-300/60'
+                          }`}
+                        />
+                      </button>
+                    );
+                  })}
+                </nav>
+              </div>
+
+              {/* Section 2: Quick Utilities, Security & App Controls */}
+              <div className="space-y-2">
+                <p className="px-1 text-[10px] font-bold uppercase tracking-wider text-slate-500 dark:text-sky-300/75">
+                  Quick Controls &amp; App
+                </p>
+                <div className="space-y-2">
+                  <button
+                    type="button"
+                    onClick={() => {
+                      setActiveTab('card');
+                      setIsMobileMenuOpen(false);
+                    }}
+                    className={`w-full min-h-[42px] px-4 py-2 text-xs font-bold inline-flex items-center justify-between gap-2.5 cursor-pointer ${
+                      activeTab === 'card' ? 'aos-btn-soft-active' : 'aos-btn-soft'
+                    }`}
+                  >
+                    <span className="inline-flex items-center gap-2.5">
+                      <CreditCard
+                        className={`w-4 h-4 shrink-0 ${
+                          activeTab === 'card'
+                            ? 'text-white'
+                            : 'text-[#0284c7] dark:text-sky-300'
+                        }`}
+                      />
+                      <span>Digital Card</span>
+                    </span>
+                    <ChevronRight
+                      className={`w-3.5 h-3.5 shrink-0 ${
+                        activeTab === 'card'
+                          ? 'text-white/90'
+                          : 'text-slate-400 dark:text-sky-300/60'
+                      }`}
+                    />
+                  </button>
+
+                  <button
+                    type="button"
+                    onClick={() => {
+                      setIsMobileMenuOpen(false);
+                      openAuthModal('locks');
+                    }}
+                    className="aos-btn-soft w-full min-h-[42px] px-4 py-2 text-xs font-bold inline-flex items-center justify-between gap-2.5 cursor-pointer"
+                  >
+                    <span className="inline-flex items-center gap-2.5">
+                      {isSessionLocked ? (
+                        <Lock className="w-4 h-4 text-amber-500 dark:text-amber-300 shrink-0" />
+                      ) : (
+                        <Shield className="w-4 h-4 text-[#0284c7] dark:text-sky-300 shrink-0" />
+                      )}
+                      <span>Tool Locks &amp; PIN</span>
+                    </span>
+                    <span
+                      className={`text-[10px] font-bold px-2 py-0.5 rounded-full ${
+                        isSessionLocked
+                          ? 'bg-amber-500/20 text-amber-600 dark:text-amber-300'
+                          : hasLocksConfigured
+                          ? 'bg-sky-500/15 text-[#0284c7] dark:text-sky-300'
+                          : 'text-slate-400 dark:text-sky-300/60'
+                      }`}
+                    >
+                      {isSessionLocked ? 'Locked' : hasLocksConfigured ? 'Active' : 'Setup'}
+                    </span>
+                  </button>
+
+                  <button
+                    type="button"
+                    onClick={onToggleTheme}
+                    className="aos-btn-soft w-full min-h-[42px] px-4 py-2 text-xs font-bold inline-flex items-center justify-between gap-2.5 cursor-pointer"
+                  >
+                    <span className="inline-flex items-center gap-2.5">
+                      {isDark ? (
+                        <Sun className="w-4 h-4 text-amber-400 shrink-0" />
+                      ) : (
+                        <Moon className="w-4 h-4 text-[#0284c7] shrink-0" />
+                      )}
+                      <span>{isDark ? 'Switch to Light Mode' : 'Switch to Dark Mode'}</span>
+                    </span>
+                    <span className="text-[10px] font-semibold text-slate-500 dark:text-sky-300/80">
+                      {isDark ? 'Dark' : 'Light'}
+                    </span>
+                  </button>
+
+                  <PWAInstallButton
+                    fullWidth
+                    onActionComplete={() => setIsMobileMenuOpen(false)}
+                  />
+                </div>
+              </div>
+
+              {/* Section 3: Compact Soft-UI Language Switcher */}
+              <div className="pt-3 border-t border-slate-200 dark:border-sky-500/20 space-y-2.5">
+                <div className="px-1 flex items-center justify-between">
+                  <span className="inline-flex items-center gap-1.5 text-[10px] font-bold uppercase tracking-wider text-slate-500 dark:text-sky-300/75">
+                    <Globe className="w-3.5 h-3.5 text-[#0284c7] dark:text-sky-300" />
+                    <span>{t.langTitle || 'Language'}</span>
+                  </span>
+                </div>
+                <div className="aos-segmented-track rounded-2xl p-2 grid grid-cols-2 gap-2 overflow-hidden">
+                  {SUPPORTED_LANGUAGES.map((langItem) => {
+                    const isCurrent = lang === langItem.code;
+                    return (
+                      <button
+                        key={langItem.code}
+                        type="button"
+                        onClick={() => setLang(langItem.code as LanguageCode)}
+                        className={`min-h-[38px] px-3 py-1.5 rounded-xl text-[11px] font-semibold inline-flex items-center justify-center cursor-pointer whitespace-nowrap ${
+                          isCurrent ? 'aos-btn-soft-active font-bold' : 'aos-btn-soft-tab'
+                        }`}
+                      >
+                        {langItem.nativeName}
+                      </button>
+                    );
+                  })}
+                </div>
+              </div>
+            </div>
+
+            {/* Drawer Footer: Account / Google Sign-In Card */}
+            <div className="p-4 border-t border-slate-200 dark:border-sky-500/20 bg-slate-50 dark:bg-[#061324] shrink-0">
+              <button
+                type="button"
                 onClick={() => {
                   setIsMobileMenuOpen(false);
                   openAuthModal('account');
                 }}
-                className="aos-btn-soft min-h-[38px] px-3.5 py-1.5 text-xs font-bold inline-flex items-center justify-center gap-1.5 cursor-pointer whitespace-nowrap shrink-0"
-              >
-                {user ? (
-                  <span className="w-4 h-4 rounded-full bg-[#0284c7] text-white text-[9px] font-black inline-flex items-center justify-center shrink-0">
-                    {(user.displayName || 'A').charAt(0).toUpperCase()}
-                  </span>
-                ) : (
-                  <LogIn className="w-3.5 h-3.5 text-[#0284c7] dark:text-sky-300 shrink-0" />
-                )}
-                <span className="max-w-[110px] truncate">
-                  {user ? user.displayName.split(' ')[0] : 'Sign In'}
-                </span>
-              </button>
-
-              <button
-                onClick={() => {
-                  setIsMobileMenuOpen(false);
-                  openAuthModal('locks');
-                }}
-                className="aos-btn-soft min-h-[38px] px-3.5 py-1.5 text-xs font-bold inline-flex items-center justify-center gap-1.5 cursor-pointer whitespace-nowrap shrink-0"
-              >
-                <Shield className="w-3.5 h-3.5 text-[#0284c7] dark:text-sky-300 shrink-0" />
-                <span>Tool Locks &amp; PIN</span>
-              </button>
-
-              <button
-                onClick={() => {
-                  setActiveTab('card');
-                  setIsMobileMenuOpen(false);
-                }}
-                className={`min-h-[38px] px-3.5 py-1.5 text-xs font-bold inline-flex items-center justify-center gap-1.5 cursor-pointer whitespace-nowrap shrink-0 ${
-                  activeTab === 'card' ? 'aos-btn-soft-active' : 'aos-btn-soft'
+                className={`w-full min-h-[44px] px-4 py-2 text-xs font-bold inline-flex items-center justify-between gap-2.5 cursor-pointer ${
+                  user ? 'aos-btn-soft' : 'aos-btn-primary'
                 }`}
               >
-                <CreditCard
-                  className={`w-3.5 h-3.5 shrink-0 ${
-                    activeTab === 'card' ? 'text-white' : 'text-[#0284c7] dark:text-sky-300'
-                  }`}
-                />
-                <span>Digital Card</span>
+                <span className="inline-flex items-center gap-2.5 min-w-0">
+                  {user ? (
+                    user.photoURL ? (
+                      <img
+                        src={user.photoURL}
+                        alt={user.displayName}
+                        referrerPolicy="no-referrer"
+                        className="w-6 h-6 rounded-full object-cover ring-1 ring-sky-400 shrink-0"
+                      />
+                    ) : (
+                      <span className="w-6 h-6 rounded-full bg-[#0284c7] text-white text-[11px] font-black inline-flex items-center justify-center shrink-0">
+                        {(user.displayName || 'A').charAt(0).toUpperCase()}
+                      </span>
+                    )
+                  ) : (
+                    <LogIn className="w-4 h-4 shrink-0" />
+                  )}
+                  <span className="truncate">
+                    {user ? user.displayName : 'Sign In with Google'}
+                  </span>
+                </span>
+                <span className="text-[10px] opacity-80 shrink-0">
+                  {user ? user.role : 'Account'}
+                </span>
               </button>
-
-              <PWAInstallButton
-                inlinePill
-                onActionComplete={() => setIsMobileMenuOpen(false)}
-              />
             </div>
-
-            {/* Ultra-Compact Horizontal Language Strip on Narrow Phones (<sm) */}
-            <div className="sm:hidden pt-1 border-t border-slate-200 dark:border-sky-500/15 flex items-center gap-1.5 overflow-x-auto">
-              <span className="inline-flex items-center gap-1 text-[10px] font-bold uppercase tracking-wider text-slate-400 pr-1 shrink-0">
-                <Globe className="w-3 h-3 text-[#0284c7]" />
-                <span>Lang</span>
-              </span>
-              {SUPPORTED_LANGUAGES.map((langItem) => {
-                const isCurrent = lang === langItem.code;
-                return (
-                  <button
-                    key={langItem.code}
-                    onClick={() => {
-                      setLang(langItem.code as LanguageCode);
-                      setIsMobileMenuOpen(false);
-                    }}
-                    className={`min-h-[34px] px-3 py-1 text-[11px] font-semibold inline-flex items-center justify-center cursor-pointer whitespace-nowrap shrink-0 ${
-                      isCurrent ? 'aos-btn-soft-active font-bold' : 'aos-btn-soft'
-                    }`}
-                  >
-                    {langItem.nativeName}
-                  </button>
-                );
-              })}
-            </div>
-          </div>
-        )}
-      </div>
-    </header>
+          </aside>
+        </div>
+      )}
+    </>
   );
 };

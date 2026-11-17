@@ -522,6 +522,7 @@ export default function App() {
         onOpenRequestModal={() => setIsRequestModalOpen(true)}
         setActiveTab={handleNavigateTab}
         lang={lang}
+        setLang={setLang}
       />
 
       {/* Lazy Search Palette Modal */}

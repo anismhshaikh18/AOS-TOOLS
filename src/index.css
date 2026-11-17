@@ -290,12 +290,30 @@ html:not(.dark) table tbody tr:hover {
    GPU-Composited 60fps Mobile Performance
    ========================================================================= */
 
+@layer components {
+  .theme-btn-primary,
+  .aos-btn-primary,
+  .aos-segmented-track,
+  .aos-btn-soft,
+  .aos-btn-soft-tab,
+  .aos-btn-soft-active,
+  .aos-btn-icon,
+  .aos-btn-emerald {
+    border-radius: 9999px;
+  }
+
+  .aos-btn-icon {
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+  }
+}
+
 .theme-btn-primary,
 .aos-btn-primary {
   color: #ffffff !important;
   background: linear-gradient(135deg, #0ea5e9 0%, #0284c7 46%, #1d4ed8 84%, #0B192C 100%) !important;
   border: 1px solid rgba(147, 197, 253, 0.42) !important;
-  border-radius: 9999px;
   box-shadow:
     0 8px 20px -5px rgba(2, 132, 199, 0.46),
     0 4px 10px -3px rgba(67, 56, 202, 0.32),
@@ -326,7 +344,6 @@ html:not(.dark) table tbody tr:hover {
 
 /* Soft-UI Neumorphic / Glassmorphic Recessed Track (Tabs & Toggle Groups) */
 .aos-segmented-track {
-  border-radius: 9999px;
   background: #edf3fa;
   border: 1px solid rgba(203, 213, 225, 0.88);
   box-shadow:
@@ -345,7 +362,6 @@ html:not(.dark) table tbody tr:hover {
 
 /* Soft-UI Neumorphic Secondary Pill Button */
 .aos-btn-soft {
-  border-radius: 9999px;
   background: linear-gradient(145deg, #ffffff 0%, #f1f6fd 100%);
   border: 1px solid rgba(203, 213, 225, 0.92);
   color: #0f172a;
@@ -405,7 +421,6 @@ html:not(.dark) table tbody tr:hover {
 
 /* Soft-UI Unselected Tab Inside Recessed Track */
 .aos-btn-soft-tab {
-  border-radius: 9999px;
   border: 1px solid transparent;
   color: #475569;
   transition: transform 0.14s ease, background-color 0.16s ease, color 0.16s ease;
@@ -435,7 +450,6 @@ html:not(.dark) table tbody tr:hover {
 
 /* Soft-UI Selected Pill (Active Tab / Toggle / Filter Chip) */
 .aos-btn-soft-active {
-  border-radius: 9999px;
   color: #ffffff !important;
   background: linear-gradient(135deg, #0284c7 0%, #1d4ed8 58%, #0B192C 100%) !important;
   border: 1px solid rgba(147, 197, 253, 0.48) !important;
@@ -453,10 +467,6 @@ html:not(.dark) table tbody tr:hover {
 
 /* Circular Soft-UI Icon Trigger */
 .aos-btn-icon {
-  display: inline-flex;
-  align-items: center;
-  justify-content: center;
-  border-radius: 9999px;
   background: linear-gradient(145deg, #ffffff 0%, #eef4fb 100%);
   border: 1px solid rgba(203, 213, 225, 0.92);
   color: #334155;
@@ -502,7 +512,6 @@ html:not(.dark) table tbody tr:hover {
 /* Soft-UI Emerald Pill CTA (WhatsApp / Export Success) */
 .aos-btn-emerald {
   color: #ffffff !important;
-  border-radius: 9999px;
   background: linear-gradient(135deg, #10b981 0%, #059669 65%, #047857 100%) !important;
   border: 1px solid rgba(110, 231, 183, 0.42) !important;
   box-shadow:
