@@ -63,10 +63,12 @@ import {
   Binary,
   ArrowRightLeft,
   Receipt,
+  Calculator,
   type LucideIcon,
 } from 'lucide-react';
 
 const ICON_MAP: Record<string, LucideIcon> = {
+  Calculator,
   Receipt,
   Scale,
   Type,

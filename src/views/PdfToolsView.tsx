@@ -4,6 +4,7 @@ import { ToolItem } from '../types';
 import { PDF_TOOLS } from '../data/pdfTools';
 import { ToolCard } from '../components/ToolCard';
 import { LanguageCode, TRANSLATIONS, getTranslatedTool } from '../utils/translations';
+import { useDebouncedValue } from '../hooks/useDebouncedValue';
 
 interface PdfToolsViewProps {
   onSelectTool: (tool: ToolItem) => void;
@@ -12,6 +13,7 @@ interface PdfToolsViewProps {
 
 export const PdfToolsView: React.FC<PdfToolsViewProps> = ({ onSelectTool, lang = 'en' }) => {
   const [searchQuery, setSearchQuery] = useState('');
+  const debouncedSearch = useDebouncedValue(searchQuery, 160);
   const [activeCategory, setActiveCategory] = useState('All');
 
   const s = TRANSLATIONS[lang] || TRANSLATIONS.en;
@@ -29,10 +31,12 @@ export const PdfToolsView: React.FC<PdfToolsViewProps> = ({ onSelectTool, lang =
   }, [lang]);
 
   const filteredTools = useMemo(() => {
+    const q = debouncedSearch.trim().toLowerCase();
     return translatedTools.filter((tool) => {
       const matchesSearch =
-        tool.name.toLowerCase().includes(searchQuery.toLowerCase()) ||
-        tool.shortDesc.toLowerCase().includes(searchQuery.toLowerCase());
+        !q ||
+        tool.name.toLowerCase().includes(q) ||
+        tool.shortDesc.toLowerCase().includes(q);
 
       if (!matchesSearch) return false;
 
@@ -44,14 +48,14 @@ export const PdfToolsView: React.FC<PdfToolsViewProps> = ({ onSelectTool, lang =
         return ['compress-pdf', 'repair-pdf', 'pdf-to-pdfa', 'crop-pdf'].includes(tool.id);
       }
       if (activeCategory === 'Convert & Export') {
-        return ['pdf-to-jpg', 'jpg-to-pdf', 'pdf-to-text', 'pdf-to-word', 'pdf-to-excel'].includes(tool.id);
+        return ['pdf-to-jpg', 'jpg-to-pdf', 'pdf-to-text', 'pdf-to-word', 'pdf-to-excel', 'pdf-translator'].includes(tool.id);
       }
       if (activeCategory === 'Security & Organize') {
         return ['rotate-pdf', 'page-numbers', 'watermark-stamp', 'sign-pdf', 'protect-pdf', 'unlock-pdf', 'compare-pdf'].includes(tool.id);
       }
       return false;
     });
-  }, [translatedTools, searchQuery, activeCategory]);
+  }, [translatedTools, debouncedSearch, activeCategory]);
 
   return (
     <div className="space-y-6 w-full max-w-full">

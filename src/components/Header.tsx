@@ -11,6 +11,7 @@ import {
   Shield,
   Lock,
   LogIn,
+  CreditCard,
 } from 'lucide-react';
 import {
   LanguageCode,
@@ -21,6 +22,7 @@ import {
 import { useAuthSecurity } from '../context/AuthSecurityContext';
 
 import { AosLogoSvg } from './AosLogoSvg';
+import { PWAInstallButton } from './PWAInstallButton';
 
 interface HeaderProps {
   activeTab: string;
@@ -77,6 +79,7 @@ export const Header: React.FC<HeaderProps> = ({
   const primaryNavItems = [
     { id: 'home', label: t.home || 'Home' },
     { id: 'tools', label: t.allTools || 'Tools' },
+    { id: 'portals', label: 'Government Portals Hub' },
     { id: 'about', label: t.about || 'About' },
     { id: 'privacy', label: t.privacy || 'Privacy' },
   ];
@@ -87,7 +90,7 @@ export const Header: React.FC<HeaderProps> = ({
     securityConfig.lockedToolIds.length > 0;
 
   return (
-    <header className="sticky top-0 z-40 w-full backdrop-blur-2xl bg-white/95 dark:bg-[#072642]/92 border-b border-slate-200 dark:border-sky-500/20 transition-colors shadow-sm dark:shadow-lg dark:shadow-black/30">
+    <header className="sticky top-0 z-40 w-full md:backdrop-blur-xl bg-white/95 dark:bg-[#0B192C]/96 border-b border-slate-200 dark:border-sky-500/20 transition-colors shadow-sm dark:shadow-lg dark:shadow-black/30">
       <div className="max-w-7xl mx-auto px-3.5 sm:px-6 lg:px-8">
         <div className="flex items-center justify-between gap-3 h-16 sm:h-[68px]">
           {/* Left: Balanced Brand Mark */}
@@ -123,7 +126,7 @@ export const Header: React.FC<HeaderProps> = ({
           {/* Center: Desktop Nav Bar */}
           <nav
             aria-label="Primary navigation"
-            className="hidden md:flex items-center gap-1 p-1 rounded-full bg-slate-100/90 dark:bg-[#03182b]/85 border border-slate-200 dark:border-sky-500/20 shrink-0"
+            className="hidden md:flex items-center gap-0.5 lg:gap-1 p-1 rounded-full bg-slate-100/90 dark:bg-[#03182b]/85 border border-slate-200 dark:border-sky-500/20 shrink-0"
           >
             {primaryNavItems.map((item) => {
               const isSelected = activeTab === item.id;
@@ -131,7 +134,7 @@ export const Header: React.FC<HeaderProps> = ({
                 <button
                   key={item.id}
                   onClick={() => setActiveTab(item.id)}
-                  className={`px-3.5 lg:px-4 h-8 rounded-full text-xs font-semibold transition-all duration-150 cursor-pointer whitespace-nowrap flex items-center ${
+                  className={`px-2.5 lg:px-3.5 h-8 rounded-full text-xs font-semibold transition-all duration-150 cursor-pointer whitespace-nowrap shrink-0 flex items-center ${
                     isSelected
                       ? 'bg-gradient-to-r from-[#0284c7] to-[#0d4775] text-white shadow-md shadow-sky-500/20'
                       : 'text-slate-600 dark:text-slate-300 hover:text-slate-900 dark:hover:text-white hover:bg-white dark:hover:bg-white/10'
@@ -145,6 +148,11 @@ export const Header: React.FC<HeaderProps> = ({
 
           {/* Right: Clean Uniform Action Toolbar */}
           <div className="flex items-center gap-1.5 sm:gap-2 shrink-0">
+            {/* PWA App Install Button */}
+            <div className="hidden sm:block">
+              <PWAInstallButton compact />
+            </div>
+
             {/* Quick Search Shortcut */}
             <button
               onClick={onOpenSearch}
@@ -328,6 +336,8 @@ export const Header: React.FC<HeaderProps> = ({
                     setIsMobileMenuOpen(false);
                   }}
                   className={`p-2.5 rounded-xl text-xs font-bold text-center transition-all cursor-pointer ${
+                    item.id === 'portals' ? 'col-span-2' : ''
+                  } ${
                     activeTab === item.id
                       ? 'bg-gradient-to-r from-[#0284c7] to-[#0d4775] text-white shadow-md'
                       : 'bg-slate-100 dark:bg-[#03182b] text-slate-700 dark:text-slate-200 border border-slate-200 dark:border-sky-500/20'
@@ -362,6 +372,23 @@ export const Header: React.FC<HeaderProps> = ({
                 <Shield className="w-3.5 h-3.5 text-[#0284c7] shrink-0" />
                 <span>Tool Locks & PIN</span>
               </button>
+            </div>
+
+            <div className="grid grid-cols-2 gap-2">
+              <button
+                onClick={() => {
+                  setActiveTab('card');
+                  setIsMobileMenuOpen(false);
+                }}
+                className="p-2.5 rounded-xl text-xs font-bold flex items-center justify-center gap-1.5 bg-slate-100 dark:bg-[#03182b] text-slate-700 dark:text-slate-200 border border-slate-200 dark:border-sky-500/20 cursor-pointer"
+              >
+                <CreditCard className="w-3.5 h-3.5 text-[#0284c7] shrink-0" />
+                <span>Digital Card</span>
+              </button>
+              <PWAInstallButton
+                fullWidth
+                onActionComplete={() => setIsMobileMenuOpen(false)}
+              />
             </div>
 
             {/* Quick Language Bar for <sm phones */}

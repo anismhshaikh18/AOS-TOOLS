@@ -109,6 +109,163 @@ service cloud.firestore {
         data.updatedAt is timestamp;
     }
 
+    function isValidLedgerEntry(data, userId, entryId) {
+      return data.keys().hasAll([
+          'id',
+          'ownerId',
+          'date',
+          'clientName',
+          'services',
+          'tokenNum',
+          'government',
+          'governmentFees',
+          'workCharge',
+          'totalPrice',
+          'status',
+          'notes',
+          'clientCreatedAt',
+          'createdAt',
+          'updatedAt'
+        ]) &&
+        data.keys().hasOnly([
+          'id',
+          'ownerId',
+          'date',
+          'clientName',
+          'services',
+          'tokenNum',
+          'government',
+          'governmentFees',
+          'workCharge',
+          'totalPrice',
+          'status',
+          'notes',
+          'clientCreatedAt',
+          'createdAt',
+          'updatedAt'
+        ]) &&
+        data.id is string &&
+        isValidId(data.id) &&
+        data.id == entryId &&
+        data.ownerId is string &&
+        isValidId(data.ownerId) &&
+        data.ownerId == userId &&
+        data.ownerId == request.auth.uid &&
+        data.date is string &&
+        data.date.size() >= 4 &&
+        data.date.size() <= 20 &&
+        data.clientName is string &&
+        data.clientName.size() >= 1 &&
+        data.clientName.size() <= 120 &&
+        data.services is string &&
+        data.services.size() >= 1 &&
+        data.services.size() <= 240 &&
+        data.tokenNum is string &&
+        data.tokenNum.size() >= 1 &&
+        data.tokenNum.size() <= 60 &&
+        data.government is string &&
+        data.government.size() <= 150 &&
+        data.governmentFees is number &&
+        data.governmentFees >= 0 &&
+        data.governmentFees <= 10000000 &&
+        data.workCharge is number &&
+        data.workCharge >= 0 &&
+        data.workCharge <= 10000000 &&
+        data.totalPrice is number &&
+        data.totalPrice >= 0 &&
+        data.totalPrice <= 20000000 &&
+        data.status is string &&
+        (data.status in ['Completed', 'Pending']) &&
+        data.notes is string &&
+        data.notes.size() <= 500 &&
+        data.clientCreatedAt is number &&
+        data.clientCreatedAt >= 0 &&
+        data.createdAt is timestamp &&
+        data.updatedAt is timestamp;
+    }
+
+    function isValidLedgerSummary(data, userId) {
+      return data.keys().hasAll(['ownerId', 'updatedAt']) &&
+        data.keys().hasOnly([
+          'ownerId',
+          'todayWorkCharge',
+          'totalGovFeesAll',
+          'monthWorkCharge',
+          'pendingCount',
+          'updatedAt'
+        ]) &&
+        data.ownerId is string &&
+        isValidId(data.ownerId) &&
+        data.ownerId == userId &&
+        data.ownerId == request.auth.uid &&
+        (!('todayWorkCharge' in data) || (data.todayWorkCharge is number && data.todayWorkCharge >= 0 && data.todayWorkCharge <= 100000000)) &&
+        (!('totalGovFeesAll' in data) || (data.totalGovFeesAll is number && data.totalGovFeesAll >= 0 && data.totalGovFeesAll <= 100000000)) &&
+        (!('monthWorkCharge' in data) || (data.monthWorkCharge is number && data.monthWorkCharge >= 0 && data.monthWorkCharge <= 100000000)) &&
+        (!('pendingCount' in data) || (data.pendingCount is number && data.pendingCount >= 0 && data.pendingCount <= 1000000)) &&
+        data.updatedAt is timestamp;
+    }
+
+    function isValidCloudBackup(data, userId) {
+      return data.keys().hasAll([
+          'ownerId',
+          'backupVersion',
+          'deviceLabel',
+          'preferences',
+          'securityPrefs',
+          'notices',
+          'ledgerCount',
+          'ledgerSnapshot',
+          'summaryOverrides',
+          'updatedAt'
+        ]) &&
+        data.keys().hasOnly([
+          'ownerId',
+          'backupVersion',
+          'deviceLabel',
+          'preferences',
+          'securityPrefs',
+          'notices',
+          'ledgerCount',
+          'ledgerSnapshot',
+          'summaryOverrides',
+          'updatedAt'
+        ]) &&
+        data.ownerId is string &&
+        isValidId(data.ownerId) &&
+        data.ownerId == userId &&
+        data.ownerId == request.auth.uid &&
+        data.backupVersion is number &&
+        data.backupVersion >= 1 &&
+        data.backupVersion <= 100 &&
+        data.deviceLabel is string &&
+        data.deviceLabel.size() >= 1 &&
+        data.deviceLabel.size() <= 120 &&
+        data.preferences is map &&
+        data.preferences.keys().hasAll(['theme', 'lang', 'templateId']) &&
+        data.preferences.keys().hasOnly(['theme', 'lang', 'templateId']) &&
+        data.preferences.theme in ['dark', 'light'] &&
+        data.preferences.lang in ['en', 'hi', 'ta', 'te', 'mr', 'hinglish'] &&
+        data.preferences.templateId in ['template-1', 'template-2', 'template-3', 'template-4'] &&
+        data.securityPrefs is map &&
+        data.securityPrefs.keys().hasAll(['pinEnabled', 'requireAuthForProTools', 'autoLockMinutes', 'lockedToolIds']) &&
+        data.securityPrefs.keys().hasOnly(['pinEnabled', 'requireAuthForProTools', 'autoLockMinutes', 'lockedToolIds']) &&
+        data.securityPrefs.pinEnabled is bool &&
+        data.securityPrefs.requireAuthForProTools is bool &&
+        data.securityPrefs.autoLockMinutes is number &&
+        (data.securityPrefs.autoLockMinutes in [0, 1, 5, 15, 30]) &&
+        data.securityPrefs.lockedToolIds is list &&
+        data.securityPrefs.lockedToolIds.size() <= 50 &&
+        data.notices is list &&
+        data.notices.size() <= 20 &&
+        data.ledgerCount is number &&
+        data.ledgerCount >= 0 &&
+        data.ledgerCount <= 100000 &&
+        data.ledgerSnapshot is list &&
+        data.ledgerSnapshot.size() <= 100 &&
+        data.summaryOverrides is map &&
+        data.updatedAt is timestamp;
+    }
+
     // =========================================================================
     // 4. ADMIN REGISTRY (Read-Only for Self, No Client Writes)
     // =========================================================================
@@ -184,6 +341,139 @@ service cloud.firestore {
           exists(/databases/$(database)/documents/users/$(userId));
 
         allow delete: if isVerifiedUser() && isValidId(userId) && isValidId(configId) && isOwner(userId);
+      }
+
+      // =======================================================================
+      // 7. USER CLIENT DIARY LEDGER (/users/{userId}/ledger/{entryId})
+      // =======================================================================
+      match /ledger/{entryId} {
+        allow get: if isSignedIn() && isValidId(userId) && isValidId(entryId) && isOwner(userId) && existing().ownerId == request.auth.uid;
+        allow list: if isSignedIn() && isValidId(userId) && isOwner(userId) && resource.data.ownerId == request.auth.uid;
+
+        allow create: if isVerifiedUser() &&
+          isValidId(userId) &&
+          isValidId(entryId) &&
+          isOwner(userId) &&
+          isValidLedgerEntry(incoming(), userId, entryId) &&
+          incoming().createdAt == request.time &&
+          incoming().updatedAt == request.time;
+
+        allow update: if isVerifiedUser() &&
+          isValidId(userId) &&
+          isValidId(entryId) &&
+          isOwner(userId) &&
+          isValidLedgerEntry(incoming(), userId, entryId) &&
+          incoming().ownerId == existing().ownerId &&
+          incoming().id == existing().id &&
+          incoming().createdAt == existing().createdAt &&
+          incoming().clientCreatedAt == existing().clientCreatedAt &&
+          incoming().updatedAt == request.time &&
+          incoming().diff(existing()).affectedKeys().hasOnly([
+            'date',
+            'clientName',
+            'services',
+            'tokenNum',
+            'government',
+            'governmentFees',
+            'workCharge',
+            'totalPrice',
+            'status',
+            'notes',
+            'updatedAt'
+          ]);
+
+        allow delete: if isVerifiedUser() &&
+          isValidId(userId) &&
+          isValidId(entryId) &&
+          isOwner(userId) &&
+          existing().ownerId == request.auth.uid;
+      }
+
+      // =======================================================================
+      // 8. USER CLIENT DIARY SUMMARY OVERRIDES (/users/{userId}/ledgerSummary/{summaryId})
+      // =======================================================================
+      match /ledgerSummary/{summaryId} {
+        allow get: if isSignedIn() && isValidId(userId) && isValidId(summaryId) && isOwner(userId) && existing().ownerId == request.auth.uid;
+        allow list: if false;
+
+        allow create: if isVerifiedUser() &&
+          isValidId(userId) &&
+          isValidId(summaryId) &&
+          summaryId == 'default' &&
+          isOwner(userId) &&
+          isValidLedgerSummary(incoming(), userId) &&
+          incoming().updatedAt == request.time;
+
+        allow update: if isVerifiedUser() &&
+          isValidId(userId) &&
+          isValidId(summaryId) &&
+          summaryId == 'default' &&
+          isOwner(userId) &&
+          isValidLedgerSummary(incoming(), userId) &&
+          incoming().ownerId == existing().ownerId &&
+          incoming().updatedAt == request.time &&
+          incoming().diff(existing()).affectedKeys().hasOnly([
+            'todayWorkCharge',
+            'totalGovFeesAll',
+            'monthWorkCharge',
+            'pendingCount',
+            'updatedAt'
+          ]);
+
+        allow delete: if isVerifiedUser() &&
+          isValidId(userId) &&
+          isValidId(summaryId) &&
+          summaryId == 'default' &&
+          isOwner(userId) &&
+          existing().ownerId == request.auth.uid;
+      }
+
+      // =======================================================================
+      // 9. USER CLOUD BACKUP & SESSION SYNC (/users/{userId}/cloudBackup/{backupId})
+      // =======================================================================
+      match /cloudBackup/{backupId} {
+        allow get: if isSignedIn() &&
+          isValidId(userId) &&
+          isValidId(backupId) &&
+          backupId == 'default' &&
+          isOwner(userId) &&
+          existing().ownerId == request.auth.uid;
+        allow list: if false;
+
+        allow create: if isVerifiedUser() &&
+          isValidId(userId) &&
+          isValidId(backupId) &&
+          backupId == 'default' &&
+          isOwner(userId) &&
+          isValidCloudBackup(incoming(), userId) &&
+          incoming().updatedAt == request.time;
+
+        allow update: if isVerifiedUser() &&
+          isValidId(userId) &&
+          isValidId(backupId) &&
+          backupId == 'default' &&
+          isOwner(userId) &&
+          isValidCloudBackup(incoming(), userId) &&
+          incoming().ownerId == existing().ownerId &&
+          incoming().updatedAt == request.time &&
+          incoming().diff(existing()).affectedKeys().hasOnly([
+            'backupVersion',
+            'deviceLabel',
+            'preferences',
+            'securityPrefs',
+            'notices',
+            'ledgerCount',
+            'ledgerSnapshot',
+            'summaryOverrides',
+            'updatedAt'
+          ]);
+
+        allow delete: if isVerifiedUser() &&
+          isValidId(userId) &&
+          isValidId(backupId) &&
+          backupId == 'default' &&
+          isOwner(userId) &&
+          existing().ownerId == request.auth.uid;
       }
     }
   }

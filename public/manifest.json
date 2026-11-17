@@ -1,30 +1,39 @@
 {
+  "id": "/",
   "name": "AOS Tools - Anis Online Services",
   "short_name": "AOS Tools",
-  "description": "Free, secure, browser-side digital workstation & citizen utilities by Anis Online Services.",
+  "description": "Free, secure, browser-side digital workstation, PDF suite, Client Diary & citizen utilities by Anis Online Services.",
   "start_url": "/",
   "scope": "/",
   "display": "standalone",
-  "orientation": "portrait",
-  "background_color": "#072642",
-  "theme_color": "#072642",
+  "orientation": "any",
+  "background_color": "#0B192C",
+  "theme_color": "#0B192C",
+  "categories": ["productivity", "utilities", "business"],
   "icons": [
     {
       "src": "/icon-192.png",
       "sizes": "192x192",
       "type": "image/png",
-      "purpose": "any maskable"
+      "purpose": "any"
     },
     {
       "src": "/icon-512.png",
       "sizes": "512x512",
       "type": "image/png",
-      "purpose": "any maskable"
+      "purpose": "any"
+    },
+    {
+      "src": "/pwa-maskable-512x512.png",
+      "sizes": "512x512",
+      "type": "image/png",
+      "purpose": "maskable"
     },
     {
       "src": "/apple-touch-icon.png",
       "sizes": "180x180",
-      "type": "image/png"
+      "type": "image/png",
+      "purpose": "any"
     }
   ]
 }

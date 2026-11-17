@@ -9,7 +9,7 @@ interface ToolCardProps {
   onSelect: (tool: ToolItem) => void;
 }
 
-export const ToolCard: React.FC<ToolCardProps> = ({ tool, onSelect }) => {
+export const ToolCard: React.FC<ToolCardProps> = React.memo(({ tool, onSelect }) => {
   const { isToolCurrentlyLocked } = useAuthSecurity();
   const isLocked = isToolCurrentlyLocked(tool.id);
 
@@ -50,7 +50,7 @@ export const ToolCard: React.FC<ToolCardProps> = ({ tool, onSelect }) => {
           onSelect(tool);
         }
       }}
-      className="theme-card group relative flex flex-col justify-between p-5 rounded-2xl cursor-pointer text-left focus:outline-none focus-visible:ring-2 active:scale-[0.99] text-slate-900 dark:text-white"
+      className="aos-card-perf theme-card group relative flex flex-col justify-between p-5 rounded-2xl cursor-pointer text-left focus:outline-none focus-visible:ring-2 active:scale-[0.99] text-slate-900 dark:text-white"
     >
       <div>
         <div className="flex items-center justify-between text-xs text-slate-500 dark:text-sky-200/70 mb-3.5 gap-2">
@@ -130,4 +130,6 @@ export const ToolCard: React.FC<ToolCardProps> = ({ tool, onSelect }) => {
       </div>
     </div>
   );
-};
+});
+
+ToolCard.displayName = 'ToolCard';

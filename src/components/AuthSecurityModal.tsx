@@ -14,6 +14,8 @@ import {
   UserCheck,
   Sparkles,
   Loader2,
+  CloudUpload,
+  CloudDownload,
 } from 'lucide-react';
 import {
   useAuthSecurity,
@@ -26,6 +28,12 @@ import { PDF_TOOLS } from '../data/pdfTools';
 import { IMAGE_TOOLS } from '../data/imageTools';
 import { SPECIAL_TOOLS } from '../data/specialTools';
 import { AosLogoSvg } from './AosLogoSvg';
+import {
+  uploadCloudBackup,
+  restoreCloudBackup,
+  getLastSyncMeta,
+  buildLocalCloudBackupPayload,
+} from '../services/cloudBackupService';
 
 const AUTO_LOCK_OPTIONS: { value: AutoLockMinutes; label: string }[] = [
   { value: 0, label: 'Off' },
@@ -68,11 +76,24 @@ export const AuthSecurityModal: React.FC = () => {
   const [pinStatus, setPinStatus] = useState<{ type: 'ok' | 'err'; msg: string } | null>(null);
   const [toolFilter, setToolFilter] = useState('');
   const [isSavingPin, setIsSavingPin] = useState(false);
+  const [isBackingUp, setIsBackingUp] = useState(false);
+  const [isRestoringBackup, setIsRestoringBackup] = useState(false);
+  const [backupNotice, setBackupNotice] = useState<{ type: 'ok' | 'err'; msg: string } | null>(null);
+  const [lastSyncMeta, setLastSyncMeta] = useState<{
+    lastSyncedAt: number;
+    deviceLabel: string;
+    ledgerCount: number;
+  } | null>(() => getLastSyncMeta(user?.uid || null));
+
+  useEffect(() => {
+    setLastSyncMeta(getLastSyncMeta(user?.uid || null));
+  }, [user?.uid, isAuthModalOpen]);
 
   useEffect(() => {
     if (isAuthModalOpen) {
       setActiveTab(authModalInitialTab);
       setPinStatus(null);
+      setBackupNotice(null);
       setUnlockPinAttempt('');
     }
   }, [isAuthModalOpen, authModalInitialTab]);
@@ -171,6 +192,62 @@ export const AuthSecurityModal: React.FC = () => {
     const mins = Math.floor(secs / 60);
     const rem = secs % 60;
     return `${mins}:${rem.toString().padStart(2, '0')}`;
+  };
+
+  const handleManualCloudBackup = async () => {
+    if (!user?.uid) return;
+    setIsBackingUp(true);
+    setBackupNotice(null);
+    try {
+      const payload = buildLocalCloudBackupPayload(user.uid, {
+        pinEnabled: securityConfig.pinEnabled,
+        requireAuthForProTools: securityConfig.requireAuthForProTools,
+        autoLockMinutes: securityConfig.autoLockMinutes,
+        lockedToolIds: securityConfig.lockedToolIds,
+      });
+      const res = await uploadCloudBackup(user.uid, payload);
+      if (res.ok) {
+        setLastSyncMeta(getLastSyncMeta(user.uid));
+        setBackupNotice({
+          type: 'ok',
+          msg: `Synced preferences, notices & ${payload.ledgerCount} Client Diary entries to Cloud Backup.`,
+        });
+      } else if (res.queuedOffline) {
+        setBackupNotice({
+          type: 'ok',
+          msg: 'Offline mode detected — Cloud Backup queued for automatic upload upon reconnect.',
+        });
+      } else {
+        setBackupNotice({
+          type: 'err',
+          msg: res.error || 'Unable to sync Cloud Backup.',
+        });
+      }
+    } finally {
+      setIsBackingUp(false);
+    }
+  };
+
+  const handleRestoreCloudBackup = async () => {
+    if (!user?.uid) return;
+    setIsRestoringBackup(true);
+    setBackupNotice(null);
+    try {
+      const res = await restoreCloudBackup(user.uid, {
+        onApplyPreferences: (prefs) => {
+          window.dispatchEvent(
+            new CustomEvent('aos-apply-cloud-preferences', { detail: prefs })
+          );
+        },
+      });
+      setLastSyncMeta(getLastSyncMeta(user.uid));
+      setBackupNotice({
+        type: res.ok ? 'ok' : 'err',
+        msg: res.message,
+      });
+    } finally {
+      setIsRestoringBackup(false);
+    }
   };
 
   return (
@@ -417,6 +494,64 @@ export const AuthSecurityModal: React.FC = () => {
                           : `${securityConfig.autoLockMinutes} min inactivity`}
                       </span>
                     </div>
+                  </div>
+
+                  {/* AOS Secure Cloud Backup & Session Sync Controls */}
+                  <div className="pt-3 border-t border-slate-200 dark:border-sky-500/20 space-y-2.5">
+                    <div className="flex flex-wrap items-center justify-between gap-2">
+                      <div>
+                        <h4 className="text-xs font-extrabold text-slate-900 dark:text-white flex items-center gap-1.5">
+                          <CloudUpload className="w-3.5 h-3.5 text-[#0284c7] dark:text-sky-300" />
+                          <span>AOS Secure Cloud Backup &amp; Session Sync</span>
+                        </h4>
+                        <p className="text-[11px] text-slate-500 dark:text-slate-300">
+                          {lastSyncMeta
+                            ? `Last synced ${new Date(lastSyncMeta.lastSyncedAt).toLocaleString('en-IN')} · ${lastSyncMeta.deviceLabel}`
+                            : 'Sync theme, language, notices, lock rules & Client Diary snapshot across devices.'}
+                        </p>
+                      </div>
+
+                      <div className="flex flex-wrap items-center gap-2">
+                        <button
+                          type="button"
+                          onClick={() => void handleManualCloudBackup()}
+                          disabled={isBackingUp}
+                          className="px-3 py-1.5 rounded-xl bg-[#0284c7] hover:bg-[#0369a1] text-white text-xs font-bold flex items-center gap-1.5 cursor-pointer disabled:opacity-60"
+                        >
+                          {isBackingUp ? (
+                            <Loader2 className="w-3.5 h-3.5 animate-spin" />
+                          ) : (
+                            <CloudUpload className="w-3.5 h-3.5" />
+                          )}
+                          <span>Backup Now</span>
+                        </button>
+                        <button
+                          type="button"
+                          onClick={() => void handleRestoreCloudBackup()}
+                          disabled={isRestoringBackup}
+                          className="px-3 py-1.5 rounded-xl bg-white dark:bg-[#0B192C] border border-slate-300 dark:border-sky-500/30 hover:border-[#0284c7] text-slate-800 dark:text-sky-200 text-xs font-bold flex items-center gap-1.5 cursor-pointer disabled:opacity-60"
+                        >
+                          {isRestoringBackup ? (
+                            <Loader2 className="w-3.5 h-3.5 animate-spin" />
+                          ) : (
+                            <CloudDownload className="w-3.5 h-3.5" />
+                          )}
+                          <span>Restore Cloud</span>
+                        </button>
+                      </div>
+                    </div>
+
+                    {backupNotice && (
+                      <div
+                        className={`p-2.5 rounded-xl text-[11px] font-medium border ${
+                          backupNotice.type === 'ok'
+                            ? 'bg-emerald-50 dark:bg-emerald-950/40 text-emerald-700 dark:text-emerald-300 border-emerald-200 dark:border-emerald-500/30'
+                            : 'bg-red-50 dark:bg-red-950/40 text-red-700 dark:text-red-300 border-red-200 dark:border-red-500/30'
+                        }`}
+                      >
+                        {backupNotice.msg}
+                      </div>
+                    )}
                   </div>
                 </div>
               )}

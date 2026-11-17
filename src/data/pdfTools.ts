@@ -172,4 +172,14 @@ export const PDF_TOOLS: ToolItem[] = [
     status: 'fully-supported',
     acceptedFormats: '.pdf',
   },
+  {
+    id: 'pdf-translator',
+    name: 'PDF Language Translator',
+    shortDesc: 'Translate smart cards, certificates & receipts locally in browser while keeping exact layout, borders, photos & formatting.',
+    category: 'pdf',
+    iconName: 'Languages',
+    status: 'fully-supported',
+    acceptedFormats: '.pdf',
+    badge: 'NEW TOOL',
+  },
 ];

@@ -1,11 +1,8 @@
-import React, { useState, useRef, useEffect } from 'react';
+import React, { useState, useRef, useEffect, lazy, Suspense } from 'react';
 import { ToolItem } from '../types';
 import { DynamicIcon } from './DynamicIcon';
-import { ToolGuideSection } from './ToolGuideSection';
 import { StarRatingWidget } from './StarRatingWidget';
-import { ColorPaletteExtractorView } from './ColorPaletteExtractorView';
-import { DocumentPhotoCropperView } from './DocumentPhotoCropperView';
-import { CircleCropAvatarView } from './CircleCropAvatarView';
+import { buildWhatsAppShareUrl, buildSmsShareUrl } from '../utils/shareUtils';
 import {
   X,
   Upload,
@@ -103,6 +100,32 @@ import {
 import { generateBarcodeSvg, generateBarcodePngDataUrl, generateQrCodeDataUrl } from '../utils/barcodeQrEngine';
 import { QrPosterTemplateId, QR_POSTER_TEMPLATES, renderQrPosterCanvas } from '../utils/qrPosterEngine';
 import JSZip from 'jszip';
+
+const ToolGuideSection = lazy(() =>
+  import('./ToolGuideSection').then((m) => ({ default: m.ToolGuideSection }))
+);
+const ColorPaletteExtractorView = lazy(() =>
+  import('./ColorPaletteExtractorView').then((m) => ({ default: m.ColorPaletteExtractorView }))
+);
+const DocumentPhotoCropperView = lazy(() =>
+  import('./DocumentPhotoCropperView').then((m) => ({ default: m.DocumentPhotoCropperView }))
+);
+const CircleCropAvatarView = lazy(() =>
+  import('./CircleCropAvatarView').then((m) => ({ default: m.CircleCropAvatarView }))
+);
+const PdfTranslatorView = lazy(() =>
+  import('./PdfTranslatorView').then((m) => ({ default: m.PdfTranslatorView }))
+);
+const QuickCalculatorSuite = lazy(() =>
+  import('./QuickCalculatorSuite').then((m) => ({ default: m.QuickCalculatorSuite }))
+);
+
+const SubToolFallback: React.FC = () => (
+  <div className="p-8 rounded-2xl bg-slate-50 dark:bg-[#071322] border border-slate-200 dark:border-sky-500/20 text-center space-y-2">
+    <div className="w-6 h-6 mx-auto rounded-full border-2 border-[#0284c7] border-t-transparent animate-spin" />
+    <p className="text-xs text-slate-500 dark:text-sky-200 font-medium">Loading tool workspace...</p>
+  </div>
+);
 
 const toPdfBlob = (data: Uint8Array): Blob => {
   return new Blob([data.buffer as ArrayBuffer], { type: 'application/pdf' });
@@ -2443,6 +2466,13 @@ export const ToolRunnerModal: React.FC<ToolRunnerModalProps> = ({
             </div>
           )}
 
+          {/* 4b. Quick Calculator Suite (3-in-1) */}
+          {tool.id === 'quick-calculator-suite' && (
+            <Suspense fallback={<SubToolFallback />}>
+              <QuickCalculatorSuite />
+            </Suspense>
+          )}
+
           {/* 5. Live HTML Sandbox UI */}
           {tool.id === 'html-editor' && (
             <div className="space-y-3">
@@ -3584,10 +3614,9 @@ export const ToolRunnerModal: React.FC<ToolRunnerModalProps> = ({
                       <span>Copy Text</span>
                     </button>
 
-                    <button
-                      type="button"
-                      onClick={() => {
-                        const text = `*OFFICIAL PAYMENT RECEIPT*\n` +
+                    <a
+                      href={buildWhatsAppShareUrl(
+                        `*OFFICIAL PAYMENT RECEIPT*\n` +
                           `*Shop:* ${receiptShopName}\n` +
                           `*Receipt No:* ${receiptNumber}\n` +
                           `*Date:* ${receiptDate}\n` +
@@ -3596,14 +3625,27 @@ export const ToolRunnerModal: React.FC<ToolRunnerModalProps> = ({
                           `*Amount Paid:* ₹${receiptAmount}/-\n` +
                           `*Words:* ${getReceiptAmountInWords(receiptAmount)}\n` +
                           `*Status:* Confirmed & Received\n\n` +
-                          `Thank you for using our citizen services!`;
-                        window.open(`https://api.whatsapp.com/send?text=${encodeURIComponent(text)}`, '_blank');
-                      }}
-                      className="px-3.5 py-2 text-xs font-bold text-white bg-emerald-600 hover:bg-emerald-700 rounded-lg shadow-xs inline-flex items-center gap-1.5 cursor-pointer"
+                          `Thank you for using our citizen services!`,
+                        receiptCustomerPhone
+                      )}
+                      target="_blank"
+                      rel="noopener noreferrer"
+                      className="px-3.5 py-2 text-xs font-bold text-white bg-emerald-600 hover:bg-emerald-700 rounded-lg shadow-xs inline-flex items-center gap-1.5"
                     >
                       <Send className="w-3.5 h-3.5" />
-                      <span>Share on WhatsApp</span>
-                    </button>
+                      <span>Share via WhatsApp</span>
+                    </a>
+
+                    <a
+                      href={buildSmsShareUrl(
+                        `PAYMENT RECEIPT | ${receiptShopName} | No: ${receiptNumber} | Date: ${receiptDate} | Client: ${receiptCustomerName} | Paid: Rs.${receiptAmount} (${receiptPaymentMode})`,
+                        receiptCustomerPhone
+                      )}
+                      className="px-3.5 py-2 text-xs font-bold text-white bg-[#0284c7] hover:bg-[#0369a1] rounded-lg shadow-xs inline-flex items-center gap-1.5"
+                    >
+                      <MessageSquare className="w-3.5 h-3.5" />
+                      <span>Share via SMS</span>
+                    </a>
 
                     <button
                       type="button"
@@ -4112,8 +4154,20 @@ export const ToolRunnerModal: React.FC<ToolRunnerModalProps> = ({
             </div>
           )}
 
+          {/* 7e. PDF Language Translator Workbench */}
+          {tool.id === 'pdf-translator' && (
+            <Suspense fallback={<SubToolFallback />}>
+              <PdfTranslatorView
+                onToast={(msg) => {
+                  setCopyToast(msg);
+                  setTimeout(() => setCopyToast(null), 2200);
+                }}
+              />
+            </Suspense>
+          )}
+
           {/* 8. Options and Settings visible for all file-based tools */}
-          {tool.acceptedFormats && tool.id !== 'image-to-color' && (
+          {tool.acceptedFormats && tool.id !== 'image-to-color' && tool.id !== 'pdf-translator' && (
             <div className="space-y-4">
               
               {/* Tool Options Controls Header */}
@@ -4485,18 +4539,22 @@ export const ToolRunnerModal: React.FC<ToolRunnerModalProps> = ({
 
                 {/* Professional Document & Photo Cropper View */}
                 {tool.id === 'crop-image' && (
-                  <DocumentPhotoCropperView
-                    file={selectedFiles[0] || null}
-                    onSuccess={(res) => setSuccessResult(res)}
-                  />
+                  <Suspense fallback={<SubToolFallback />}>
+                    <DocumentPhotoCropperView
+                      file={selectedFiles[0] || null}
+                      onSuccess={(res) => setSuccessResult(res)}
+                    />
+                  </Suspense>
                 )}
 
                 {/* Advanced Circle Crop Avatar Studio View */}
                 {tool.id === 'crop-circle-image' && (
-                  <CircleCropAvatarView
-                    file={selectedFiles[0] || null}
-                    onSuccess={(res) => setSuccessResult(res)}
-                  />
+                  <Suspense fallback={<SubToolFallback />}>
+                    <CircleCropAvatarView
+                      file={selectedFiles[0] || null}
+                      onSuccess={(res) => setSuccessResult(res)}
+                    />
+                  </Suspense>
                 )}
 
                 {/* Image Resize Dimensions */}
@@ -4775,14 +4833,16 @@ export const ToolRunnerModal: React.FC<ToolRunnerModalProps> = ({
 
                 {/* Professional AOS Color Palette Extractor View */}
                 {tool.id === 'color-extractor' && (
-                  <ColorPaletteExtractorView
-                    imageFile={selectedFiles[0] || null}
-                    palette={extractedPalette}
-                    onPaletteExtracted={setExtractedPalette}
-                    paletteMaxColors={paletteMaxColors}
-                    setPaletteMaxColors={setPaletteMaxColors}
-                    onCopyText={(text, label) => copyToClipboard(text, label)}
-                  />
+                  <Suspense fallback={<SubToolFallback />}>
+                    <ColorPaletteExtractorView
+                      imageFile={selectedFiles[0] || null}
+                      palette={extractedPalette}
+                      onPaletteExtracted={setExtractedPalette}
+                      paletteMaxColors={paletteMaxColors}
+                      setPaletteMaxColors={setPaletteMaxColors}
+                      onCopyText={(text, label) => copyToClipboard(text, label)}
+                    />
+                  </Suspense>
                 )}
 
                 {/* ZIP Extractor list */}
@@ -5040,7 +5100,9 @@ export const ToolRunnerModal: React.FC<ToolRunnerModalProps> = ({
           )}
 
           {/* Professional Information & Guide Section (How to Use, Key Features, Conclusion) */}
-          <ToolGuideSection tool={tool} />
+          <Suspense fallback={null}>
+            <ToolGuideSection tool={tool} />
+          </Suspense>
 
         </div>
 

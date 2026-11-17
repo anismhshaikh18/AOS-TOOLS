@@ -48,46 +48,69 @@
 
 /* =========================================================================
    DARK MODE LIQUID GLASS & THEME CARDS (Anis Online Services Deep Navy)
+   GPU-composited for smooth 60fps mobile scrolling with desktop glass polish
    ========================================================================= */
 
 .dark .theme-card,
 .dark .liquid-glass {
-  transition: transform 0.25s cubic-bezier(0.16, 1, 0.3, 1), 
-              box-shadow 0.25s cubic-bezier(0.16, 1, 0.3, 1), 
-              border-color 0.25s ease;
-  backdrop-filter: blur(24px) saturate(190%) !important;
-  -webkit-backdrop-filter: blur(24px) saturate(190%) !important;
-  background: rgba(7, 38, 66, 0.72) !important;
+  transition: border-color 0.2s ease, box-shadow 0.2s ease;
+  background: rgba(11, 25, 44, 0.92) !important;
   border: 1px solid rgba(56, 189, 248, 0.22) !important;
-  box-shadow: 0 16px 40px -8px rgba(0, 0, 0, 0.6), inset 0 1px 1px 0 rgba(255, 255, 255, 0.12) !important;
+  box-shadow: 0 10px 28px -8px rgba(0, 0, 0, 0.55), inset 0 1px 0 0 rgba(255, 255, 255, 0.08) !important;
   color: #f8fafc !important;
 }
 
-.dark .theme-card:hover,
-.dark .liquid-glass:hover,
-.dark .liquid-glass-hover:hover {
-  border-color: #0284c7 !important;
-  box-shadow: 0 20px 48px -6px rgba(2, 132, 199, 0.35), inset 0 1px 2px 0 rgba(255, 255, 255, 0.2) !important;
-  transform: translateY(-2px);
-}
-
 .dark .liquid-glass-sub {
-  background: rgba(13, 71, 117, 0.32) !important;
-  backdrop-filter: blur(18px) saturate(180%) !important;
-  -webkit-backdrop-filter: blur(18px) saturate(180%) !important;
+  background: rgba(7, 38, 66, 0.72) !important;
   border: 1px solid rgba(56, 189, 248, 0.16) !important;
-  box-shadow: 0 4px 20px -2px rgba(0, 0, 0, 0.3), inset 0 1px 0.5px 0 rgba(255, 255, 255, 0.1) !important;
+  box-shadow: 0 4px 16px -4px rgba(0, 0, 0, 0.3) !important;
   color: #e2e8f0;
 }
 
-/* Fallbacks for nested dark containers */
+/* Lightweight frosted blur only on capable desktop viewports */
+@media (min-width: 769px) and (prefers-reduced-motion: no-preference) {
+  .dark .theme-card,
+  .dark .liquid-glass {
+    backdrop-filter: blur(10px) saturate(140%);
+    -webkit-backdrop-filter: blur(10px) saturate(140%);
+    background: rgba(11, 25, 44, 0.82) !important;
+  }
+
+  .dark .liquid-glass-sub {
+    backdrop-filter: blur(8px);
+    -webkit-backdrop-filter: blur(8px);
+    background: rgba(13, 71, 117, 0.38) !important;
+  }
+}
+
+/* Force zero backdrop blur on mobile screens & reduced-motion for 60fps scrolling */
+@media (max-width: 768px), (prefers-reduced-motion: reduce) {
+  .dark .theme-card,
+  .dark .liquid-glass,
+  .dark .liquid-glass-sub,
+  .dark [class*="backdrop-blur"] {
+    backdrop-filter: none !important;
+    -webkit-backdrop-filter: none !important;
+  }
+}
+
+/* Hover lift only on true hover-capable pointer devices (prevents sticky touch repaints) */
+@media (hover: hover) and (pointer: fine) {
+  .dark .theme-card:hover,
+  .dark .liquid-glass:hover,
+  .dark .liquid-glass-hover:hover {
+    border-color: #0284c7 !important;
+    box-shadow: 0 18px 36px -6px rgba(2, 132, 199, 0.32), inset 0 1px 1px 0 rgba(255, 255, 255, 0.15) !important;
+    transform: translateY(-2px);
+  }
+}
+
+/* Fallbacks for nested dark containers (no stacked backdrop-filter overdraw) */
 .dark [class*="bg-[#072642]"],
 .dark [class*="dark:bg-[#072642]"],
 .dark .bg-slate-900,
 .dark .bg-slate-950 {
-  background: rgba(7, 38, 66, 0.72) !important;
-  backdrop-filter: blur(24px) saturate(190%) !important;
-  -webkit-backdrop-filter: blur(24px) saturate(190%) !important;
+  background: rgba(7, 38, 66, 0.9) !important;
   border-color: rgba(56, 189, 248, 0.22) !important;
 }
 
@@ -100,8 +123,14 @@
 .dark .bg-slate-800\/80,
 .dark .bg-slate-950\/50,
 .dark .bg-slate-950\/60 {
-  background: rgba(13, 71, 117, 0.32) !important;
+  background: rgba(13, 71, 117, 0.42) !important;
   border-color: rgba(56, 189, 248, 0.16) !important;
+}
+
+/* Offscreen grid card paint optimization */
+.aos-card-perf {
+  content-visibility: auto;
+  contain-intrinsic-size: auto 230px;
 }
 
 /* =========================================================================
@@ -116,16 +145,18 @@ html:not(.dark) .liquid-glass {
   backdrop-filter: none !important;
   -webkit-backdrop-filter: none !important;
   border: 1px solid #cbd5e1 !important;
-  box-shadow: 0 4px 18px -2px rgba(7, 38, 66, 0.08), 0 1px 3px 0 rgba(0, 0, 0, 0.05) !important;
+  box-shadow: 0 4px 16px -2px rgba(7, 38, 66, 0.08), 0 1px 3px 0 rgba(0, 0, 0, 0.05) !important;
   color: #0f172a !important;
 }
 
-html:not(.dark) .theme-card:hover,
-html:not(.dark) .liquid-glass:hover,
-html:not(.dark) .liquid-glass-hover:hover {
-  border-color: #0284c7 !important;
-  box-shadow: 0 12px 28px -4px rgba(2, 132, 199, 0.18), 0 4px 8px -2px rgba(0, 0, 0, 0.06) !important;
-  transform: translateY(-2px);
+@media (hover: hover) and (pointer: fine) {
+  html:not(.dark) .theme-card:hover,
+  html:not(.dark) .liquid-glass:hover,
+  html:not(.dark) .liquid-glass-hover:hover {
+    border-color: #0284c7 !important;
+    box-shadow: 0 12px 26px -4px rgba(2, 132, 199, 0.18), 0 4px 8px -2px rgba(0, 0, 0, 0.06) !important;
+    transform: translateY(-2px);
+  }
 }
 
 html:not(.dark) .liquid-glass-sub {

@@ -4,6 +4,7 @@ import { ToolItem } from '../types';
 import { IMAGE_TOOLS } from '../data/imageTools';
 import { ToolCard } from '../components/ToolCard';
 import { LanguageCode, TRANSLATIONS, getTranslatedTool } from '../utils/translations';
+import { useDebouncedValue } from '../hooks/useDebouncedValue';
 
 interface ImageToolsViewProps {
   onSelectTool: (tool: ToolItem) => void;
@@ -12,6 +13,7 @@ interface ImageToolsViewProps {
 
 export const ImageToolsView: React.FC<ImageToolsViewProps> = ({ onSelectTool, lang = 'en' }) => {
   const [searchQuery, setSearchQuery] = useState('');
+  const debouncedSearch = useDebouncedValue(searchQuery, 160);
   const [activeCategory, setActiveCategory] = useState('All');
 
   const s = TRANSLATIONS[lang] || TRANSLATIONS.en;
@@ -28,10 +30,12 @@ export const ImageToolsView: React.FC<ImageToolsViewProps> = ({ onSelectTool, la
   }, [lang]);
 
   const filteredTools = useMemo(() => {
+    const q = debouncedSearch.trim().toLowerCase();
     return translatedTools.filter((tool) => {
       const matchesSearch =
-        tool.name.toLowerCase().includes(searchQuery.toLowerCase()) ||
-        tool.shortDesc.toLowerCase().includes(searchQuery.toLowerCase());
+        !q ||
+        tool.name.toLowerCase().includes(q) ||
+        tool.shortDesc.toLowerCase().includes(q);
 
       if (!matchesSearch) return false;
 
@@ -47,7 +51,7 @@ export const ImageToolsView: React.FC<ImageToolsViewProps> = ({ onSelectTool, la
       }
       return false;
     });
-  }, [translatedTools, searchQuery, activeCategory]);
+  }, [translatedTools, debouncedSearch, activeCategory]);
 
   return (
     <div className="space-y-6 w-full max-w-full">

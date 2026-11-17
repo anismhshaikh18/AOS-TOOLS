@@ -71,6 +71,18 @@ export const Footer: React.FC<FooterProps> = ({
             {t.allTools || 'All Tools'}
           </button>
           <button
+            onClick={() => setActiveTab('portals')}
+            className="hover:text-slate-900 dark:hover:text-white transition-colors cursor-pointer"
+          >
+            Government Portals Hub
+          </button>
+          <button
+            onClick={() => setActiveTab('card')}
+            className="hover:text-slate-900 dark:hover:text-white transition-colors cursor-pointer font-semibold text-[#0284c7] dark:text-sky-300"
+          >
+            Digital Card (/card)
+          </button>
+          <button
             onClick={() => setActiveTab('about')}
             className="hover:text-slate-900 dark:hover:text-white transition-colors cursor-pointer"
           >

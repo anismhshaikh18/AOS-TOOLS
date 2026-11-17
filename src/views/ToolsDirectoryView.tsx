@@ -13,6 +13,8 @@ import {
   BookMarked,
   ShieldAlert,
   Lock,
+  Mic,
+  MicOff,
 } from 'lucide-react';
 import { ToolItem } from '../types';
 import { PDF_TOOLS } from '../data/pdfTools';
@@ -21,6 +23,9 @@ import { SPECIAL_TOOLS } from '../data/specialTools';
 import { DynamicIcon } from '../components/DynamicIcon';
 import { LanguageCode, TRANSLATIONS, getTranslatedTool } from '../utils/translations';
 import { useAuthSecurity } from '../context/AuthSecurityContext';
+import { matchesMultilingualQuery } from '../utils/multilingualSearch';
+import { useVoiceSearch } from '../hooks/useVoiceSearch';
+import { useDebouncedValue } from '../hooks/useDebouncedValue';
 
 interface ToolsDirectoryViewProps {
   onSelectTool: (tool: ToolItem) => void;
@@ -34,8 +39,13 @@ export const ToolsDirectoryView: React.FC<ToolsDirectoryViewProps> = ({
   lang = 'en',
 }) => {
   const [searchQuery, setSearchQuery] = useState('');
+  const debouncedQuery = useDebouncedValue(searchQuery, 160);
   const [selectedFilter, setSelectedFilter] = useState('All Tools');
   const { isToolCurrentlyLocked } = useAuthSecurity();
+  const { isSupported: voiceSupported, isListening, startListening } = useVoiceSearch(
+    lang,
+    (transcript) => setSearchQuery(transcript)
+  );
 
   const t = TRANSLATIONS[lang] || TRANSLATIONS.en;
 
@@ -166,12 +176,13 @@ export const ToolsDirectoryView: React.FC<ToolsDirectoryViewProps> = ({
 
   const filteredTools = useMemo(() => {
     return allTools.filter((t) => {
-      const q = searchQuery.toLowerCase();
-      const matchesSearch =
-        t.name.toLowerCase().includes(q) ||
-        t.shortDesc.toLowerCase().includes(q) ||
-        t.category.toLowerCase().includes(q) ||
-        (t.badge && t.badge.toLowerCase().includes(q));
+      const matchesSearch = matchesMultilingualQuery(debouncedQuery, [
+        t.name,
+        t.shortDesc,
+        t.category,
+        t.badge,
+        t.id,
+      ]);
 
       if (!matchesSearch) return false;
 
@@ -184,7 +195,7 @@ export const ToolsDirectoryView: React.FC<ToolsDirectoryViewProps> = ({
       if (selectedFilter === 'AOS Pro Tools' || selectedFilter === 'Special Tools') return t.category === 'special';
       return true;
     });
-  }, [allTools, searchQuery, selectedFilter]);
+  }, [allTools, debouncedQuery, selectedFilter]);
 
   const categories = [
     {
@@ -235,10 +246,10 @@ export const ToolsDirectoryView: React.FC<ToolsDirectoryViewProps> = ({
     {
       id: 'portals',
       gateToolId: 'gov-portals',
-      title: t.portals || 'Government Portals',
-      subtitle: '50 official portals: Aadhaar, PAN, Voter, Passport, Parivahan',
+      title: 'Government Portals Hub',
+      subtitle: 'Central, State (TNPDS), Banking & Utility portals with permanent routing',
       icon: Building,
-      color: 'bg-gradient-to-r from-blue-700 to-indigo-900',
+      color: 'bg-gradient-to-r from-[#0284c7] to-[#0B192C]',
       action: () => setActiveTab('portals'),
     },
   ];
@@ -267,7 +278,7 @@ export const ToolsDirectoryView: React.FC<ToolsDirectoryViewProps> = ({
           {t.directoryDesc || 'Every tool below contains actual client-side processing code. No fake buttons, no subscriptions, and your files stay private in your browser.'}
         </p>
 
-        {/* Pill Search Bar */}
+        {/* Pill Multilingual + Voice Search Bar */}
         <div className="max-w-xl mx-auto relative pt-2">
           <div className="relative flex items-center">
             <Search className="w-4 h-4 absolute left-4 text-slate-400" />
@@ -275,9 +286,24 @@ export const ToolsDirectoryView: React.FC<ToolsDirectoryViewProps> = ({
               type="text"
               value={searchQuery}
               onChange={(e) => setSearchQuery(e.target.value)}
-              placeholder={t.searchBarPlaceholder || 'Search tools (e.g. passport, id card, pdf, resize, signature)...'}
-              className="w-full pl-11 pr-4 py-3 rounded-full liquid-glass-sub text-xs text-slate-900 dark:text-white placeholder-slate-400 focus:outline-none focus:ring-2 focus:ring-[#0284c7]/50 shadow-inner"
+              placeholder={t.searchBarPlaceholder || 'Search tools in English / हिंदी / தமிழ் / తెలుగు / मराठी or tap mic...'}
+              className="w-full pl-11 pr-12 py-3 rounded-full liquid-glass-sub text-xs text-slate-900 dark:text-white placeholder-slate-400 focus:outline-none focus:ring-2 focus:ring-[#0284c7]/50 shadow-inner"
             />
+            {voiceSupported && (
+              <button
+                type="button"
+                onClick={startListening}
+                aria-label={isListening ? 'Stop voice search' : 'Start voice search'}
+                title={isListening ? 'Listening...' : 'Voice Search'}
+                className={`absolute right-2.5 p-2 rounded-full transition-colors cursor-pointer ${
+                  isListening
+                    ? 'bg-red-500 text-white animate-pulse'
+                    : 'bg-[#0284c7]/15 text-[#0284c7] dark:text-sky-300 hover:bg-[#0284c7]/25'
+                }`}
+              >
+                {isListening ? <MicOff className="w-3.5 h-3.5" /> : <Mic className="w-3.5 h-3.5" />}
+              </button>
+            )}
           </div>
         </div>
       </div>
@@ -375,7 +401,7 @@ export const ToolsDirectoryView: React.FC<ToolsDirectoryViewProps> = ({
                 onClick={() => onSelectTool(tool)}
                 role="button"
                 tabIndex={0}
-                className="p-5 rounded-2xl liquid-glass liquid-glass-hover transition-all cursor-pointer text-left flex flex-col justify-between group border border-slate-200 dark:border-sky-500/20"
+                className="aos-card-perf p-5 rounded-2xl liquid-glass liquid-glass-hover transition-all cursor-pointer text-left flex flex-col justify-between group border border-slate-200 dark:border-sky-500/20"
               >
                 <div>
                   <div className="flex items-center justify-between mb-3">
@@ -429,7 +455,7 @@ export const ToolsDirectoryView: React.FC<ToolsDirectoryViewProps> = ({
 
         {filteredTools.length === 0 && (
           <div className="p-12 text-center text-slate-500 dark:text-slate-400 liquid-glass rounded-2xl border border-slate-200 dark:border-white/10">
-            <p className="text-sm font-medium">No tools matched your search for "{searchQuery}".</p>
+            <p className="text-sm font-medium">No tools matched your search for "{debouncedQuery}".</p>
             <button
               onClick={() => {
                 setSearchQuery('');

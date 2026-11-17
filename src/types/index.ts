@@ -33,13 +33,18 @@ export interface PanServiceGuide {
   utiitslUrl?: string;
 }
 
+export type PortalHubCategory = 'Central' | 'State' | 'Banking' | 'Utility';
+
 export interface GovernmentPortal {
   id: string;
   name: string;
   category: string;
+  hubGroup: PortalHubCategory;
   description: string;
   officialDomain: string;
   portalUrl: string;
+  fallbackUrls: string[];
+  legacyAliases?: string[];
   isStateSpecific?: boolean;
   state?: string;
 }

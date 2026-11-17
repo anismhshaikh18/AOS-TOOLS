@@ -1,11 +1,14 @@
 import React, { useState, useEffect, useMemo } from 'react';
-import { Search, X, ArrowRight } from 'lucide-react';
+import { Search, X, ArrowRight, Mic, MicOff } from 'lucide-react';
 import { ToolItem } from '../types';
 import { PDF_TOOLS } from '../data/pdfTools';
 import { IMAGE_TOOLS } from '../data/imageTools';
 import { SPECIAL_TOOLS } from '../data/specialTools';
 import { DynamicIcon } from './DynamicIcon';
 import { LanguageCode, TRANSLATIONS, getTranslatedTool } from '../utils/translations';
+import { matchesMultilingualQuery } from '../utils/multilingualSearch';
+import { useVoiceSearch } from '../hooks/useVoiceSearch';
+import { useDebouncedValue } from '../hooks/useDebouncedValue';
 
 interface SearchModalProps {
   isOpen: boolean;
@@ -21,7 +24,12 @@ export const SearchModal: React.FC<SearchModalProps> = ({
   lang = 'en',
 }) => {
   const [query, setQuery] = useState('');
+  const debouncedQuery = useDebouncedValue(query, 150);
   const t = TRANSLATIONS[lang] || TRANSLATIONS.en;
+  const { isSupported: voiceSupported, isListening, startListening } = useVoiceSearch(
+    lang,
+    (transcript) => setQuery(transcript)
+  );
 
   useEffect(() => {
     const handleKeyDown = (e: KeyboardEvent) => {
@@ -50,19 +58,23 @@ export const SearchModal: React.FC<SearchModalProps> = ({
     return rawTools.map((tool) => getTranslatedTool(tool, lang));
   }, [rawTools, lang]);
 
+  const filtered = useMemo(() => {
+    if (!debouncedQuery.trim()) return allTools.slice(0, 10);
+    return allTools.filter((tool) =>
+      matchesMultilingualQuery(debouncedQuery, [
+        tool.name,
+        tool.shortDesc,
+        tool.category,
+        tool.id,
+        tool.badge,
+      ])
+    );
+  }, [allTools, debouncedQuery]);
+
   if (!isOpen) return null;
 
-  const filtered = query.trim()
-    ? allTools.filter(
-        (t) =>
-          t.name.toLowerCase().includes(query.toLowerCase()) ||
-          t.shortDesc.toLowerCase().includes(query.toLowerCase()) ||
-          t.category.toLowerCase().includes(query.toLowerCase())
-      )
-    : allTools.slice(0, 10);
-
   return (
-    <div className="fixed inset-0 z-50 overflow-y-auto bg-black/70 backdrop-blur-md flex items-start justify-center p-4 sm:pt-20">
+    <div className="fixed inset-0 z-50 overflow-y-auto bg-black/75 md:backdrop-blur-md flex items-start justify-center p-4 sm:pt-20">
       <div className="relative w-full max-w-xl liquid-glass rounded-2xl shadow-2xl overflow-hidden border border-slate-200 dark:border-sky-500/30">
         <div className="flex items-center px-4 py-3.5 border-b border-slate-200 dark:border-white/10 liquid-glass-sub">
           <Search className="w-5 h-5 text-slate-400 shrink-0 mr-3" />
@@ -74,6 +86,20 @@ export const SearchModal: React.FC<SearchModalProps> = ({
             placeholder={t.searchBarPlaceholder || `Search across all ${allTools.length} working tools...`}
             className="w-full text-sm bg-transparent text-slate-900 dark:text-white placeholder-slate-400 focus:outline-none"
           />
+          {voiceSupported && (
+            <button
+              type="button"
+              onClick={startListening}
+              aria-label={isListening ? 'Stop voice search' : 'Start voice search'}
+              className={`p-1.5 rounded-lg mr-1.5 cursor-pointer transition-colors ${
+                isListening
+                  ? 'bg-red-500 text-white animate-pulse'
+                  : 'bg-[#0284c7]/15 text-[#0284c7] dark:text-sky-300 hover:bg-[#0284c7]/25'
+              }`}
+            >
+              {isListening ? <MicOff className="w-4 h-4" /> : <Mic className="w-4 h-4" />}
+            </button>
+          )}
           {query && (
             <button
               onClick={() => setQuery('')}

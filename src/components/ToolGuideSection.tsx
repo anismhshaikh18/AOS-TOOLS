@@ -149,6 +149,30 @@ const TOOL_GUIDES: Record<string, ToolCustomGuide> = {
     conclusionNote: 'AOS Receipt Hub is an indispensable billing utility for Indian cyber cafes, Jan Seva Kendras, retail shops, and freelancers seeking rapid, paper-free, and legally compliant receipts without requiring expensive accounting software.'
   },
 
+  'pdf-translator': {
+    steps: [
+      {
+        title: 'Upload Digital Smart Card, Certificate, or Receipt PDF',
+        desc: 'Select a PDF from your device. Every page is rendered locally in browser memory to map exact text box coordinates, font styles, ink/background colors, and safe column margins.'
+      },
+      {
+        title: 'Choose Languages & Privacy Mode',
+        desc: 'Pick Auto-Detect or any source language and your target language across 16 regional and global scripts, using Smart High-Accuracy Mode or 100% Offline Civic Dictionary Mode.'
+      },
+      {
+        title: 'Preview Exact Layout, Fine-Tune Fields & Export PDF',
+        desc: 'Compare the original and translated pages side-by-side, edit any individual field if needed, and download the reconstructed PDF matching the exact original layout, photos, QR codes & dimensions.'
+      }
+    ],
+    highlights: [
+      'Exact visual layout preservation: seals, photos, QR codes, tables, margins & page dimensions remain intact',
+      'Built-in 100% offline civic/certificate dictionary & Indian script phonetic transliteration',
+      'Live interactive block inspector lets you tweak any field and see the PDF update immediately',
+      'Supports 16 languages including Hindi, Tamil, Telugu, Marathi, Bengali, Gujarati, Kannada, Malayalam, Urdu & English'
+    ],
+    conclusionNote: 'PDF Language Translator empowers citizens and service centers to convert official cards, certificates, and receipts across languages while preserving authentic document layout locally in the browser.'
+  },
+
   // 4. Passport Photo Studio
   'passport-photo-studio': {
     steps: [

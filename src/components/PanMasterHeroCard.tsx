@@ -199,7 +199,7 @@ export const PanMasterHeroCard: React.FC<PanMasterHeroCardProps> = ({
                 <ExternalLink className="w-3 h-3 text-[#0284c7] dark:text-cyan-400" />
               </a>
               <a
-                href="https://www.pan.utiitsl.com"
+                href="https://www.utiitsl.com"
                 target="_blank"
                 rel="noopener noreferrer"
                 className="flex-1 py-1.5 px-2 rounded-lg liquid-glass-sub hover:bg-slate-100 dark:hover:bg-white/10 text-center font-bold text-slate-900 dark:text-slate-100 flex items-center justify-center gap-1 transition-colors border border-slate-200 dark:border-white/10"

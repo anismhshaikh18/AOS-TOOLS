@@ -93,6 +93,210 @@
         }
       },
       "required": ["ownerId", "pinEnabled", "requireAuthForProTools", "autoLockMinutes", "lockedToolIds", "updatedAt"]
+    },
+    "LedgerEntry": {
+      "title": "LedgerEntry",
+      "description": "Per-user Client Diary ticket and financial charge entry stored strictly under the owner's UID.",
+      "type": "object",
+      "properties": {
+        "id": {
+          "type": "string",
+          "description": "Unique ledger entry identifier matching document ID.",
+          "minLength": 1,
+          "maxLength": 128,
+          "pattern": "^[a-zA-Z0-9_\\-]+$"
+        },
+        "ownerId": {
+          "type": "string",
+          "description": "Owner Firebase Auth UID.",
+          "minLength": 1,
+          "maxLength": 128,
+          "pattern": "^[a-zA-Z0-9_\\-]+$"
+        },
+        "date": {
+          "type": "string",
+          "description": "ISO calendar date (YYYY-MM-DD).",
+          "minLength": 4,
+          "maxLength": 20
+        },
+        "clientName": {
+          "type": "string",
+          "description": "Citizen or client full name.",
+          "minLength": 1,
+          "maxLength": 120
+        },
+        "services": {
+          "type": "string",
+          "description": "Services rendered for this client ticket.",
+          "minLength": 1,
+          "maxLength": 240
+        },
+        "tokenNum": {
+          "type": "string",
+          "description": "Center token or reference number.",
+          "minLength": 1,
+          "maxLength": 60
+        },
+        "government": {
+          "type": "string",
+          "description": "Associated government department or portal.",
+          "maxLength": 150
+        },
+        "governmentFees": {
+          "type": "number",
+          "description": "Official portal challan/fee amount in INR."
+        },
+        "workCharge": {
+          "type": "number",
+          "description": "Center service/work charge in INR."
+        },
+        "totalPrice": {
+          "type": "number",
+          "description": "Total client amount (governmentFees + workCharge)."
+        },
+        "status": {
+          "type": "string",
+          "enum": ["Completed", "Pending"],
+          "description": "Current fulfillment status of the ticket."
+        },
+        "notes": {
+          "type": "string",
+          "description": "Optional notes or tracking details.",
+          "maxLength": 500
+        },
+        "clientCreatedAt": {
+          "type": "number",
+          "description": "Client creation epoch milliseconds for ordering."
+        },
+        "createdAt": {
+          "type": "string",
+          "format": "date-time",
+          "description": "Server creation timestamp."
+        },
+        "updatedAt": {
+          "type": "string",
+          "format": "date-time",
+          "description": "Server update timestamp."
+        }
+      },
+      "required": [
+        "id",
+        "ownerId",
+        "date",
+        "clientName",
+        "services",
+        "tokenNum",
+        "government",
+        "governmentFees",
+        "workCharge",
+        "totalPrice",
+        "status",
+        "notes",
+        "clientCreatedAt",
+        "createdAt",
+        "updatedAt"
+      ]
+    },
+    "LedgerSummary": {
+      "title": "LedgerSummary",
+      "description": "Per-user Client Diary custom summary balance overrides.",
+      "type": "object",
+      "properties": {
+        "ownerId": {
+          "type": "string",
+          "description": "Owner Firebase Auth UID.",
+          "minLength": 1,
+          "maxLength": 128,
+          "pattern": "^[a-zA-Z0-9_\\-]+$"
+        },
+        "todayWorkCharge": {
+          "type": "number",
+          "description": "Optional override for today's work charge."
+        },
+        "totalGovFeesAll": {
+          "type": "number",
+          "description": "Optional override for total government fees disbursed."
+        },
+        "monthWorkCharge": {
+          "type": "number",
+          "description": "Optional override for monthly work charge."
+        },
+        "pendingCount": {
+          "type": "number",
+          "description": "Optional override for pending token count."
+        },
+        "updatedAt": {
+          "type": "string",
+          "format": "date-time",
+          "description": "Server update timestamp."
+        }
+      },
+      "required": ["ownerId", "updatedAt"]
+    },
+    "UserCloudBackup": {
+      "title": "UserCloudBackup",
+      "description": "Encrypted/structured user cloud backup storing preferences, notices, security preferences snapshot, and Client Diary backup under users/{uid}/cloudBackup.",
+      "type": "object",
+      "properties": {
+        "ownerId": {
+          "type": "string",
+          "description": "Owner Firebase Auth UID.",
+          "minLength": 1,
+          "maxLength": 128,
+          "pattern": "^[a-zA-Z0-9_\\-]+$"
+        },
+        "backupVersion": {
+          "type": "number",
+          "description": "Schema version for cloud backup snapshots."
+        },
+        "deviceLabel": {
+          "type": "string",
+          "description": "Device/browser descriptor where backup originated.",
+          "minLength": 1,
+          "maxLength": 120
+        },
+        "preferences": {
+          "type": "object",
+          "description": "UI preferences map (theme, lang, templateId)."
+        },
+        "securityPrefs": {
+          "type": "object",
+          "description": "Lock preferences snapshot map (pinEnabled, requireAuthForProTools, autoLockMinutes, lockedToolIds)."
+        },
+        "notices": {
+          "type": "array",
+          "description": "Bounded operator live status notices list (max 20)."
+        },
+        "ledgerCount": {
+          "type": "number",
+          "description": "Total Client Diary entries count at backup time."
+        },
+        "ledgerSnapshot": {
+          "type": "array",
+          "description": "Bounded recent Client Diary records snapshot (max 100)."
+        },
+        "summaryOverrides": {
+          "type": "object",
+          "description": "Client Diary custom summary overrides map."
+        },
+        "updatedAt": {
+          "type": "string",
+          "format": "date-time",
+          "description": "Server timestamp of the latest cloud backup."
+        }
+      },
+      "required": [
+        "ownerId",
+        "backupVersion",
+        "deviceLabel",
+        "preferences",
+        "securityPrefs",
+        "notices",
+        "ledgerCount",
+        "ledgerSnapshot",
+        "summaryOverrides",
+        "updatedAt"
+      ]
     }
   },
   "firestore": {
@@ -107,6 +311,24 @@
         "$ref": "#/entities/UserSecurityConfig"
       },
       "description": "Isolated private security preferences and tool lock configurations owned by the user."
+    },
+    "/users/{userId}/ledger/{entryId}": {
+      "schema": {
+        "$ref": "#/entities/LedgerEntry"
+      },
+      "description": "Per-user Client Diary ledger entries tied strictly to the signed-in user's UID."
+    },
+    "/users/{userId}/ledgerSummary/{summaryId}": {
+      "schema": {
+        "$ref": "#/entities/LedgerSummary"
+      },
+      "description": "Per-user Client Diary financial summary balance overrides."
+    },
+    "/users/{userId}/cloudBackup/{backupId}": {
+      "schema": {
+        "$ref": "#/entities/UserCloudBackup"
+      },
+      "description": "Cross-device encrypted/structured cloud backup of AOS user preferences, lock preferences, live notices, and Client Diary records."
     }
   }
 }

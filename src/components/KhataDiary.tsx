@@ -1,4 +1,4 @@
-import React, { useState, useEffect, useMemo } from 'react';
+import React, { useState, useEffect, useMemo, useRef, useCallback } from 'react';
 import {
   Briefcase,
   Pen,
@@ -12,7 +12,32 @@ import {
   Trash2,
   AlertCircle,
   X,
+  Cloud,
+  HardDrive,
+  UserCheck,
+  Send,
+  MessageSquare,
 } from 'lucide-react';
+import {
+  collection,
+  doc,
+  onSnapshot,
+  query,
+  where,
+  setDoc,
+  updateDoc,
+  deleteDoc,
+  serverTimestamp,
+  Timestamp,
+} from 'firebase/firestore';
+import { auth, db, OperationType, handleFirestoreError, isFirestorePermissionError } from '../firebase';
+import { useAuthSecurity } from '../context/AuthSecurityContext';
+import {
+  buildWhatsAppShareUrl,
+  buildSmsShareUrl,
+  formatKhataEntryShareMessage,
+  formatKhataSummaryShareMessage,
+} from '../utils/shareUtils';
 
 export interface KhataRecord {
   id: string;
@@ -36,66 +61,82 @@ interface SummaryOverrides {
   pendingCount?: number | null;
 }
 
-const STORAGE_KEY = 'aos_tools_khata_records_v1';
-const SUMMARY_STORAGE_KEY = 'aos_tools_khata_summary_overrides_v1';
+const RECORDS_STORAGE_PREFIX = 'aos_tools_khata_records_v1';
+const SUMMARY_STORAGE_PREFIX = 'aos_tools_khata_summary_overrides_v1';
+
+const getRecordsStorageKey = (uid: string | null) =>
+  uid ? `${RECORDS_STORAGE_PREFIX}::${uid}` : `${RECORDS_STORAGE_PREFIX}::guest`;
+
+const getSummaryStorageKey = (uid: string | null) =>
+  uid ? `${SUMMARY_STORAGE_PREFIX}::${uid}` : `${SUMMARY_STORAGE_PREFIX}::guest`;
+
+function loadPartitionRecords(uid: string | null): KhataRecord[] {
+  try {
+    const raw = localStorage.getItem(getRecordsStorageKey(uid));
+    if (!raw) return [];
+    const parsed = JSON.parse(raw);
+    if (!Array.isArray(parsed)) return [];
+    return parsed
+      .filter((item): item is KhataRecord => Boolean(item && typeof item.id === 'string' && typeof item.clientName === 'string'))
+      .sort((a, b) => (b.createdAt || 0) - (a.createdAt || 0));
+  } catch {
+    return [];
+  }
+}
+
+function savePartitionRecords(uid: string | null, records: KhataRecord[]) {
+  try {
+    localStorage.setItem(getRecordsStorageKey(uid), JSON.stringify(records));
+  } catch {
+    // Ignore storage quota errors
+  }
+}
+
+function loadPartitionSummary(uid: string | null): SummaryOverrides {
+  try {
+    const raw = localStorage.getItem(getSummaryStorageKey(uid));
+    if (!raw) return {};
+    const parsed = JSON.parse(raw);
+    return parsed && typeof parsed === 'object' ? parsed : {};
+  } catch {
+    return {};
+  }
+}
+
+function savePartitionSummary(uid: string | null, overrides: SummaryOverrides) {
+  try {
+    localStorage.setItem(getSummaryStorageKey(uid), JSON.stringify(overrides));
+  } catch {
+    // Ignore storage quota errors
+  }
+}
+
+function sanitizeRecordId(rawId: string): string {
+  const cleaned = rawId.replace(/[^a-zA-Z0-9_-]/g, '-').slice(0, 128);
+  return cleaned || `rec-${Date.now()}`;
+}
 
 export const KhataDiary: React.FC = () => {
-  const [records, setRecords] = useState<KhataRecord[]>(() => {
-    try {
-      const saved = localStorage.getItem(STORAGE_KEY);
-      if (saved) return JSON.parse(saved);
-    } catch {}
-    return [
-      {
-        id: 'rec-1',
-        date: new Date().toISOString().split('T')[0],
-        clientName: 'Rajesh Kumar Verma',
-        services: 'New PAN Card (Form 49A) & Aadhaar Link',
-        tokenNum: 'TK-1082',
-        government: 'Income Tax Department (Protean)',
-        governmentFees: 107,
-        workCharge: 100,
-        totalPrice: 207,
-        status: 'Completed',
-        notes: 'Physical card dispatch requested',
-        createdAt: Date.now() - 7200000,
-      },
-      {
-        id: 'rec-2',
-        date: new Date().toISOString().split('T')[0],
-        clientName: 'Sunita Devi Sharma',
-        services: 'Ayushman Bharat Golden Card & e-KYC',
-        tokenNum: 'TK-1083',
-        government: 'National Health Authority (NHA)',
-        governmentFees: 0,
-        workCharge: 80,
-        totalPrice: 80,
-        status: 'Completed',
-        notes: 'Family ID verified via Ration card',
-        createdAt: Date.now() - 3600000,
-      },
-      {
-        id: 'rec-3',
-        date: new Date().toISOString().split('T')[0],
-        clientName: 'Mohammed Imtiyaz',
-        services: 'Sarathi Driving Licence Renewal + Slot',
-        tokenNum: 'TK-1084',
-        government: 'Ministry of Road Transport (Parivahan)',
-        governmentFees: 450,
-        workCharge: 150,
-        totalPrice: 600,
-        status: 'Pending',
-        notes: 'Slot booked for Friday 10:30 AM',
-        createdAt: Date.now(),
-      },
-    ];
-  });
+  const { user, authReady } = useAuthSecurity();
+  const activeUid = user?.uid || null;
+
+  const [records, setRecords] = useState<KhataRecord[]>(() => loadPartitionRecords(activeUid));
+  const [summaryOverrides, setSummaryOverrides] = useState<SummaryOverrides>(() =>
+    loadPartitionSummary(activeUid)
+  );
+  const [syncState, setSyncState] = useState<'syncing' | 'cloud' | 'local'>(
+    activeUid ? 'syncing' : 'local'
+  );
+
+  const loadedUidRef = useRef<string | null>(activeUid);
+  const cloudDisabledForUidRef = useRef<string | null>(null);
 
   const [searchQuery, setSearchQuery] = useState('');
   const [statusFilter, setStatusFilter] = useState('All');
   const [dateFilter, setDateFilter] = useState('');
   const [isModalOpen, setIsModalOpen] = useState(false);
   const [editingRecord, setEditingRecord] = useState<KhataRecord | null>(null);
+  const [deleteTarget, setDeleteTarget] = useState<{ id: string; name: string } | null>(null);
 
   // Form states
   const [formDate, setFormDate] = useState(new Date().toISOString().split('T')[0]);
@@ -109,32 +150,236 @@ export const KhataDiary: React.FC = () => {
   const [formNotes, setFormNotes] = useState('');
   const [formError, setFormError] = useState<string | null>(null);
 
-  // Overrides
-  const [summaryOverrides, setSummaryOverrides] = useState<SummaryOverrides>(() => {
-    try {
-      const saved = localStorage.getItem(SUMMARY_STORAGE_KEY);
-      if (saved) return JSON.parse(saved);
-    } catch {}
-    return {};
-  });
-
   const [isSummaryModalOpen, setIsSummaryModalOpen] = useState(false);
   const [overrideTodayWork, setOverrideTodayWork] = useState('');
   const [overrideGovFees, setOverrideGovFees] = useState('');
   const [overrideMonthWork, setOverrideMonthWork] = useState('');
   const [overridePending, setOverridePending] = useState('');
 
+  // Dynamic account switching & Firestore real-time partition sync (users/{uid}/ledger)
   useEffect(() => {
-    try {
-      localStorage.setItem(SUMMARY_STORAGE_KEY, JSON.stringify(summaryOverrides));
-    } catch {}
-  }, [summaryOverrides]);
+    loadedUidRef.current = activeUid;
+    cloudDisabledForUidRef.current = null;
 
-  useEffect(() => {
+    // Immediately swap UI state to the active user's isolated partition
+    setRecords(loadPartitionRecords(activeUid));
+    setSummaryOverrides(loadPartitionSummary(activeUid));
+    setSearchQuery('');
+    setStatusFilter('All');
+    setDateFilter('');
+    setIsModalOpen(false);
+    setEditingRecord(null);
+    setIsSummaryModalOpen(false);
+    setDeleteTarget(null);
+
+    if (!authReady || !activeUid || auth.currentUser?.uid !== activeUid) {
+      setSyncState('local');
+      return;
+    }
+
+    setSyncState('syncing');
+
+    const ledgerPath = `users/${activeUid}/ledger`;
+    const ledgerQuery = query(
+      collection(db, 'users', activeUid, 'ledger'),
+      where('ownerId', '==', activeUid)
+    );
+
+    const unsubLedger = onSnapshot(
+      ledgerQuery,
+      (snapshot) => {
+        if (loadedUidRef.current !== activeUid) return;
+        if (cloudDisabledForUidRef.current === activeUid) return;
+
+        const cloudRecords: KhataRecord[] = snapshot.docs.map((docSnap) => {
+          const d = docSnap.data();
+          const createdTs =
+            typeof d.clientCreatedAt === 'number'
+              ? d.clientCreatedAt
+              : d.createdAt instanceof Timestamp
+              ? d.createdAt.toMillis()
+              : Date.now();
+          return {
+            id: typeof d.id === 'string' ? d.id : docSnap.id,
+            date: typeof d.date === 'string' ? d.date : new Date().toISOString().split('T')[0],
+            clientName: typeof d.clientName === 'string' ? d.clientName : '',
+            services: typeof d.services === 'string' ? d.services : '',
+            tokenNum: typeof d.tokenNum === 'string' ? d.tokenNum : '',
+            government: typeof d.government === 'string' ? d.government : 'General Public Service',
+            governmentFees: typeof d.governmentFees === 'number' ? d.governmentFees : 0,
+            workCharge: typeof d.workCharge === 'number' ? d.workCharge : 0,
+            totalPrice: typeof d.totalPrice === 'number' ? d.totalPrice : 0,
+            status: d.status === 'Pending' ? 'Pending' : 'Completed',
+            notes: typeof d.notes === 'string' ? d.notes : '',
+            createdAt: createdTs,
+          };
+        });
+
+        cloudRecords.sort((a, b) => (b.createdAt || 0) - (a.createdAt || 0));
+
+        // Preserve any local partition records if snapshot is from empty cache while offline
+        if (snapshot.metadata.fromCache && cloudRecords.length === 0) {
+          const localCached = loadPartitionRecords(activeUid);
+          if (localCached.length > 0) {
+            setRecords(localCached);
+            setSyncState('local');
+            return;
+          }
+        }
+
+        setRecords(cloudRecords);
+        savePartitionRecords(activeUid, cloudRecords);
+        setSyncState('cloud');
+      },
+      (error) => {
+        if (loadedUidRef.current !== activeUid) return;
+        handleFirestoreError(error, OperationType.LIST, ledgerPath);
+        if (isFirestorePermissionError(error)) {
+          cloudDisabledForUidRef.current = activeUid;
+        }
+        setSyncState('local');
+      }
+    );
+
+    const summaryPath = `users/${activeUid}/ledgerSummary/default`;
+    const summaryRef = doc(db, 'users', activeUid, 'ledgerSummary', 'default');
+
+    const unsubSummary = onSnapshot(
+      summaryRef,
+      (docSnap) => {
+        if (loadedUidRef.current !== activeUid) return;
+        if (cloudDisabledForUidRef.current === activeUid) return;
+
+        if (docSnap.exists()) {
+          const d = docSnap.data();
+          const nextSummary: SummaryOverrides = {
+            todayWorkCharge: typeof d.todayWorkCharge === 'number' ? d.todayWorkCharge : null,
+            totalGovFeesAll: typeof d.totalGovFeesAll === 'number' ? d.totalGovFeesAll : null,
+            monthWorkCharge: typeof d.monthWorkCharge === 'number' ? d.monthWorkCharge : null,
+            pendingCount: typeof d.pendingCount === 'number' ? d.pendingCount : null,
+          };
+          setSummaryOverrides(nextSummary);
+          savePartitionSummary(activeUid, nextSummary);
+        } else if (!docSnap.metadata.fromCache) {
+          setSummaryOverrides({});
+          savePartitionSummary(activeUid, {});
+        }
+      },
+      (error) => {
+        if (loadedUidRef.current !== activeUid) return;
+        handleFirestoreError(error, OperationType.GET, summaryPath);
+      }
+    );
+
+    return () => {
+      unsubLedger();
+      unsubSummary();
+    };
+  }, [activeUid, authReady]);
+
+  const syncRecordToCloud = useCallback(
+    async (uid: string, record: KhataRecord, isNew: boolean) => {
+      if (!auth.currentUser || auth.currentUser.uid !== uid || !auth.currentUser.emailVerified) {
+        setSyncState('local');
+        return;
+      }
+
+      const safeId = sanitizeRecordId(record.id);
+      const entryRef = doc(db, 'users', uid, 'ledger', safeId);
+      const entryPath = `users/${uid}/ledger/${safeId}`;
+
+      try {
+        if (isNew) {
+          await setDoc(entryRef, {
+            id: safeId,
+            ownerId: uid,
+            date: record.date.slice(0, 20),
+            clientName: record.clientName.trim().slice(0, 120),
+            services: record.services.trim().slice(0, 240),
+            tokenNum: record.tokenNum.trim().slice(0, 60),
+            government: (record.government.trim() || 'General Public Service').slice(0, 150),
+            governmentFees: Math.min(10000000, Math.max(0, Number(record.governmentFees) || 0)),
+            workCharge: Math.min(10000000, Math.max(0, Number(record.workCharge) || 0)),
+            totalPrice: Math.min(20000000, Math.max(0, Number(record.totalPrice) || 0)),
+            status: record.status,
+            notes: (record.notes || '').trim().slice(0, 500),
+            clientCreatedAt: Math.max(0, Number(record.createdAt) || Date.now()),
+            createdAt: serverTimestamp(),
+            updatedAt: serverTimestamp(),
+          });
+        } else {
+          await updateDoc(entryRef, {
+            date: record.date.slice(0, 20),
+            clientName: record.clientName.trim().slice(0, 120),
+            services: record.services.trim().slice(0, 240),
+            tokenNum: record.tokenNum.trim().slice(0, 60),
+            government: (record.government.trim() || 'General Public Service').slice(0, 150),
+            governmentFees: Math.min(10000000, Math.max(0, Number(record.governmentFees) || 0)),
+            workCharge: Math.min(10000000, Math.max(0, Number(record.workCharge) || 0)),
+            totalPrice: Math.min(20000000, Math.max(0, Number(record.totalPrice) || 0)),
+            status: record.status,
+            notes: (record.notes || '').trim().slice(0, 500),
+            updatedAt: serverTimestamp(),
+          });
+        }
+        if (loadedUidRef.current === uid) {
+          setSyncState('cloud');
+        }
+      } catch (err) {
+        handleFirestoreError(err, isNew ? OperationType.CREATE : OperationType.UPDATE, entryPath);
+        if (isFirestorePermissionError(err)) {
+          cloudDisabledForUidRef.current = uid;
+        }
+        if (loadedUidRef.current === uid) {
+          setSyncState('local');
+        }
+      }
+    },
+    []
+  );
+
+  const syncSummaryToCloud = useCallback(async (uid: string, overrides: SummaryOverrides) => {
+    if (!auth.currentUser || auth.currentUser.uid !== uid || !auth.currentUser.emailVerified) {
+      return;
+    }
+
+    const summaryRef = doc(db, 'users', uid, 'ledgerSummary', 'default');
+    const summaryPath = `users/${uid}/ledgerSummary/default`;
+
+    const hasAnyOverride =
+      (overrides.todayWorkCharge !== undefined && overrides.todayWorkCharge !== null) ||
+      (overrides.totalGovFeesAll !== undefined && overrides.totalGovFeesAll !== null) ||
+      (overrides.monthWorkCharge !== undefined && overrides.monthWorkCharge !== null) ||
+      (overrides.pendingCount !== undefined && overrides.pendingCount !== null);
+
     try {
-      localStorage.setItem(STORAGE_KEY, JSON.stringify(records));
-    } catch {}
-  }, [records]);
+      if (!hasAnyOverride) {
+        await deleteDoc(summaryRef);
+        return;
+      }
+
+      const payload: Record<string, unknown> = {
+        ownerId: uid,
+        updatedAt: serverTimestamp(),
+      };
+      if (typeof overrides.todayWorkCharge === 'number' && overrides.todayWorkCharge >= 0) {
+        payload.todayWorkCharge = Math.min(100000000, overrides.todayWorkCharge);
+      }
+      if (typeof overrides.totalGovFeesAll === 'number' && overrides.totalGovFeesAll >= 0) {
+        payload.totalGovFeesAll = Math.min(100000000, overrides.totalGovFeesAll);
+      }
+      if (typeof overrides.monthWorkCharge === 'number' && overrides.monthWorkCharge >= 0) {
+        payload.monthWorkCharge = Math.min(100000000, overrides.monthWorkCharge);
+      }
+      if (typeof overrides.pendingCount === 'number' && overrides.pendingCount >= 0) {
+        payload.pendingCount = Math.min(1000000, overrides.pendingCount);
+      }
+
+      await setDoc(summaryRef, payload);
+    } catch (err) {
+      handleFirestoreError(err, OperationType.WRITE, summaryPath);
+    }
+  }, []);
 
   const filteredRecords = useMemo(() => {
     return records.filter((rec) => {
@@ -241,17 +486,27 @@ export const KhataDiary: React.FC = () => {
 
   const handleSaveSummaryOverrides = (e: React.FormEvent) => {
     e.preventDefault();
-    setSummaryOverrides({
+    const nextOverrides: SummaryOverrides = {
       todayWorkCharge: overrideTodayWork.trim() === '' ? null : Math.max(0, Number(overrideTodayWork)),
       totalGovFeesAll: overrideGovFees.trim() === '' ? null : Math.max(0, Number(overrideGovFees)),
       monthWorkCharge: overrideMonthWork.trim() === '' ? null : Math.max(0, Number(overrideMonthWork)),
       pendingCount: overridePending.trim() === '' ? null : Math.max(0, Number(overridePending)),
-    });
+    };
+    setSummaryOverrides(nextOverrides);
+    savePartitionSummary(activeUid, nextOverrides);
+    if (activeUid) {
+      void syncSummaryToCloud(activeUid, nextOverrides);
+    }
     setIsSummaryModalOpen(false);
   };
 
   const handleResetSummaryOverrides = () => {
-    setSummaryOverrides({});
+    const cleared: SummaryOverrides = {};
+    setSummaryOverrides(cleared);
+    savePartitionSummary(activeUid, cleared);
+    if (activeUid) {
+      void syncSummaryToCloud(activeUid, cleared);
+    }
     setIsSummaryModalOpen(false);
   };
 
@@ -300,63 +555,90 @@ export const KhataDiary: React.FC = () => {
       return;
     }
 
-    const govFee = Math.max(0, Number(formGovFees) || 0);
-    const workCharge = Math.max(0, Number(formWorkCharge) || 0);
+    const govFee = Math.min(10000000, Math.max(0, Number(formGovFees) || 0));
+    const workCharge = Math.min(10000000, Math.max(0, Number(formWorkCharge) || 0));
     const total = govFee + workCharge;
 
     if (editingRecord) {
-      setRecords((prev) =>
-        prev.map((r) =>
-          r.id === editingRecord.id
-            ? {
-                ...r,
-                date: formDate,
-                clientName: formClientName.trim(),
-                services: formServices.trim(),
-                tokenNum: formTokenNum.trim(),
-                government: formGovernment.trim() || 'General Public Service',
-                governmentFees: govFee,
-                workCharge: workCharge,
-                totalPrice: total,
-                status: formStatus,
-                notes: formNotes.trim(),
-              }
-            : r
-        )
-      );
-    } else {
-      const newRec: KhataRecord = {
-        id: `rec-${Date.now()}`,
+      const updatedRecord: KhataRecord = {
+        ...editingRecord,
         date: formDate,
-        clientName: formClientName.trim(),
-        services: formServices.trim(),
-        tokenNum: formTokenNum.trim(),
-        government: formGovernment.trim() || 'General Public Service',
+        clientName: formClientName.trim().slice(0, 120),
+        services: formServices.trim().slice(0, 240),
+        tokenNum: formTokenNum.trim().slice(0, 60),
+        government: (formGovernment.trim() || 'General Public Service').slice(0, 150),
         governmentFees: govFee,
         workCharge: workCharge,
         totalPrice: total,
         status: formStatus,
-        notes: formNotes.trim(),
+        notes: formNotes.trim().slice(0, 500),
+      };
+      const nextRecords = records.map((r) => (r.id === editingRecord.id ? updatedRecord : r));
+      setRecords(nextRecords);
+      savePartitionRecords(activeUid, nextRecords);
+      if (activeUid) {
+        void syncRecordToCloud(activeUid, updatedRecord, false);
+      }
+    } else {
+      const newRec: KhataRecord = {
+        id: sanitizeRecordId(`rec-${Date.now()}-${Math.random().toString(36).slice(2, 6)}`),
+        date: formDate,
+        clientName: formClientName.trim().slice(0, 120),
+        services: formServices.trim().slice(0, 240),
+        tokenNum: formTokenNum.trim().slice(0, 60),
+        government: (formGovernment.trim() || 'General Public Service').slice(0, 150),
+        governmentFees: govFee,
+        workCharge: workCharge,
+        totalPrice: total,
+        status: formStatus,
+        notes: formNotes.trim().slice(0, 500),
         createdAt: Date.now(),
       };
-      setRecords((prev) => [newRec, ...prev]);
+      const nextRecords = [newRec, ...records];
+      setRecords(nextRecords);
+      savePartitionRecords(activeUid, nextRecords);
+      if (activeUid) {
+        void syncRecordToCloud(activeUid, newRec, true);
+      }
     }
 
     setIsModalOpen(false);
   };
 
-  const handleDeleteRecord = (id: string, name: string) => {
-    if (confirm(`Are you sure you want to delete ledger record for "${name}"?`)) {
-      setRecords((prev) => prev.filter((r) => r.id !== id));
+  const confirmDeleteRecord = async () => {
+    if (!deleteTarget) return;
+    const { id } = deleteTarget;
+    setDeleteTarget(null);
+
+    const nextRecords = records.filter((r) => r.id !== id);
+    setRecords(nextRecords);
+    savePartitionRecords(activeUid, nextRecords);
+
+    if (activeUid && auth.currentUser?.uid === activeUid && auth.currentUser.emailVerified) {
+      const safeId = sanitizeRecordId(id);
+      const entryPath = `users/${activeUid}/ledger/${safeId}`;
+      try {
+        await deleteDoc(doc(db, 'users', activeUid, 'ledger', safeId));
+      } catch (err) {
+        handleFirestoreError(err, OperationType.DELETE, entryPath);
+      }
     }
   };
 
   const handleToggleStatus = (id: string) => {
-    setRecords((prev) =>
-      prev.map((r) =>
-        r.id === id ? { ...r, status: r.status === 'Completed' ? 'Pending' : 'Completed' } : r
-      )
-    );
+    let toggledRecord: KhataRecord | null = null;
+    const nextRecords = records.map((r) => {
+      if (r.id !== id) return r;
+      const nextStatus: 'Completed' | 'Pending' = r.status === 'Completed' ? 'Pending' : 'Completed';
+      toggledRecord = { ...r, status: nextStatus };
+      return toggledRecord;
+    });
+    setRecords(nextRecords);
+    savePartitionRecords(activeUid, nextRecords);
+
+    if (toggledRecord && activeUid) {
+      void syncRecordToCloud(activeUid, toggledRecord, false);
+    }
   };
 
   const handleExportCsv = () => {
@@ -403,18 +685,40 @@ export const KhataDiary: React.FC = () => {
   return (
     <div className="space-y-6">
       {/* Header bar */}
-      <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-4 pb-4 border-b border-slate-200 dark:border-slate-800">
+      <div className="flex flex-col lg:flex-row lg:items-center justify-between gap-4 pb-4 border-b border-slate-200 dark:border-slate-800">
         <div>
           <h1 className="text-xl sm:text-2xl font-bold tracking-tight text-slate-900 dark:text-white flex items-center gap-2.5">
             <Briefcase className="w-6 h-6 text-[#0284c7]" />
             <span>Client Diary</span>
           </h1>
-          <p className="text-xs text-slate-500 dark:text-slate-400 mt-1">
-            Compliant daily registry for E-Sevai, CSC operators, cyber cafes, and documentation centers.
-          </p>
+          <div className="flex flex-wrap items-center gap-x-3 gap-y-1 text-xs text-slate-600 dark:text-slate-300 mt-1">
+            <span>
+              Compliant daily registry for E-Sevai, CSC operators, cyber cafes, and documentation centers.
+            </span>
+            {user && (
+              <span className="inline-flex items-center gap-1.5 text-[11px] font-medium text-[#0284c7] dark:text-sky-300">
+                <UserCheck className="w-3.5 h-3.5 shrink-0" />
+                <span>Account: {user.email}</span>
+                <span aria-hidden="true">·</span>
+                {syncState === 'cloud' ? (
+                  <span className="inline-flex items-center gap-1 text-emerald-600 dark:text-emerald-400">
+                    <Cloud className="w-3 h-3" />
+                    UID Cloud Synced
+                  </span>
+                ) : syncState === 'syncing' ? (
+                  <span className="text-sky-600 dark:text-sky-300">Syncing Account Ledger...</span>
+                ) : (
+                  <span className="inline-flex items-center gap-1 text-slate-500 dark:text-slate-300">
+                    <HardDrive className="w-3 h-3" />
+                    Account Local Partition
+                  </span>
+                )}
+              </span>
+            )}
+          </div>
         </div>
 
-        <div className="flex items-center gap-2">
+        <div className="flex flex-wrap items-center gap-2">
           <button
             onClick={handleOpenSummaryModal}
             className="flex items-center gap-1.5 px-3 py-1.5 text-xs font-medium text-blue-700 dark:text-blue-300 bg-blue-50 dark:bg-blue-950/60 border border-blue-200 dark:border-blue-800 rounded-lg hover:bg-blue-100 dark:hover:bg-blue-900/60 transition-colors cursor-pointer shadow-xs"
@@ -430,6 +734,18 @@ export const KhataDiary: React.FC = () => {
             <Download className="w-3.5 h-3.5" />
             <span>Export CSV</span>
           </button>
+          <a
+            href={buildWhatsAppShareUrl(
+              formatKhataSummaryShareMessage(filteredRecords, displayStats)
+            )}
+            target="_blank"
+            rel="noopener noreferrer"
+            className="flex items-center gap-1.5 px-3 py-1.5 text-xs font-semibold text-white bg-emerald-600 hover:bg-emerald-700 rounded-lg transition-colors shadow-xs"
+            title="Share Client Diary Summary via WhatsApp"
+          >
+            <Send className="w-3.5 h-3.5" />
+            <span>WhatsApp Report</span>
+          </a>
           <button
             onClick={() => window.print()}
             className="flex items-center gap-1.5 px-3 py-1.5 text-xs font-medium text-slate-700 dark:text-slate-200 bg-white dark:bg-slate-800 border border-slate-300 dark:border-slate-700 rounded-lg hover:bg-slate-50 dark:hover:bg-slate-700 transition-colors cursor-pointer shadow-xs"
@@ -439,7 +755,7 @@ export const KhataDiary: React.FC = () => {
           </button>
           <button
             onClick={handleOpenNewEntry}
-            className="flex items-center gap-1.5 px-3.5 py-1.5 text-xs font-semibold text-white bg-blue-600 hover:bg-blue-700 rounded-lg transition-colors cursor-pointer shadow-xs"
+            className="flex items-center gap-1.5 px-3.5 py-1.5 text-xs font-semibold text-white bg-[#0284c7] hover:bg-[#0369a1] rounded-lg transition-colors cursor-pointer shadow-xs"
           >
             <Plus className="w-4 h-4" />
             <span>New Client Entry</span>
@@ -637,10 +953,23 @@ export const KhataDiary: React.FC = () => {
                 <tr>
                   <td colSpan={10} className="py-12 text-center text-slate-500 dark:text-slate-400">
                     <FileSpreadsheet className="w-8 h-8 mx-auto mb-2 opacity-40" />
-                    <p className="text-sm font-medium">No client records found</p>
-                    <p className="text-xs mt-0.5">
-                      Click "New Client Entry" above to add your first client ticket.
+                    <p className="text-sm font-medium text-slate-700 dark:text-slate-200">
+                      {records.length === 0
+                        ? `No client records in ${user ? `${user.email}'s` : 'this'} Client Diary yet`
+                        : 'No client records match your current filter'}
                     </p>
+                    <p className="text-xs mt-1">
+                      Click "New Client Entry" above to record your first client ticket for this account.
+                    </p>
+                    {records.length === 0 && (
+                      <button
+                        onClick={handleOpenNewEntry}
+                        className="mt-4 inline-flex items-center gap-1.5 px-4 py-2 text-xs font-semibold text-white bg-[#0284c7] hover:bg-[#0369a1] rounded-lg transition-colors cursor-pointer shadow-xs"
+                      >
+                        <Plus className="w-3.5 h-3.5" />
+                        <span>Add First Client Entry</span>
+                      </button>
+                    )}
                   </td>
                 </tr>
               ) : (
@@ -693,6 +1022,24 @@ export const KhataDiary: React.FC = () => {
                     </td>
                     <td className="py-3 px-3.5 text-right whitespace-nowrap">
                       <div className="flex items-center justify-end gap-1.5 opacity-90 group-hover:opacity-100">
+                        <a
+                          href={buildWhatsAppShareUrl(formatKhataEntryShareMessage(r))}
+                          target="_blank"
+                          rel="noopener noreferrer"
+                          className="p-1 text-emerald-600 dark:text-emerald-400 hover:bg-emerald-50 dark:hover:bg-emerald-950/50 rounded"
+                          title="Share Token Update via WhatsApp"
+                          aria-label={`Share ${r.clientName} update via WhatsApp`}
+                        >
+                          <Send className="w-3.5 h-3.5" />
+                        </a>
+                        <a
+                          href={buildSmsShareUrl(formatKhataEntryShareMessage(r))}
+                          className="p-1 text-sky-600 dark:text-sky-400 hover:bg-sky-50 dark:hover:bg-sky-950/50 rounded"
+                          title="Share Token Update via SMS"
+                          aria-label={`Share ${r.clientName} update via SMS`}
+                        >
+                          <MessageSquare className="w-3.5 h-3.5" />
+                        </a>
                         <button
                           onClick={() => handleEditRecord(r)}
                           className="p-1 text-slate-400 hover:text-blue-600 rounded cursor-pointer"
@@ -701,7 +1048,7 @@ export const KhataDiary: React.FC = () => {
                           <Pen className="w-3.5 h-3.5" />
                         </button>
                         <button
-                          onClick={() => handleDeleteRecord(r.id, r.clientName)}
+                          onClick={() => setDeleteTarget({ id: r.id, name: r.clientName })}
                           className="p-1 text-slate-400 hover:text-red-600 rounded cursor-pointer"
                           title="Delete Record"
                         >
@@ -717,16 +1064,57 @@ export const KhataDiary: React.FC = () => {
         </div>
       </div>
 
-      {/* Local Storage Notice */}
-      <div className="p-4 bg-slate-50 dark:bg-slate-900/60 border border-slate-200 dark:border-slate-800 rounded-xl text-xs text-slate-600 dark:text-slate-400 space-y-1">
-        <div className="flex items-center gap-2 font-semibold text-slate-900 dark:text-slate-200">
-          <AlertCircle className="w-4 h-4 text-blue-600 shrink-0" />
-          <span>Local Storage Guarantee & Data Integrity</span>
+      {/* Account Sync & Data Isolation Notice */}
+      <div className="p-4 bg-slate-50 dark:bg-slate-900/60 border border-slate-200 dark:border-slate-800 rounded-xl text-xs text-slate-600 dark:text-slate-300 space-y-1">
+        <div className="flex items-center gap-2 font-semibold text-slate-900 dark:text-slate-100">
+          <AlertCircle className="w-4 h-4 text-[#0284c7] shrink-0" />
+          <span>Account-Scoped Ledger Sync &amp; Local Partition</span>
         </div>
         <p className="leading-relaxed">
-          Ledger records are saved strictly in your device’s browser storage (localStorage). No client names, phone records, or fees are uploaded to remote cloud databases. Please export regular CSV backups via the "Export CSV" button, as clearing your browser cache will erase offline records.
+          All ledger tickets, work charges, and summary balances are strictly isolated per Google account UID (
+          <code className="text-[11px] font-mono text-[#0284c7] dark:text-sky-300">
+            {user ? `users/${user.uid}/ledger` : 'local partition'}
+          </code>
+          ) with automatic local partition backup. Switching Google accounts dynamically loads that specific account&apos;s own ledger without cross-account data mixing. Use &quot;Export CSV&quot; anytime for offline spreadsheet backups.
         </p>
       </div>
+
+      {/* Delete Confirmation Modal */}
+      {deleteTarget && (
+        <div className="fixed inset-0 z-50 overflow-y-auto bg-slate-950/70 backdrop-blur-xs flex items-center justify-center p-4">
+          <div className="w-full max-w-sm bg-white dark:bg-[#072642] border border-slate-200 dark:border-sky-500/30 rounded-2xl shadow-2xl p-6 space-y-4">
+            <div className="flex items-start gap-3">
+              <div className="w-9 h-9 rounded-xl bg-red-500/15 border border-red-500/30 text-red-600 dark:text-red-400 flex items-center justify-center shrink-0">
+                <Trash2 className="w-4 h-4" />
+              </div>
+              <div>
+                <h3 className="text-sm font-bold text-slate-900 dark:text-white">
+                  Delete Client Record?
+                </h3>
+                <p className="text-xs text-slate-600 dark:text-slate-300 mt-1">
+                  This will remove the ledger entry for <strong>{deleteTarget.name}</strong> from this account&apos;s Client Diary.
+                </p>
+              </div>
+            </div>
+            <div className="flex justify-end gap-2 pt-1">
+              <button
+                type="button"
+                onClick={() => setDeleteTarget(null)}
+                className="px-3.5 py-1.5 text-xs font-medium text-slate-700 dark:text-slate-200 hover:bg-slate-100 dark:hover:bg-white/10 rounded-lg cursor-pointer"
+              >
+                Cancel
+              </button>
+              <button
+                type="button"
+                onClick={confirmDeleteRecord}
+                className="px-3.5 py-1.5 text-xs font-semibold text-white bg-red-600 hover:bg-red-700 rounded-lg cursor-pointer shadow-xs"
+              >
+                Delete Record
+              </button>
+            </div>
+          </div>
+        </div>
+      )}
 
       {/* New / Edit Client Entry Modal */}
       {isModalOpen && (
@@ -907,7 +1295,7 @@ export const KhataDiary: React.FC = () => {
                 </button>
                 <button
                   type="submit"
-                  className="px-4 py-2 text-xs font-semibold text-white bg-blue-600 hover:bg-blue-700 rounded-lg cursor-pointer shadow-xs"
+                  className="px-4 py-2 text-xs font-semibold text-white bg-[#0284c7] hover:bg-[#0369a1] rounded-lg cursor-pointer shadow-xs"
                 >
                   {editingRecord ? 'Update Record' : 'Save Record'}
                 </button>
@@ -923,7 +1311,7 @@ export const KhataDiary: React.FC = () => {
           <div className="relative w-full max-w-md bg-white dark:bg-slate-900 border border-slate-200 dark:border-slate-800 rounded-2xl shadow-xl overflow-hidden my-8">
             <div className="flex items-center justify-between px-6 py-4 border-b border-slate-200 dark:border-slate-800 bg-slate-50/50 dark:bg-slate-900/50">
               <div className="flex items-center gap-2">
-                <Pen className="w-4 h-4 text-blue-600" />
+                <Pen className="w-4 h-4 text-[#0284c7]" />
                 <h3 className="text-base font-bold text-slate-900 dark:text-white">
                   Edit Summary Balances
                 </h3>
@@ -938,7 +1326,7 @@ export const KhataDiary: React.FC = () => {
 
             <form onSubmit={handleSaveSummaryOverrides} className="p-6 space-y-4">
               <p className="text-xs text-slate-500 dark:text-slate-400">
-                You can manually set or adjust these 4 summary balance figures. Leaving a field blank will revert it to auto-calculation from client records.
+                You can manually set or adjust these 4 summary balance figures for this account. Leaving a field blank will revert it to auto-calculation from client records.
               </p>
 
               <div>
@@ -1019,7 +1407,7 @@ export const KhataDiary: React.FC = () => {
                   </button>
                   <button
                     type="submit"
-                    className="px-3.5 py-1.5 text-xs font-semibold text-white bg-blue-600 hover:bg-blue-700 rounded-lg cursor-pointer shadow-xs"
+                    className="px-3.5 py-1.5 text-xs font-semibold text-white bg-[#0284c7] hover:bg-[#0369a1] rounded-lg cursor-pointer shadow-xs"
                   >
                     Save Changes
                   </button>

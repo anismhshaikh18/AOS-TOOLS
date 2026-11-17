@@ -1,28 +1,38 @@
-import React, { useState, useRef, useEffect } from 'react';
+import React, { useState, useRef, useEffect, useMemo, lazy, Suspense } from 'react';
 import {
   Search,
   Zap,
   Lock,
   Smartphone,
-  Sparkles,
-  ExternalLink,
-  CheckCircle2,
   Camera,
   CreditCard,
   FileText,
   BookOpen,
   ShieldCheck,
   Unlock,
+  Mic,
+  MicOff,
+  Calculator,
 } from 'lucide-react';
 import { ToolItem } from '../types';
 import { PDF_TOOLS } from '../data/pdfTools';
 import { IMAGE_TOOLS } from '../data/imageTools';
 import { SPECIAL_TOOLS } from '../data/specialTools';
 import { PanMasterHeroCard } from '../components/PanMasterHeroCard';
-import { AosLogoSvg } from '../components/AosLogoSvg';
-import { ToolRequestSection } from '../components/ToolRequestSection';
 import { LanguageCode, TRANSLATIONS, getTranslatedTool } from '../utils/translations';
 import { useAuthSecurity } from '../context/AuthSecurityContext';
+import { matchesMultilingualQuery } from '../utils/multilingualSearch';
+import { useVoiceSearch } from '../hooks/useVoiceSearch';
+import { useDebouncedValue } from '../hooks/useDebouncedValue';
+
+const LiveStatusNoticeWidget = lazy(() =>
+  import('../components/LiveStatusNoticeWidget').then((m) => ({
+    default: m.LiveStatusNoticeWidget,
+  }))
+);
+const ToolRequestSection = lazy(() =>
+  import('../components/ToolRequestSection').then((m) => ({ default: m.ToolRequestSection }))
+);
 
 interface HomeViewProps {
   onSelectTool: (tool: ToolItem) => void;
@@ -45,6 +55,10 @@ export const HomeView: React.FC<HomeViewProps> = ({
   const isClientDiaryLocked = isToolCurrentlyLocked('khata-diary');
   const isPortalsLocked = isToolCurrentlyLocked('gov-portals');
   const t = TRANSLATIONS[lang] || TRANSLATIONS.en;
+  const { isSupported: voiceSupported, isListening, startListening } = useVoiceSearch(
+    lang,
+    (transcript) => setSearchQuery(transcript)
+  );
 
   // Browser back handling on mobile so pressing back closes suggestions or keyboard instead of exiting website
   const handleSearchFocus = () => {
@@ -90,18 +104,28 @@ export const HomeView: React.FC<HomeViewProps> = ({
     return () => window.removeEventListener('popstate', handlePopState);
   }, []);
 
-  const allTools = [...PDF_TOOLS, ...IMAGE_TOOLS, ...SPECIAL_TOOLS].map((tool) =>
-    getTranslatedTool(tool, lang)
+  const debouncedSearchQuery = useDebouncedValue(searchQuery, 150);
+
+  const allTools = useMemo(
+    () =>
+      [...PDF_TOOLS, ...IMAGE_TOOLS, ...SPECIAL_TOOLS].map((tool) =>
+        getTranslatedTool(tool, lang)
+      ),
+    [lang]
   );
 
-  const filteredTools = searchQuery.trim()
-    ? allTools.filter(
-        (tool) =>
-          tool.name.toLowerCase().includes(searchQuery.toLowerCase()) ||
-          tool.shortDesc.toLowerCase().includes(searchQuery.toLowerCase()) ||
-          tool.category.toLowerCase().includes(searchQuery.toLowerCase())
-      )
-    : [];
+  const filteredTools = useMemo(() => {
+    if (!debouncedSearchQuery.trim()) return [];
+    return allTools.filter((tool) =>
+      matchesMultilingualQuery(debouncedSearchQuery, [
+        tool.name,
+        tool.shortDesc,
+        tool.category,
+        tool.id,
+        tool.badge,
+      ])
+    );
+  }, [allTools, debouncedSearchQuery]);
 
   // Direct launcher helpers
   const handleLaunchPassport = () => {
@@ -135,6 +159,15 @@ export const HomeView: React.FC<HomeViewProps> = ({
     }
   };
 
+  const handleLaunchQuickCalculators = () => {
+    const calcTool = SPECIAL_TOOLS.find((item) => item.id === 'quick-calculator-suite');
+    if (calcTool) {
+      onSelectTool(getTranslatedTool(calcTool, lang));
+    } else {
+      setActiveTab('special');
+    }
+  };
+
   return (
     <div className="space-y-8 w-full max-w-6xl mx-auto pb-12 animate-in fade-in duration-200">
       
@@ -142,9 +175,9 @@ export const HomeView: React.FC<HomeViewProps> = ({
           HERO SECTION (Anis Online Services Deep Navy Corporate Styling)
           ========================================================================= */}
       <section className="relative rounded-3xl liquid-glass p-6 sm:p-10 shadow-xl overflow-hidden border border-slate-200 dark:border-sky-500/20">
-        {/* Ambient atmospheric glows */}
-        <div className="absolute top-0 right-1/4 w-96 h-96 bg-[#0284c7]/15 rounded-full blur-3xl pointer-events-none" />
-        <div className="absolute bottom-0 left-10 w-80 h-80 bg-[#0d4775]/20 rounded-full blur-3xl pointer-events-none" />
+        {/* Ambient atmospheric glows (desktop-only for smooth mobile GPU performance) */}
+        <div className="hidden md:block absolute top-0 right-1/4 w-96 h-96 bg-[#0284c7]/15 rounded-full blur-3xl pointer-events-none" />
+        <div className="hidden md:block absolute bottom-0 left-10 w-80 h-80 bg-[#0d4775]/20 rounded-full blur-3xl pointer-events-none" />
 
         <div className="grid grid-cols-1 lg:grid-cols-12 gap-8 items-stretch relative z-10">
           
@@ -186,8 +219,23 @@ export const HomeView: React.FC<HomeViewProps> = ({
                       onOpenSearch();
                     }
                   }}
-                  className="w-full liquid-glass-sub hover:border-slate-300 dark:hover:border-sky-500/50 focus:border-[#0284c7] text-slate-900 dark:text-white placeholder-slate-400 rounded-2xl py-3.5 pl-5 pr-14 text-xs sm:text-sm focus:outline-none transition-all shadow-inner"
+                  className="w-full liquid-glass-sub hover:border-slate-300 dark:hover:border-sky-500/50 focus:border-[#0284c7] text-slate-900 dark:text-white placeholder-slate-400 rounded-2xl py-3.5 pl-5 pr-24 text-xs sm:text-sm focus:outline-none transition-all shadow-inner"
                 />
+                {voiceSupported && (
+                  <button
+                    type="button"
+                    onClick={startListening}
+                    aria-label={isListening ? 'Stop voice search' : 'Voice search'}
+                    title={isListening ? 'Listening... tap to stop' : 'Voice Search (Multi-language)'}
+                    className={`absolute right-14 w-9 h-9 rounded-full flex items-center justify-center transition-all cursor-pointer ${
+                      isListening
+                        ? 'bg-red-500 text-white animate-pulse'
+                        : 'bg-[#0284c7]/15 text-[#0284c7] dark:text-sky-300 hover:bg-[#0284c7]/25'
+                    }`}
+                  >
+                    {isListening ? <MicOff className="w-4 h-4" /> : <Mic className="w-4 h-4" />}
+                  </button>
+                )}
                 <button
                   onClick={() => {
                     if (onOpenSearch) onOpenSearch();
@@ -224,7 +272,7 @@ export const HomeView: React.FC<HomeViewProps> = ({
                     ))
                   ) : (
                     <div className="p-3 text-center text-xs text-slate-500 dark:text-slate-400">
-                      No tools found for "{searchQuery}".
+                      No tools found for "{debouncedSearchQuery}".
                     </div>
                   )}
                 </div>
@@ -266,6 +314,14 @@ export const HomeView: React.FC<HomeViewProps> = ({
                 {isClientDiaryLocked && (
                   <Lock className="w-3 h-3 text-[#0284c7] dark:text-sky-300 shrink-0" />
                 )}
+              </button>
+
+              <button
+                onClick={handleLaunchQuickCalculators}
+                className="flex items-center gap-2 px-4 py-2.5 rounded-xl liquid-glass-sub hover:border-[#0284c7] text-slate-700 dark:text-slate-100 font-bold text-xs transition-all cursor-pointer active:scale-95 shadow-xs"
+              >
+                <Calculator className="w-4 h-4 text-[#0284c7] dark:text-sky-300 shrink-0" />
+                <span>Quick Calculators</span>
               </button>
             </div>
 
@@ -315,90 +371,11 @@ export const HomeView: React.FC<HomeViewProps> = ({
       </section>
 
       {/* =========================================================================
-          ANIS ONLINE SERVICES PROMOTIONAL BANNER
+          AOS LIVE STATUS & NOTICE BOARD WIDGET (Lazy-loaded below fold)
           ========================================================================= */}
-      <section className="relative rounded-3xl liquid-glass p-6 sm:p-10 shadow-xl space-y-6 overflow-hidden border border-slate-200 dark:border-sky-500/20">
-        {/* Ambient background glow */}
-        <div className="absolute top-0 right-0 w-80 h-80 bg-[#0284c7]/15 rounded-full blur-3xl pointer-events-none" />
-        <div className="absolute bottom-0 left-0 w-80 h-80 bg-[#0d4775]/20 rounded-full blur-3xl pointer-events-none" />
-
-        <div className="grid grid-cols-1 lg:grid-cols-12 gap-6 items-center">
-          
-          <div className="lg:col-span-8 space-y-4">
-            {/* Partner Badge */}
-            <div className="inline-flex items-center gap-2 px-3.5 py-1.5 rounded-full liquid-glass-sub text-[#0284c7] dark:text-sky-300 text-[11px] font-bold tracking-wide uppercase shadow-xs">
-              <Sparkles className="w-3.5 h-3.5 text-[#0284c7] dark:text-sky-400" />
-              <span>{t.partnerBadge || 'OFFICIAL DIGITAL SERVICES PARTNER · ANIS ONLINE SERVICES'}</span>
-            </div>
-
-            {/* Banner Headline & Text */}
-            <div className="space-y-2">
-              <h2 className="text-2xl sm:text-3xl font-extrabold text-slate-900 dark:text-white tracking-tight leading-snug">
-                {t.partnerHeadline || 'Need Professional Assistance with Government & Citizen Applications?'}
-              </h2>
-              <p className="text-xs sm:text-sm text-slate-600 dark:text-slate-300 leading-relaxed max-w-3xl">
-                {t.partnerDesc || 'Experience verified, reliable citizen support handled directly by Anis Online Services. From official documentation to online government submissions, get your work done accurately without hassle.'}
-              </p>
-            </div>
-
-            {/* Verified Support Pills */}
-            <div className="flex flex-wrap gap-2.5 pt-1">
-              <div className="px-3.5 py-1.5 rounded-full liquid-glass-sub hover:border-[#0284c7]/50 text-xs text-slate-700 dark:text-slate-200 flex items-center gap-2 font-medium transition-colors shadow-xs">
-                <CheckCircle2 className="w-3.5 h-3.5 text-[#0284c7] dark:text-sky-400 shrink-0" />
-                <span>Aadhaar Update &amp; e-KYC Support</span>
-              </div>
-
-              <div className="px-3.5 py-1.5 rounded-full liquid-glass-sub hover:border-[#0284c7]/50 text-xs text-slate-700 dark:text-slate-200 flex items-center gap-2 font-medium transition-colors shadow-xs">
-                <CheckCircle2 className="w-3.5 h-3.5 text-[#0284c7] dark:text-sky-400 shrink-0" />
-                <span>PAN Card (Form 49A / Correction / Reprint)</span>
-              </div>
-
-              <div className="px-3.5 py-1.5 rounded-full liquid-glass-sub hover:border-[#0284c7]/50 text-xs text-slate-700 dark:text-slate-200 flex items-center gap-2 font-medium transition-colors shadow-xs">
-                <CheckCircle2 className="w-3.5 h-3.5 text-[#0284c7] dark:text-sky-400 shrink-0" />
-                <span>Online Government Documentation &amp; Affidavits</span>
-              </div>
-
-              <div className="px-3.5 py-1.5 rounded-full liquid-glass-sub hover:border-[#0284c7]/50 text-xs text-slate-700 dark:text-slate-200 flex items-center gap-2 font-medium transition-colors shadow-xs">
-                <CheckCircle2 className="w-3.5 h-3.5 text-[#0284c7] dark:text-sky-400 shrink-0" />
-                <span>Certificate &amp; Official Portal Assistance</span>
-              </div>
-            </div>
-
-            {/* Action Button & Disclaimer */}
-            <div className="flex flex-col sm:flex-row sm:items-center gap-4 pt-2">
-              <a
-                href="https://anis-online-services.pages.dev/"
-                target="_blank"
-                rel="noopener noreferrer"
-                className="inline-flex items-center gap-2.5 px-6 py-3.5 rounded-xl bg-gradient-to-r from-[#0284c7] to-[#0d4775] hover:from-[#38bdf8] hover:to-[#0284c7] text-white text-xs sm:text-sm font-bold shadow-lg shadow-sky-500/25 transition-all cursor-pointer active:scale-95 group shrink-0"
-              >
-                <span>Explore Services</span>
-                <ExternalLink className="w-4 h-4 group-hover:translate-x-0.5 group-hover:-translate-y-0.5 transition-transform" />
-              </a>
-
-              <span className="text-[11px] text-slate-500 dark:text-slate-400 font-medium">
-                {t.partnerNote || 'Direct Verified Portal • Opens in New Tab'}
-              </span>
-            </div>
-
-          </div>
-
-          {/* Right Visual Graphic */}
-          <div className="lg:col-span-4 flex flex-col items-center justify-center p-6 rounded-2xl liquid-glass-sub space-y-3 text-center border border-slate-200 dark:border-sky-500/25">
-            <div className="w-16 h-16 rounded-full overflow-hidden bg-white ring-4 ring-[#0284c7]/30 flex items-center justify-center shadow-lg p-1 aspect-square shrink-0">
-              <AosLogoSvg className="w-full h-full aspect-square object-contain shrink-0" />
-            </div>
-            <div>
-              <div className="font-extrabold text-sm text-slate-900 dark:text-white">Anis Online Services</div>
-              <div className="text-[11px] text-[#0284c7] dark:text-sky-300 font-medium">{t.verifiedCitizenSupport || 'Verified Citizen Support'}</div>
-            </div>
-            <span className="text-[10px] text-slate-600 dark:text-slate-300 px-3 py-1 liquid-glass-sub rounded-full">
-              {t.fastAccurateProcessing || 'Fast & Accurate Processing'}
-            </span>
-          </div>
-
-        </div>
-      </section>
+      <Suspense fallback={null}>
+        <LiveStatusNoticeWidget />
+      </Suspense>
 
       {/* =========================================================================
           CITIZEN HELPDESK & QUALITY ASSURANCE SECTION
@@ -426,7 +403,7 @@ export const HomeView: React.FC<HomeViewProps> = ({
               className="text-xs font-semibold text-[#0284c7] dark:text-sky-300 hover:text-[#0369a1] dark:hover:text-sky-200 px-3 py-1.5 rounded-lg liquid-glass-sub hover:bg-slate-100 dark:hover:bg-white/10 border-[#0284c7]/30 transition-colors inline-flex items-center gap-1.5 cursor-pointer"
             >
               {isPortalsLocked && <Lock className="w-3 h-3 shrink-0" />}
-              <span>{t.govtPortalsBtn || '50+ Govt Portals'}</span>
+              <span>Government Portals Hub</span>
             </button>
           </div>
         </div>
@@ -473,7 +450,9 @@ export const HomeView: React.FC<HomeViewProps> = ({
       {/* =========================================================================
           COMMUNITY FEEDBACK & REQUEST A NEW TOOL SECTION
           ========================================================================= */}
-      <ToolRequestSection />
+      <Suspense fallback={null}>
+        <ToolRequestSection />
+      </Suspense>
 
     </div>
   );

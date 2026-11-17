@@ -120,4 +120,14 @@ export const SPECIAL_TOOLS: ToolItem[] = [
     iconName: 'BookMarked',
     status: 'fully-supported',
   },
+  {
+    id: 'quick-calculator-suite',
+    name: 'Quick Calculator Suite',
+    shortDesc: '3-in-1 utility suite: Exam Age Calculator, Real-Time Word/Byte Counter & Cyber Cafe Fee/Commission Calculator.',
+    category: 'special',
+    iconName: 'Calculator',
+    status: 'fully-supported',
+    badge: '3-IN-1',
+    isPopular: true,
+  },
 ];

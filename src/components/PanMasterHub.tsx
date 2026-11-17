@@ -501,7 +501,7 @@ export const PanMasterHub: React.FC<PanMasterHubProps> = ({
                     <Building2 className="w-4 h-4 text-indigo-600 shrink-0" />
                     <div>
                       <div className="font-bold">UTIITSL PAN Portal</div>
-                      <div className="text-[10px] text-slate-500 font-mono">pan.utiitsl.com</div>
+                      <div className="text-[10px] text-slate-500 font-mono">www.utiitsl.com</div>
                     </div>
                   </div>
                   <ExternalLink className="w-4 h-4 opacity-60 group-hover:opacity-100 text-indigo-600 shrink-0" />

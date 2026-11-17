@@ -42,7 +42,7 @@ export const PAN_SERVICES: PanServiceGuide[] = [
       ],
     },
     proteanUrl: 'https://www.protean-tinpan.com',
-    utiitslUrl: 'https://www.pan.utiitsl.com',
+    utiitslUrl: 'https://www.utiitsl.com',
     fees: 'Physical Card: ₹107 (incl. GST) for Indian communication address; ₹1,017 for foreign dispatch. e-PAN only: ₹66.',
     steps: [
       'Step 1: Choose mode — Paperless (e-KYC & e-Sign via Aadhaar OTP), DSC based, or Physical documents submission.',
@@ -80,7 +80,7 @@ export const PAN_SERVICES: PanServiceGuide[] = [
       ],
     },
     proteanUrl: 'https://www.protean-tinpan.com',
-    utiitslUrl: 'https://www.pan.utiitsl.com',
+    utiitslUrl: 'https://www.utiitsl.com',
     fees: '₹107 for Indian dispatch address; ₹1,017 for overseas dispatch.',
     steps: [
       'Step 1: Select Application Type: "Changes or Correction in existing PAN Data / Reprint of PAN Card".',
@@ -105,7 +105,7 @@ export const PAN_SERVICES: PanServiceGuide[] = [
       pod: ['DOB as registered in existing record'],
     },
     proteanUrl: 'https://www.protean-tinpan.com',
-    utiitslUrl: 'https://www.pan.utiitsl.com',
+    utiitslUrl: 'https://www.utiitsl.com',
     fees: '₹50 (inclusive of taxes and speed post delivery across India).',
     steps: [
       'Step 1: Open the official Reprint portal (Protean or UTIITSL based on which entity originally issued your PAN).',
@@ -126,7 +126,7 @@ export const PAN_SERVICES: PanServiceGuide[] = [
       pod: ['Applicant Date of Birth (for UTIITSL verification)'],
     },
     proteanUrl: 'https://www.protean-tinpan.com',
-    utiitslUrl: 'https://www.pan.utiitsl.com',
+    utiitslUrl: 'https://www.utiitsl.com',
     fees: 'Free of cost.',
     steps: [
       'Step 1: Identify whether your receipt is from Protean (NSDL) or UTIITSL.',

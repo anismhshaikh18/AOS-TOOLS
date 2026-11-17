@@ -693,6 +693,13 @@ export const TOOL_TRANSLATIONS: Record<string, Partial<Record<LanguageCode, { na
     mr: { name: 'क्यूआर कोड जनरेटर', shortDesc: 'यूपीआय, वेबसाइट लिंक आणि मजकुरासाठी थेट आकर्षक क्यूआर तयार करा.' },
     hinglish: { name: 'QR Code Generator', shortDesc: 'UPI payments, links aur custom text ke liye instant designer QR codes banayein.' },
   },
+  'pdf-translator': {
+    hi: { name: 'पीडीएफ भाषा अनुवादक', shortDesc: 'किसी भी पीडीएफ का टेक्स्ट निकालें और हिंदी, तमिल, अंग्रेजी आदि में तुरंत अनुवाद व डाउनलोड करें।' },
+    ta: { name: 'PDF மொழிபெயர்ப்பாளர்', shortDesc: 'PDF ஆவண உரையைப் பிரித்தெடுத்து தமிழ், ஆங்கிலம், இந்தி உள்ளிட்ட மொழிகளில் உடனே மொழிபெயர்க்கவும்.' },
+    te: { name: 'PDF భాషా అనువాదకం', shortDesc: 'ఏదైనా PDF నుండి వచనాన్ని తీసి తెలుగు, ఇంగ్లీష్, హిందీ భాషల్లోకి తక్షణమే అనువదించండి.' },
+    mr: { name: 'पीडीएफ भाषा अनुवादक', shortDesc: 'कोणत्याही पीडीएफमधील मजकूर मराठी, हिंदी, इंग्रजीमध्ये त्वरित अनुवादित करून डाउनलोड करा.' },
+    hinglish: { name: 'PDF Language Translator', shortDesc: 'Kisi bhi PDF ka text locally extract karke Tamil, Hindi, English me turant translate aur download karein.' },
+  },
 };
 
 /**

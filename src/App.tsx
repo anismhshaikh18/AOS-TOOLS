@@ -1,44 +1,118 @@
-import React, { useState, useEffect } from 'react';
+import React, { useState, useEffect, useCallback, lazy, Suspense } from 'react';
 import { Header } from './components/Header';
 import { Footer } from './components/Footer';
 import { HomeView } from './views/HomeView';
-import { ToolsDirectoryView } from './views/ToolsDirectoryView';
-import { AboutView } from './views/AboutView';
-import { PrivacyView } from './views/PrivacyView';
-import { PdfToolsView } from './views/PdfToolsView';
-import { ImageToolsView } from './views/ImageToolsView';
-import { SpecialToolsView } from './views/SpecialToolsView';
-import { PassportPhotoStudioPage } from './views/PassportPhotoStudioPage';
-import { SmartIdCardStudioPage } from './views/SmartIdCardStudioPage';
-import { KhataDiary } from './components/KhataDiary';
-import { PanMasterHub } from './components/PanMasterHub';
-import { GovernmentPortals } from './components/GovernmentPortals';
-import { ToolRunnerModal } from './components/ToolRunnerModal';
-import { SearchModal } from './components/SearchModal';
-import { PrivacyModal, FreePolicyModal } from './components/PolicyModals';
 import { ToolItem } from './types';
 import { PDF_TOOLS } from './data/pdfTools';
 import { IMAGE_TOOLS } from './data/imageTools';
 import { SPECIAL_TOOLS } from './data/specialTools';
 import { LanguageCode, TemplateId, getTranslatedTool } from './utils/translations';
 import { SiteBackgroundSvg } from './components/SiteBackgroundSvg';
-import { ToolGuideSection } from './components/ToolGuideSection';
-import { StarRatingWidget } from './components/StarRatingWidget';
-import { ToolRequestModal } from './components/ToolRequestModal';
-import { AuthSecurityModal } from './components/AuthSecurityModal';
-import { ToolLockGateModal } from './components/ToolLockGateModal';
+import { OfflineSyncIndicator } from './components/OfflineSyncIndicator';
 import { useAuthSecurity, getGateToolForTab } from './context/AuthSecurityContext';
+import {
+  CloudBackupPayload,
+  flushPendingCloudSync,
+  uploadCloudBackup,
+} from './services/cloudBackupService';
+
+// Code-split secondary views, studios, protected hubs, and heavy modals
+const ToolsDirectoryView = lazy(() =>
+  import('./views/ToolsDirectoryView').then((m) => ({ default: m.ToolsDirectoryView }))
+);
+const AboutView = lazy(() =>
+  import('./views/AboutView').then((m) => ({ default: m.AboutView }))
+);
+const PrivacyView = lazy(() =>
+  import('./views/PrivacyView').then((m) => ({ default: m.PrivacyView }))
+);
+const PdfToolsView = lazy(() =>
+  import('./views/PdfToolsView').then((m) => ({ default: m.PdfToolsView }))
+);
+const ImageToolsView = lazy(() =>
+  import('./views/ImageToolsView').then((m) => ({ default: m.ImageToolsView }))
+);
+const SpecialToolsView = lazy(() =>
+  import('./views/SpecialToolsView').then((m) => ({ default: m.SpecialToolsView }))
+);
+const PassportPhotoStudioPage = lazy(() =>
+  import('./views/PassportPhotoStudioPage').then((m) => ({ default: m.PassportPhotoStudioPage }))
+);
+const SmartIdCardStudioPage = lazy(() =>
+  import('./views/SmartIdCardStudioPage').then((m) => ({ default: m.SmartIdCardStudioPage }))
+);
+const DigitalBusinessCardView = lazy(() =>
+  import('./views/DigitalBusinessCardView').then((m) => ({ default: m.DigitalBusinessCardView }))
+);
+const KhataDiary = lazy(() =>
+  import('./components/KhataDiary').then((m) => ({ default: m.KhataDiary }))
+);
+const PanMasterHub = lazy(() =>
+  import('./components/PanMasterHub').then((m) => ({ default: m.PanMasterHub }))
+);
+const GovernmentPortals = lazy(() =>
+  import('./components/GovernmentPortals').then((m) => ({ default: m.GovernmentPortals }))
+);
+const ToolRunnerModal = lazy(() =>
+  import('./components/ToolRunnerModal').then((m) => ({ default: m.ToolRunnerModal }))
+);
+const ToolGuideSection = lazy(() =>
+  import('./components/ToolGuideSection').then((m) => ({ default: m.ToolGuideSection }))
+);
+const StarRatingWidget = lazy(() =>
+  import('./components/StarRatingWidget').then((m) => ({ default: m.StarRatingWidget }))
+);
+const SearchModal = lazy(() =>
+  import('./components/SearchModal').then((m) => ({ default: m.SearchModal }))
+);
+const PrivacyModal = lazy(() =>
+  import('./components/PolicyModals').then((m) => ({ default: m.PrivacyModal }))
+);
+const FreePolicyModal = lazy(() =>
+  import('./components/PolicyModals').then((m) => ({ default: m.FreePolicyModal }))
+);
+const ToolRequestModal = lazy(() =>
+  import('./components/ToolRequestModal').then((m) => ({ default: m.ToolRequestModal }))
+);
+const AuthSecurityModal = lazy(() =>
+  import('./components/AuthSecurityModal').then((m) => ({ default: m.AuthSecurityModal }))
+);
+const ToolLockGateModal = lazy(() =>
+  import('./components/ToolLockGateModal').then((m) => ({ default: m.ToolLockGateModal }))
+);
+const WhatsAppConsultationWidget = lazy(() =>
+  import('./components/WhatsAppConsultationWidget').then((m) => ({
+    default: m.WhatsAppConsultationWidget,
+  }))
+);
 
 const CLIENT_DIARY_TOOL_ITEM: ToolItem = {
   id: 'khata-diary',
   name: 'Client Diary',
-  shortDesc: 'Digital customer ledger, transaction diary, and balance tracking for CSCs, cyber cafes, and businesses.',
+  shortDesc:
+    'Digital customer ledger, transaction diary, and balance tracking for CSCs, cyber cafes, and businesses.',
   category: 'special',
   iconName: 'BookMarked',
 };
 
+const ViewLoadingFallback: React.FC = () => (
+  <div className="w-full max-w-4xl mx-auto py-16 px-4">
+    <div className="rounded-2xl liquid-glass border border-slate-200 dark:border-sky-500/20 p-8 text-center space-y-3">
+      <div className="w-8 h-8 mx-auto rounded-full border-2 border-[#0284c7] border-t-transparent animate-spin" />
+      <p className="text-xs font-semibold text-slate-600 dark:text-sky-200">
+        Loading AOS workspace...
+      </p>
+    </div>
+  </div>
+);
+
 export default function App() {
-  const [activeTab, setActiveTab] = useState<string>('home');
+  const [activeTab, setActiveTab] = useState<string>(() => {
+    if (typeof window !== 'undefined' && window.location.pathname.replace(/\/+$/, '') === '/card') {
+      return 'card';
+    }
+    return 'home';
+  });
   const [selectedTool, setSelectedTool] = useState<ToolItem | null>(null);
   const [isSearchOpen, setIsSearchOpen] = useState<boolean>(false);
   const [isPrivacyOpen, setIsPrivacyOpen] = useState<boolean>(false);
@@ -50,7 +124,7 @@ export default function App() {
     tool: ToolItem;
   } | null>(null);
 
-  const { authReady, isToolCurrentlyLocked } = useAuthSecurity();
+  const { user, authReady, isToolCurrentlyLocked, isAuthModalOpen } = useAuthSecurity();
 
   // Template Id
   const [templateId, setTemplateId] = useState<TemplateId>(() => {
@@ -111,10 +185,38 @@ export default function App() {
     localStorage.setItem('aos_lang', lang);
   }, [lang]);
 
+  // Listen for restored preferences from Cloud Backup
+  useEffect(() => {
+    const handleApplyCloudPrefs = (event: Event) => {
+      const prefs = (event as CustomEvent<CloudBackupPayload['preferences']>).detail;
+      if (!prefs) return;
+      setIsDark(prefs.theme !== 'light');
+      setLang(prefs.lang);
+      setTemplateId(prefs.templateId);
+    };
+    window.addEventListener('aos-apply-cloud-preferences', handleApplyCloudPrefs);
+    return () => window.removeEventListener('aos-apply-cloud-preferences', handleApplyCloudPrefs);
+  }, []);
+
+  // Debounced auto-sync for user preferences & pending queue when authenticated
+  useEffect(() => {
+    if (!authReady || !user?.uid) return;
+    const timer = window.setTimeout(() => {
+      void flushPendingCloudSync().then((flushed) => {
+        if (!flushed) {
+          void uploadCloudBackup(user.uid);
+        }
+      });
+    }, 1800);
+    return () => window.clearTimeout(timer);
+  }, [authReady, user?.uid, isDark, lang, templateId]);
+
   // Mobile browser back-button & history navigation handler
   useEffect(() => {
+    const initialTab =
+      window.location.pathname.replace(/\/+$/, '') === '/card' ? 'card' : 'home';
     if (!window.history.state) {
-      window.history.replaceState({ tab: 'home', toolId: null }, '');
+      window.history.replaceState({ tab: initialTab, toolId: null }, '');
     }
 
     const handlePopState = (event: PopStateEvent) => {
@@ -149,11 +251,12 @@ export default function App() {
         setIsPrivacyOpen(false);
         setIsFreePolicyOpen(false);
       } else {
+        const isCardPath = window.location.pathname.replace(/\/+$/, '') === '/card';
         setSelectedTool(null);
         setIsSearchOpen(false);
         setIsPrivacyOpen(false);
         setIsFreePolicyOpen(false);
-        setActiveTab('home');
+        setActiveTab(isCardPath ? 'card' : 'home');
       }
     };
 
@@ -175,65 +278,76 @@ export default function App() {
     }
   }, [authReady, activeTab, lang, isToolCurrentlyLocked]);
 
-  const navigateTabDirectly = (tab: string) => {
+  const navigateTabDirectly = useCallback((tab: string) => {
+    setSelectedTool(null);
     setActiveTab(tab);
     window.scrollTo({ top: 0, behavior: 'smooth' });
-    window.history.pushState({ tab, toolId: null }, '');
-  };
+    const nextUrl = tab === 'card' ? '/card' : '/';
+    window.history.pushState({ tab, toolId: null }, '', nextUrl);
+  }, []);
 
-  const handleNavigateTab = (tab: string) => {
-    const tabGate = getGateToolForTab(tab);
-    if (tabGate && isToolCurrentlyLocked(tabGate.id)) {
-      setPendingGate({
-        kind: 'tab',
-        tab,
-        tool: getTranslatedTool(tabGate, lang),
-      });
-      return;
-    }
-    navigateTabDirectly(tab);
-  };
+  const handleNavigateTab = useCallback(
+    (tab: string) => {
+      const tabGate = getGateToolForTab(tab);
+      if (tabGate && isToolCurrentlyLocked(tabGate.id)) {
+        setPendingGate({
+          kind: 'tab',
+          tab,
+          tool: getTranslatedTool(tabGate, lang),
+        });
+        return;
+      }
+      navigateTabDirectly(tab);
+    },
+    [isToolCurrentlyLocked, lang, navigateTabDirectly]
+  );
 
-  const launchToolDirectly = (tool: ToolItem) => {
-    if (tool.id === 'khata-diary') {
-      navigateTabDirectly('khata');
-      return;
-    }
-    const localizedTool = getTranslatedTool(tool, lang);
-    setSelectedTool(localizedTool);
-    window.history.pushState({ tab: activeTab, toolId: tool.id }, '');
-  };
+  const launchToolDirectly = useCallback(
+    (tool: ToolItem) => {
+      if (tool.id === 'khata-diary') {
+        navigateTabDirectly('khata');
+        return;
+      }
+      const localizedTool = getTranslatedTool(tool, lang);
+      setSelectedTool(localizedTool);
+      window.history.pushState({ tab: activeTab, toolId: tool.id }, '');
+    },
+    [activeTab, lang, navigateTabDirectly]
+  );
 
-  const handleSelectTool = (tool: ToolItem) => {
-    if (tool.id === 'khata-diary') {
-      handleNavigateTab('khata');
-      return;
-    }
-    if (isToolCurrentlyLocked(tool.id)) {
-      setPendingGate({ kind: 'tool', tool: getTranslatedTool(tool, lang) });
-      return;
-    }
-    launchToolDirectly(tool);
-  };
+  const handleSelectTool = useCallback(
+    (tool: ToolItem) => {
+      if (tool.id === 'khata-diary') {
+        handleNavigateTab('khata');
+        return;
+      }
+      if (isToolCurrentlyLocked(tool.id)) {
+        setPendingGate({ kind: 'tool', tool: getTranslatedTool(tool, lang) });
+        return;
+      }
+      launchToolDirectly(tool);
+    },
+    [handleNavigateTab, isToolCurrentlyLocked, lang, launchToolDirectly]
+  );
 
-  const handleCloseTool = () => {
+  const handleCloseTool = useCallback(() => {
     setSelectedTool(null);
     if (window.history.state?.toolId) {
       window.history.back();
     }
-  };
+  }, []);
 
-  const handleOpenSearchModal = () => {
+  const handleOpenSearchModal = useCallback(() => {
     setIsSearchOpen(true);
     window.history.pushState({ tab: activeTab, isSearchModal: true }, '');
-  };
+  }, [activeTab]);
 
-  const handleCloseSearchModal = () => {
+  const handleCloseSearchModal = useCallback(() => {
     setIsSearchOpen(false);
     if (window.history.state?.isSearchModal) {
       window.history.back();
     }
-  };
+  }, []);
 
   // Global keyboard shortcut for search
   useEffect(() => {
@@ -248,26 +362,28 @@ export default function App() {
     };
     window.addEventListener('keydown', handleKeyDown);
     return () => window.removeEventListener('keydown', handleKeyDown);
-  }, [activeTab]);
+  }, [handleOpenSearchModal]);
 
-  const handleLaunchPhotoResizer = () => {
+  const handleLaunchPhotoResizer = useCallback(() => {
     const photoTool = IMAGE_TOOLS.find((t) => t.id === 'photo-signature-resize');
     if (photoTool) {
       handleSelectTool(photoTool);
     }
-  };
+  }, [handleSelectTool]);
+
+  const handleToggleTheme = useCallback(() => setIsDark((prev) => !prev), []);
 
   return (
     <div className="min-h-screen flex flex-col bg-transparent text-slate-900 dark:text-slate-100 transition-colors duration-200 w-full max-w-full overflow-x-hidden relative">
-      {/* Full-Website SVG Background (Anis Online Services Deep Navy Grid) */}
+      {/* Hardware-Accelerated Deep Blue (#0B192C) Background */}
       <SiteBackgroundSvg isDark={isDark} />
-      
+
       {/* Responsive Header */}
       <Header
         activeTab={activeTab}
         setActiveTab={handleNavigateTab}
         isDark={isDark}
-        onToggleTheme={() => setIsDark((prev) => !prev)}
+        onToggleTheme={handleToggleTheme}
         templateId={templateId}
         setTemplateId={setTemplateId}
         lang={lang}
@@ -278,38 +394,40 @@ export default function App() {
       {/* Main Container Viewport */}
       <main className="flex-1 max-w-7xl w-full mx-auto px-4 sm:px-6 lg:px-8 pt-6 sm:pt-8 min-w-0">
         {selectedTool ? (
-          (selectedTool.id === 'passport-photo-studio' || selectedTool.id === 'passport-photo-sheet') ? (
-            <div className="space-y-8 pb-12">
-              <PassportPhotoStudioPage onBack={handleCloseTool} />
-              <ToolGuideSection tool={selectedTool} />
-            </div>
-          ) : (selectedTool.id === 'smart-id-card-studio' || selectedTool.id === 'id-card-maker') ? (
-            <div className="space-y-8 pb-12">
-              <SmartIdCardStudioPage onBack={handleCloseTool} />
-              <ToolGuideSection tool={selectedTool} />
-            </div>
-          ) : (
-            <ToolRunnerModal
-              tool={selectedTool}
-              onClose={handleCloseTool}
-              onOpenKhataTab={() => {
-                handleCloseTool();
-                handleNavigateTab('khata');
-              }}
-            />
-          )
-        ) : (
-          <>
-            {activeTab === 'home' && (
-              <HomeView
-                onSelectTool={handleSelectTool}
-                setActiveTab={handleNavigateTab}
-                onOpenSearch={handleOpenSearchModal}
-                templateId={templateId}
-                lang={lang}
+          <Suspense fallback={<ViewLoadingFallback />}>
+            {selectedTool.id === 'passport-photo-studio' ||
+            selectedTool.id === 'passport-photo-sheet' ? (
+              <div className="space-y-8 pb-12">
+                <PassportPhotoStudioPage onBack={handleCloseTool} />
+                <ToolGuideSection tool={selectedTool} />
+              </div>
+            ) : selectedTool.id === 'smart-id-card-studio' ||
+              selectedTool.id === 'id-card-maker' ? (
+              <div className="space-y-8 pb-12">
+                <SmartIdCardStudioPage onBack={handleCloseTool} />
+                <ToolGuideSection tool={selectedTool} />
+              </div>
+            ) : (
+              <ToolRunnerModal
+                tool={selectedTool}
+                onClose={handleCloseTool}
+                onOpenKhataTab={() => {
+                  handleCloseTool();
+                  handleNavigateTab('khata');
+                }}
               />
             )}
-
+          </Suspense>
+        ) : activeTab === 'home' ? (
+          <HomeView
+            onSelectTool={handleSelectTool}
+            setActiveTab={handleNavigateTab}
+            onOpenSearch={handleOpenSearchModal}
+            templateId={templateId}
+            lang={lang}
+          />
+        ) : (
+          <Suspense fallback={<ViewLoadingFallback />}>
             {activeTab === 'tools' && (
               <ToolsDirectoryView
                 onSelectTool={handleSelectTool}
@@ -336,7 +454,7 @@ export default function App() {
               <SpecialToolsView onSelectTool={handleSelectTool} lang={lang} />
             )}
 
-            {/* Client Diary Workspace (Google Auth Gated) */}
+            {/* Client Diary Workspace (Google Auth Gated - Untouched) */}
             {activeTab === 'khata' && (
               <div className="space-y-6 pb-12">
                 <div className="p-3.5 rounded-2xl liquid-glass border border-slate-200 dark:border-sky-500/20 shadow-md flex flex-wrap items-center justify-between gap-3">
@@ -355,13 +473,17 @@ export default function App() {
               </div>
             )}
 
-            {/* PAN Master Hub (Google Auth Gated) */}
+            {/* PAN Master Hub (Google Auth Gated - Untouched) */}
             {activeTab === 'pan' && (
               <PanMasterHub onLaunchImageResize={handleLaunchPhotoResizer} />
             )}
 
             {activeTab === 'portals' && <GovernmentPortals />}
-          </>
+
+            {activeTab === 'card' && (
+              <DigitalBusinessCardView onBackHome={() => handleNavigateTab('home')} />
+            )}
+          </Suspense>
         )}
       </main>
 
@@ -374,50 +496,76 @@ export default function App() {
         lang={lang}
       />
 
-      {/* Search Palette Modal */}
+      {/* Lazy Search Palette Modal */}
       {isSearchOpen && (
-        <SearchModal
-          isOpen={isSearchOpen}
-          onClose={handleCloseSearchModal}
-          onSelectTool={handleSelectTool}
-          lang={lang}
-        />
+        <Suspense fallback={null}>
+          <SearchModal
+            isOpen={isSearchOpen}
+            onClose={handleCloseSearchModal}
+            onSelectTool={handleSelectTool}
+            lang={lang}
+          />
+        </Suspense>
       )}
 
-      {/* Policy Modals */}
-      <PrivacyModal
-        isOpen={isPrivacyOpen}
-        onClose={() => setIsPrivacyOpen(false)}
-      />
+      {/* Lazy Policy Modals */}
+      {isPrivacyOpen && (
+        <Suspense fallback={null}>
+          <PrivacyModal isOpen={isPrivacyOpen} onClose={() => setIsPrivacyOpen(false)} />
+        </Suspense>
+      )}
 
-      <FreePolicyModal
-        isOpen={isFreePolicyOpen}
-        onClose={() => setIsFreePolicyOpen(false)}
-      />
+      {isFreePolicyOpen && (
+        <Suspense fallback={null}>
+          <FreePolicyModal
+            isOpen={isFreePolicyOpen}
+            onClose={() => setIsFreePolicyOpen(false)}
+          />
+        </Suspense>
+      )}
 
-      {/* Community Tool Request Modal */}
-      <ToolRequestModal
-        isOpen={isRequestModalOpen}
-        onClose={() => setIsRequestModalOpen(false)}
-      />
+      {/* Lazy Community Tool Request Modal */}
+      {isRequestModalOpen && (
+        <Suspense fallback={null}>
+          <ToolRequestModal
+            isOpen={isRequestModalOpen}
+            onClose={() => setIsRequestModalOpen(false)}
+          />
+        </Suspense>
+      )}
 
-      {/* Google Auth & Tool Access Control Modals */}
-      <AuthSecurityModal />
+      {/* Google Auth & Tool Access Control Modals (Only loaded when opened) */}
+      {isAuthModalOpen && (
+        <Suspense fallback={null}>
+          <AuthSecurityModal />
+        </Suspense>
+      )}
 
-      <ToolLockGateModal
-        tool={pendingGate?.tool || null}
-        onClose={() => setPendingGate(null)}
-        onUnlocked={(unlockedTool) => {
-          const gate = pendingGate;
-          setPendingGate(null);
-          if (gate?.kind === 'tab' && gate.tab) {
-            navigateTabDirectly(gate.tab);
-          } else {
-            launchToolDirectly(unlockedTool);
-          }
-        }}
-      />
+      {pendingGate && (
+        <Suspense fallback={null}>
+          <ToolLockGateModal
+            tool={pendingGate.tool}
+            onClose={() => setPendingGate(null)}
+            onUnlocked={(unlockedTool) => {
+              const gate = pendingGate;
+              setPendingGate(null);
+              if (gate?.kind === 'tab' && gate.tab) {
+                navigateTabDirectly(gate.tab);
+              } else {
+                launchToolDirectly(unlockedTool);
+              }
+            }}
+          />
+        </Suspense>
+      )}
 
+      {/* Offline Status & Cloud Sync Queue Indicator */}
+      <OfflineSyncIndicator />
+
+      {/* Lazy Direct WhatsApp Consultation Floating Widget */}
+      <Suspense fallback={null}>
+        <WhatsAppConsultationWidget onOpenDigitalCard={() => handleNavigateTab('card')} />
+      </Suspense>
     </div>
   );
 }
