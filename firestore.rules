@@ -266,8 +266,75 @@ service cloud.firestore {
         data.updatedAt is timestamp;
     }
 
+    function isValidPublicNoticeBoard(data, boardId) {
+      return data.keys().hasAll(['boardId', 'notices', 'updatedByUid', 'updatedAt']) &&
+        data.keys().hasOnly(['boardId', 'notices', 'updatedByUid', 'updatedAt']) &&
+        data.boardId is string &&
+        isValidId(data.boardId) &&
+        data.boardId == boardId &&
+        data.boardId == 'board' &&
+        data.updatedByUid is string &&
+        isValidId(data.updatedByUid) &&
+        data.updatedByUid == request.auth.uid &&
+        data.notices is list &&
+        data.notices.size() <= 20 &&
+        (
+          data.notices.size() == 0 ||
+          (
+            data.notices[0] is map &&
+            data.notices[0].keys().hasAll(['id', 'title', 'message', 'severity', 'pinned', 'createdAt']) &&
+            data.notices[0].keys().hasOnly(['id', 'title', 'message', 'severity', 'pinned', 'createdAt']) &&
+            data.notices[0].id is string &&
+            data.notices[0].id.size() >= 1 &&
+            data.notices[0].id.size() <= 64 &&
+            data.notices[0].title is string &&
+            data.notices[0].title.size() >= 1 &&
+            data.notices[0].title.size() <= 120 &&
+            data.notices[0].message is string &&
+            data.notices[0].message.size() >= 1 &&
+            data.notices[0].message.size() <= 400 &&
+            (data.notices[0].severity in ['info', 'warning', 'urgent']) &&
+            data.notices[0].pinned is bool &&
+            data.notices[0].createdAt is number &&
+            data.notices[0].createdAt >= 0
+          )
+        ) &&
+        data.updatedAt is timestamp;
+    }
+
     // =========================================================================
-    // 4. ADMIN REGISTRY (Read-Only for Self, No Client Writes)
+    // 4. PUBLIC LIVE STATUS & NOTICE BOARD (/publicNotices/{boardId})
+    // Public Read-Only ('board' doc), Strictly Official Admin Write Only
+    // =========================================================================
+    match /publicNotices/{boardId} {
+      allow get: if isValidId(boardId) && boardId == 'board';
+      allow list: if false;
+
+      allow create: if isBootstrapAdmin() &&
+        isValidId(boardId) &&
+        boardId == 'board' &&
+        isValidPublicNoticeBoard(incoming(), boardId) &&
+        incoming().updatedAt == request.time;
+
+      allow update: if isBootstrapAdmin() &&
+        isValidId(boardId) &&
+        boardId == 'board' &&
+        isValidPublicNoticeBoard(incoming(), boardId) &&
+        incoming().boardId == existing().boardId &&
+        incoming().updatedAt == request.time &&
+        incoming().diff(existing()).affectedKeys().hasOnly([
+          'notices',
+          'updatedByUid',
+          'updatedAt'
+        ]);
+
+      allow delete: if isBootstrapAdmin() &&
+        isValidId(boardId) &&
+        boardId == 'board';
+    }
+
+    // =========================================================================
+    // 5. ADMIN REGISTRY (Read-Only for Self, No Client Writes)
     // =========================================================================
     match /admins/{adminId} {
       allow get: if isSignedIn() && isValidId(adminId) && request.auth.uid == adminId;

@@ -297,6 +297,37 @@
         "summaryOverrides",
         "updatedAt"
       ]
+    },
+    "PublicNoticeBoard": {
+      "title": "PublicNoticeBoard",
+      "description": "Public read-only live status and advisories board editable exclusively by the verified official AOS Tools admin (anismhshaikh18@gmail.com).",
+      "type": "object",
+      "properties": {
+        "boardId": {
+          "type": "string",
+          "description": "Fixed document identifier ('board').",
+          "minLength": 1,
+          "maxLength": 32,
+          "pattern": "^[a-zA-Z0-9_\\-]+$"
+        },
+        "notices": {
+          "type": "array",
+          "description": "Bounded list of up to 20 live advisories shown on the public notice board."
+        },
+        "updatedByUid": {
+          "type": "string",
+          "description": "Firebase Auth UID of the official admin who last updated the board.",
+          "minLength": 1,
+          "maxLength": 128,
+          "pattern": "^[a-zA-Z0-9_\\-]+$"
+        },
+        "updatedAt": {
+          "type": "string",
+          "format": "date-time",
+          "description": "Server timestamp of the latest notice board update."
+        }
+      },
+      "required": ["boardId", "notices", "updatedByUid", "updatedAt"]
     }
   },
   "firestore": {
@@ -329,6 +360,12 @@
         "$ref": "#/entities/UserCloudBackup"
       },
       "description": "Cross-device encrypted/structured cloud backup of AOS user preferences, lock preferences, live notices, and Client Diary records."
+    },
+    "/publicNotices/{boardId}": {
+      "schema": {
+        "$ref": "#/entities/PublicNoticeBoard"
+      },
+      "description": "Public read-only AOS Live Status & Notice Board document ('board') writable exclusively by verified official admin anismhshaikh18@gmail.com."
     }
   }
 }

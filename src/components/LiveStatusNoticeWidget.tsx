@@ -1,4 +1,4 @@
-import React, { useState, useEffect } from 'react';
+import React, { useState, useEffect, useCallback } from 'react';
 import {
   Bell,
   BellRing,
@@ -9,7 +9,17 @@ import {
   AlertTriangle,
   Megaphone,
   RotateCcw,
+  Lock,
+  ShieldCheck,
 } from 'lucide-react';
+import { doc, onSnapshot, setDoc, serverTimestamp } from 'firebase/firestore';
+import {
+  auth,
+  db,
+  OperationType,
+  handleFirestoreError,
+  isFirestorePermissionError,
+} from '../firebase';
 import {
   LiveNoticeItem,
   loadLocalNotices,
@@ -17,6 +27,10 @@ import {
   uploadCloudBackup,
 } from '../services/cloudBackupService';
 import { useAuthSecurity } from '../context/AuthSecurityContext';
+
+const OFFICIAL_NOTICE_ADMIN_EMAIL = 'anismhshaikh18@gmail.com';
+const PUBLIC_NOTICES_COLLECTION = 'publicNotices';
+const PUBLIC_NOTICES_DOC_ID = 'board';
 
 const DEFAULT_NOTICES: LiveNoticeItem[] = [
   {
@@ -48,8 +62,34 @@ const DEFAULT_NOTICES: LiveNoticeItem[] = [
   },
 ];
 
+function sanitizeNoticeList(rawList: unknown[]): LiveNoticeItem[] {
+  return rawList
+    .slice(0, 20)
+    .filter((n): n is Record<string, unknown> => Boolean(n && typeof n === 'object'))
+    .map((n, index) => {
+      const severity: LiveNoticeItem['severity'] =
+        n.severity === 'urgent' || n.severity === 'warning' ? n.severity : 'info';
+      return {
+        id:
+          typeof n.id === 'string' && n.id.trim().length > 0
+            ? n.id.trim().slice(0, 64)
+            : `notice-${Date.now()}-${index}`,
+        title: typeof n.title === 'string' ? n.title.trim().slice(0, 120) : '',
+        message: typeof n.message === 'string' ? n.message.trim().slice(0, 400) : '',
+        severity,
+        pinned: Boolean(n.pinned),
+        createdAt: typeof n.createdAt === 'number' && n.createdAt >= 0 ? n.createdAt : Date.now(),
+      };
+    })
+    .filter((n) => n.title.length > 0 && n.message.length > 0)
+    .sort((a, b) => {
+      if (a.pinned !== b.pinned) return a.pinned ? -1 : 1;
+      return b.createdAt - a.createdAt;
+    });
+}
+
 export const LiveStatusNoticeWidget: React.FC = () => {
-  const { user } = useAuthSecurity();
+  const { user, authReady } = useAuthSecurity();
   const [notices, setNotices] = useState<LiveNoticeItem[]>(() => {
     const saved = loadLocalNotices();
     return saved.length > 0 ? saved : DEFAULT_NOTICES;
@@ -58,11 +98,58 @@ export const LiveStatusNoticeWidget: React.FC = () => {
   const [newTitle, setNewTitle] = useState('');
   const [newMessage, setNewMessage] = useState('');
   const [newSeverity, setNewSeverity] = useState<'info' | 'warning' | 'urgent'>('info');
+  const [isPublishing, setIsPublishing] = useState(false);
   const [notifPermission, setNotifPermission] = useState<string>(() =>
     typeof Notification !== 'undefined' ? Notification.permission : 'unsupported'
   );
-  const [alertStatusMsg, setAlertStatusMsg] = useState<string | null>(null);
+  const [statusBanner, setStatusBanner] = useState<{
+    tone: 'info' | 'warning';
+    text: string;
+  } | null>(null);
 
+  // Strict official admin check: requires verified Google Sign-In matching exact official email
+  const isOfficialAdmin = Boolean(
+    authReady &&
+      user &&
+      user.emailVerified &&
+      user.email.trim().toLowerCase() === OFFICIAL_NOTICE_ADMIN_EMAIL &&
+      auth.currentUser &&
+      auth.currentUser.emailVerified &&
+      auth.currentUser.email?.trim().toLowerCase() === OFFICIAL_NOTICE_ADMIN_EMAIL
+  );
+
+  // Ensure composer closes immediately if admin signs out or switches accounts
+  useEffect(() => {
+    if (!isOfficialAdmin) {
+      setIsComposerOpen(false);
+    }
+  }, [isOfficialAdmin]);
+
+  // Listen for live public notice board updates (read-only for all visitors, instant sync for admin)
+  useEffect(() => {
+    const boardPath = `${PUBLIC_NOTICES_COLLECTION}/${PUBLIC_NOTICES_DOC_ID}`;
+    const boardRef = doc(db, PUBLIC_NOTICES_COLLECTION, PUBLIC_NOTICES_DOC_ID);
+
+    const unsubscribe = onSnapshot(
+      boardRef,
+      (snap) => {
+        if (!snap.exists()) return;
+        const data = snap.data();
+        if (Array.isArray(data?.notices)) {
+          const clean = sanitizeNoticeList(data.notices);
+          setNotices(clean);
+          saveLocalNotices(clean);
+        }
+      },
+      (err) => {
+        handleFirestoreError(err, OperationType.GET, boardPath);
+      }
+    );
+
+    return () => unsubscribe();
+  }, []);
+
+  // Sync local cross-tab updates if updated locally
   useEffect(() => {
     const handleRefresh = () => {
       const saved = loadLocalNotices();
@@ -72,21 +159,56 @@ export const LiveStatusNoticeWidget: React.FC = () => {
     return () => window.removeEventListener('aos-notices-updated', handleRefresh);
   }, []);
 
-  const persistNotices = (next: LiveNoticeItem[]) => {
-    const sorted = [...next].sort((a, b) => {
-      if (a.pinned !== b.pinned) return a.pinned ? -1 : 1;
-      return b.createdAt - a.createdAt;
-    });
-    setNotices(sorted);
-    saveLocalNotices(sorted);
-    if (user?.uid) {
-      void uploadCloudBackup(user.uid);
-    }
-  };
+  const flashStatus = useCallback((text: string, tone: 'info' | 'warning' = 'info') => {
+    setStatusBanner({ text, tone });
+    window.setTimeout(() => {
+      setStatusBanner((curr) => (curr?.text === text ? null : curr));
+    }, 3800);
+  }, []);
+
+  const persistNotices = useCallback(
+    async (next: LiveNoticeItem[]) => {
+      // Hard runtime guard: block any mutation unless exact verified official admin is active
+      if (!isOfficialAdmin || !auth.currentUser) {
+        return;
+      }
+
+      const sorted = sanitizeNoticeList(next);
+      setNotices(sorted);
+      saveLocalNotices(sorted);
+      setIsPublishing(true);
+
+      const boardPath = `${PUBLIC_NOTICES_COLLECTION}/${PUBLIC_NOTICES_DOC_ID}`;
+      try {
+        await setDoc(doc(db, PUBLIC_NOTICES_COLLECTION, PUBLIC_NOTICES_DOC_ID), {
+          boardId: PUBLIC_NOTICES_DOC_ID,
+          notices: sorted,
+          updatedByUid: auth.currentUser.uid,
+          updatedAt: serverTimestamp(),
+        });
+        if (user?.uid) {
+          void uploadCloudBackup(user.uid);
+        }
+        flashStatus('Live Notice Board updated for all visitors.');
+      } catch (err) {
+        handleFirestoreError(err, OperationType.WRITE, boardPath);
+        if (isFirestorePermissionError(err)) {
+          flashStatus('Admin verification required by server rules to publish.', 'warning');
+        } else {
+          flashStatus('Saved locally. Will sync to visitors when online.', 'warning');
+        }
+      } finally {
+        setIsPublishing(false);
+      }
+    },
+    [isOfficialAdmin, user?.uid, flashStatus]
+  );
 
   const handleAddNotice = (e: React.FormEvent) => {
     e.preventDefault();
+    if (!isOfficialAdmin || !auth.currentUser) return;
     if (!newTitle.trim() || !newMessage.trim()) return;
+
     const item: LiveNoticeItem = {
       id: `notice-${Date.now()}`,
       title: newTitle.trim().slice(0, 120),
@@ -95,7 +217,7 @@ export const LiveStatusNoticeWidget: React.FC = () => {
       pinned: true,
       createdAt: Date.now(),
     };
-    persistNotices([item, ...notices].slice(0, 20));
+    void persistNotices([item, ...notices].slice(0, 20));
     setNewTitle('');
     setNewMessage('');
     setNewSeverity('info');
@@ -103,39 +225,41 @@ export const LiveStatusNoticeWidget: React.FC = () => {
   };
 
   const handleTogglePin = (id: string) => {
-    persistNotices(
+    if (!isOfficialAdmin || !auth.currentUser) return;
+    void persistNotices(
       notices.map((n) => (n.id === id ? { ...n, pinned: !n.pinned } : n))
     );
   };
 
   const handleDeleteNotice = (id: string) => {
-    persistNotices(notices.filter((n) => n.id !== id));
+    if (!isOfficialAdmin || !auth.currentUser) return;
+    void persistNotices(notices.filter((n) => n.id !== id));
   };
 
   const handleResetDefaults = () => {
-    persistNotices(DEFAULT_NOTICES);
+    if (!isOfficialAdmin || !auth.currentUser) return;
+    void persistNotices(DEFAULT_NOTICES);
   };
 
   const handleEnablePushAlerts = async () => {
     if (typeof Notification === 'undefined') {
-      setAlertStatusMsg('Push alerts unavailable in this browser.');
+      flashStatus('Push alerts unavailable in this browser.', 'warning');
       return;
     }
     try {
       const perm = await Notification.requestPermission();
       setNotifPermission(perm);
       if (perm === 'granted') {
-        setAlertStatusMsg('Push Alerts Enabled for Notice Board updates.');
+        flashStatus('Push Alerts Enabled for Notice Board updates.');
         new Notification('AOS Tools Notice Board', {
-          body: 'Live operator portal advisories & sync notifications are now active.',
+          body: 'Live official portal advisories & status updates are now active.',
           icon: '/icon-192.png',
         });
       } else {
-        setAlertStatusMsg('Notification permission not granted.');
+        flashStatus('Notification permission not granted.', 'warning');
       }
-      setTimeout(() => setAlertStatusMsg(null), 3500);
     } catch {
-      setAlertStatusMsg('Could not request notification permission.');
+      flashStatus('Could not request notification permission.', 'warning');
     }
   };
 
@@ -151,7 +275,7 @@ export const LiveStatusNoticeWidget: React.FC = () => {
             <Megaphone className="w-5 h-5" />
           </div>
           <div>
-            <div className="flex items-center gap-2">
+            <div className="flex flex-wrap items-center gap-2">
               <h2 className="guide-banner-title text-sm sm:text-base font-extrabold text-white">
                 AOS Live Status &amp; Notice Board
               </h2>
@@ -161,7 +285,7 @@ export const LiveStatusNoticeWidget: React.FC = () => {
               </span>
             </div>
             <p className="text-[11px] text-sky-200/85">
-              Operator desk advisories, portal status updates &amp; citizen counter notices
+              Official operator desk advisories, portal status updates &amp; citizen counter notices
             </p>
           </div>
         </div>
@@ -170,7 +294,7 @@ export const LiveStatusNoticeWidget: React.FC = () => {
           <button
             type="button"
             onClick={() => void handleEnablePushAlerts()}
-            className={`px-3.5 py-2 min-h-[38px] rounded-full text-[11px] font-bold flex items-center gap-1.5 cursor-pointer transition-all shadow-sm ${
+            className={`px-3.5 py-2 min-h-[38px] rounded-full text-[11px] font-bold inline-flex items-center gap-1.5 cursor-pointer transition-all shadow-sm whitespace-nowrap ${
               notifPermission === 'granted'
                 ? 'bg-emerald-500/25 text-emerald-100 border border-emerald-400/50'
                 : 'bg-white/10 hover:bg-white/20 text-sky-100 border border-sky-300/35'
@@ -178,38 +302,69 @@ export const LiveStatusNoticeWidget: React.FC = () => {
           >
             {notifPermission === 'granted' ? (
               <>
-                <BellRing className="w-3.5 h-3.5" />
+                <BellRing className="w-3.5 h-3.5 shrink-0" />
                 <span>Alerts Active</span>
               </>
             ) : (
               <>
-                <Bell className="w-3.5 h-3.5" />
+                <Bell className="w-3.5 h-3.5 shrink-0" />
                 <span>Push Alerts</span>
               </>
             )}
           </button>
 
-          <button
-            type="button"
-            onClick={() => setIsComposerOpen((v) => !v)}
-            className="aos-btn-primary px-4 py-2 min-h-[38px] text-[11px] font-bold flex items-center gap-1.5 cursor-pointer"
-          >
-            <Plus className="w-3.5 h-3.5" />
-            <span>Post Notice</span>
-          </button>
+          {isOfficialAdmin ? (
+            <>
+              <span
+                title="Authenticated as official AOS Tools administrator"
+                className="inline-flex items-center gap-1.5 px-3 py-2 min-h-[38px] rounded-full bg-emerald-500/20 border border-emerald-400/45 text-[11px] font-bold text-emerald-100 whitespace-nowrap"
+              >
+                <ShieldCheck className="w-3.5 h-3.5 text-emerald-300 shrink-0" />
+                <span>Admin Access</span>
+              </span>
+              <button
+                type="button"
+                disabled={isPublishing}
+                onClick={() => setIsComposerOpen((v) => !v)}
+                className="aos-btn-primary px-4 py-2 min-h-[38px] text-[11px] font-bold inline-flex items-center gap-1.5 cursor-pointer whitespace-nowrap disabled:opacity-60"
+              >
+                <Plus className="w-3.5 h-3.5 shrink-0" />
+                <span>Post Notice</span>
+              </button>
+            </>
+          ) : (
+            <span
+              role="status"
+              aria-label="Official Notice Board Read-Only Mode"
+              className="inline-flex items-center gap-1.5 px-3.5 py-2 min-h-[38px] rounded-full bg-[#061325]/85 border border-sky-300/30 text-[11px] font-bold text-sky-100 shadow-[inset_0_1px_0_rgba(255,255,255,0.14)] whitespace-nowrap select-none"
+            >
+              <Lock className="w-3.5 h-3.5 text-sky-300 shrink-0" />
+              <span>Official Board • Read-Only</span>
+            </span>
+          )}
         </div>
       </div>
 
       <div className="p-5 sm:p-6 space-y-4">
-        {alertStatusMsg && (
-          <div className="px-3.5 py-2 rounded-xl bg-sky-50 dark:bg-sky-950/50 border border-sky-200 dark:border-sky-500/30 text-xs text-sky-800 dark:text-sky-200 font-medium flex items-center gap-2">
-            <CheckCircle2 className="w-4 h-4 text-[#0284c7] shrink-0" />
-            <span>{alertStatusMsg}</span>
+        {statusBanner && (
+          <div
+            className={`px-3.5 py-2 rounded-xl border text-xs font-medium flex items-center gap-2 ${
+              statusBanner.tone === 'warning'
+                ? 'bg-amber-50 dark:bg-amber-950/40 border-amber-200 dark:border-amber-500/30 text-amber-800 dark:text-amber-200'
+                : 'bg-sky-50 dark:bg-sky-950/50 border-sky-200 dark:border-sky-500/30 text-sky-800 dark:text-sky-200'
+            }`}
+          >
+            {statusBanner.tone === 'warning' ? (
+              <AlertTriangle className="w-4 h-4 text-amber-500 shrink-0" />
+            ) : (
+              <CheckCircle2 className="w-4 h-4 text-[#0284c7] shrink-0" />
+            )}
+            <span>{statusBanner.text}</span>
           </div>
         )}
 
-        {/* Composer Form */}
-        {isComposerOpen && (
+        {/* Strict Admin-Only Composer Form (Never mounted for unauthenticated or non-admin users) */}
+        {isOfficialAdmin && isComposerOpen && (
           <form
             onSubmit={handleAddNotice}
             className="p-4 rounded-2xl bg-slate-50 dark:bg-[#071322] border border-slate-200 dark:border-sky-500/25 space-y-3"
@@ -218,6 +373,7 @@ export const LiveStatusNoticeWidget: React.FC = () => {
               <input
                 type="text"
                 required
+                disabled={!isOfficialAdmin || isPublishing}
                 maxLength={120}
                 value={newTitle}
                 onChange={(e) => setNewTitle(e.target.value)}
@@ -225,6 +381,7 @@ export const LiveStatusNoticeWidget: React.FC = () => {
                 className="sm:col-span-2 px-3 py-2 rounded-xl text-xs bg-white dark:bg-[#0B192C] border border-slate-300 dark:border-sky-500/30 text-slate-900 dark:text-white focus:outline-none focus:ring-2 focus:ring-[#0284c7]"
               />
               <select
+                disabled={!isOfficialAdmin || isPublishing}
                 value={newSeverity}
                 onChange={(e) => setNewSeverity(e.target.value as 'info' | 'warning' | 'urgent')}
                 className="px-3 py-2 rounded-xl text-xs font-semibold bg-white dark:bg-[#0B192C] border border-slate-300 dark:border-sky-500/30 text-slate-900 dark:text-white"
@@ -236,6 +393,7 @@ export const LiveStatusNoticeWidget: React.FC = () => {
             </div>
             <textarea
               required
+              disabled={!isOfficialAdmin || isPublishing}
               rows={2}
               maxLength={400}
               value={newMessage}
@@ -253,9 +411,10 @@ export const LiveStatusNoticeWidget: React.FC = () => {
               </button>
               <button
                 type="submit"
-                className="aos-btn-primary inline-flex items-center justify-center gap-1.5 px-5 py-2 min-h-[38px] text-xs font-bold cursor-pointer whitespace-nowrap"
+                disabled={!isOfficialAdmin || isPublishing}
+                className="aos-btn-primary inline-flex items-center justify-center gap-1.5 px-5 py-2 min-h-[38px] text-xs font-bold cursor-pointer whitespace-nowrap disabled:opacity-60"
               >
-                Publish Notice
+                {isPublishing ? 'Publishing...' : 'Publish Notice'}
               </button>
             </div>
           </form>
@@ -289,37 +448,42 @@ export const LiveStatusNoticeWidget: React.FC = () => {
                         }`}
                       >
                         {item.severity === 'urgent' || item.severity === 'warning' ? (
-                          <AlertTriangle className="w-3 h-3" />
+                          <AlertTriangle className="w-3 h-3 shrink-0" />
                         ) : (
-                          <CheckCircle2 className="w-3 h-3" />
+                          <CheckCircle2 className="w-3 h-3 shrink-0" />
                         )}
                         <span>{item.pinned ? 'Pinned Advisory' : 'Notice'}</span>
                       </span>
 
-                      <div className="flex items-center gap-1 shrink-0">
-                        <button
-                          type="button"
-                          onClick={() => handleTogglePin(item.id)}
-                          title={item.pinned ? 'Unpin notice' : 'Pin notice'}
-                          aria-label={item.pinned ? 'Unpin notice' : 'Pin notice'}
-                          className={`p-1 rounded-md cursor-pointer transition-colors ${
-                            item.pinned
-                              ? 'text-[#0284c7] dark:text-sky-300 bg-[#0284c7]/15'
-                              : 'text-slate-400 hover:text-slate-700 dark:hover:text-white'
-                          }`}
-                        >
-                          <Pin className="w-3 h-3" />
-                        </button>
-                        <button
-                          type="button"
-                          onClick={() => handleDeleteNotice(item.id)}
-                          title="Remove notice"
-                          aria-label="Remove notice"
-                          className="p-1 rounded-md text-slate-400 hover:text-red-500 cursor-pointer transition-colors"
-                        >
-                          <Trash2 className="w-3 h-3" />
-                        </button>
-                      </div>
+                      {/* Strict Admin-Only Pin & Delete Controls */}
+                      {isOfficialAdmin && (
+                        <div className="flex items-center gap-1 shrink-0">
+                          <button
+                            type="button"
+                            disabled={isPublishing}
+                            onClick={() => handleTogglePin(item.id)}
+                            title={item.pinned ? 'Unpin notice' : 'Pin notice'}
+                            aria-label={item.pinned ? 'Unpin notice' : 'Pin notice'}
+                            className={`p-1 rounded-md cursor-pointer transition-colors disabled:opacity-50 ${
+                              item.pinned
+                                ? 'text-[#0284c7] dark:text-sky-300 bg-[#0284c7]/15'
+                                : 'text-slate-400 hover:text-slate-700 dark:hover:text-white'
+                            }`}
+                          >
+                            <Pin className="w-3 h-3" />
+                          </button>
+                          <button
+                            type="button"
+                            disabled={isPublishing}
+                            onClick={() => handleDeleteNotice(item.id)}
+                            title="Remove notice"
+                            aria-label="Remove notice"
+                            className="p-1 rounded-md text-slate-400 hover:text-red-500 cursor-pointer transition-colors disabled:opacity-50"
+                          >
+                            <Trash2 className="w-3 h-3" />
+                          </button>
+                        </div>
+                      )}
                     </div>
 
                     <h3 className="text-xs font-extrabold text-slate-900 dark:text-white leading-snug">
@@ -330,11 +494,16 @@ export const LiveStatusNoticeWidget: React.FC = () => {
                     </p>
                   </div>
 
-                  <div className="text-[10px] font-mono text-slate-400 dark:text-sky-200/70">
-                    {new Date(item.createdAt).toLocaleDateString('en-IN', {
-                      day: '2-digit',
-                      month: 'short',
-                    })}
+                  <div className="flex items-center justify-between gap-2 text-[10px] font-mono text-slate-400 dark:text-sky-200/70">
+                    <span>
+                      {new Date(item.createdAt).toLocaleDateString('en-IN', {
+                        day: '2-digit',
+                        month: 'short',
+                      })}
+                    </span>
+                    <span className="text-[9px] font-sans font-semibold uppercase tracking-wider text-slate-400 dark:text-sky-300/60">
+                      Official Advisory
+                    </span>
                   </div>
                 </article>
               );
@@ -343,16 +512,19 @@ export const LiveStatusNoticeWidget: React.FC = () => {
         ) : (
           <div className="p-6 text-center rounded-2xl bg-slate-50 dark:bg-[#071322] border border-slate-200 dark:border-sky-500/20 space-y-2">
             <p className="text-xs text-slate-600 dark:text-slate-300">
-              All notices cleared.
+              No active advisories published right now.
             </p>
-            <button
-              type="button"
-              onClick={handleResetDefaults}
-              className="aos-btn-primary inline-flex items-center gap-1.5 px-4 py-2 min-h-[40px] text-xs font-bold cursor-pointer"
-            >
-              <RotateCcw className="w-3.5 h-3.5" />
-              <span>Restore Default Advisories</span>
-            </button>
+            {isOfficialAdmin && (
+              <button
+                type="button"
+                disabled={isPublishing}
+                onClick={handleResetDefaults}
+                className="aos-btn-primary inline-flex items-center gap-1.5 px-4 py-2 min-h-[40px] text-xs font-bold cursor-pointer disabled:opacity-60"
+              >
+                <RotateCcw className="w-3.5 h-3.5" />
+                <span>Restore Default Advisories</span>
+              </button>
+            )}
           </div>
         )}
       </div>

@@ -24,6 +24,22 @@
   </head>
   <body>
     <div id="root"></div>
+    <script>
+      (function () {
+        window.__aosDeferredInstallPrompt = null;
+        window.__aosAppInstalled = false;
+        window.addEventListener('beforeinstallprompt', function (event) {
+          event.preventDefault();
+          window.__aosDeferredInstallPrompt = event;
+          window.dispatchEvent(new CustomEvent('aos-pwa-prompt-captured'));
+        });
+        window.addEventListener('appinstalled', function () {
+          window.__aosDeferredInstallPrompt = null;
+          window.__aosAppInstalled = true;
+          window.dispatchEvent(new CustomEvent('aos-pwa-installed'));
+        });
+      })();
+    </script>
     <script type="module" src="/src/main.tsx"></script>
   </body>
 </html>

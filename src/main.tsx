@@ -3,7 +3,10 @@ import ReactDOM from 'react-dom/client';
 import { registerSW } from 'virtual:pwa-register';
 import App from './App';
 import { AuthSecurityProvider } from './context/AuthSecurityContext';
+import { initGlobalPWAInstallListeners } from './hooks/usePWAInstall';
 import './index.css';
+
+initGlobalPWAInstallListeners();
 
 if (typeof window !== 'undefined' && 'serviceWorker' in navigator) {
   if (import.meta.env.PROD) {
