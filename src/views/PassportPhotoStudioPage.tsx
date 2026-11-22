@@ -1,4 +1,4 @@
-import React, { useState, useRef, useEffect, useCallback } from 'react';
+import React, { useState, useRef, useEffect, useCallback, useMemo } from 'react';
 import {
   Upload,
   Crop,
@@ -9,16 +9,22 @@ import {
   Download,
   Scissors,
   RotateCcw,
+  RotateCw,
   ChevronDown,
   ChevronUp,
   ArrowLeft,
   ZoomIn,
+  ZoomOut,
   FileDown,
   Camera,
   Check,
-  RefreshCw,
   Sparkles,
   UserCheck,
+  Calendar,
+  FileCheck2,
+  Move,
+  AlertCircle,
+  X,
 } from 'lucide-react';
 import { PDFDocument } from 'pdf-lib';
 import {
@@ -28,137 +34,423 @@ import {
   SamplePortrait,
 } from '../utils/stockPassportPhoto';
 import { StarRatingWidget } from '../components/StarRatingWidget';
-import { PassportStudioGraphicCard } from '../components/ToolIllustrativeCards';
 
 interface PassportPhotoStudioPageProps {
   onBack: () => void;
 }
 
-type SheetPresetId = '4x6-8' | '4x6-6' | 'a4-30' | 'a4-36' | 'single';
+type DimensionPresetId =
+  | 'indian-passport'
+  | 'pan-nsdl'
+  | 'pan-square'
+  | 'ssc-upsc'
+  | 'stamp-size';
+
+type PaperType = '4x6' | 'a4';
+type TargetKbOption = 'best' | 20 | 50 | 100;
 type CutGuideStyle = 'dotted' | 'crop-marks' | 'solid' | 'none';
 type BorderThickness = 'none' | 'thin' | 'standard' | 'bold';
 
-interface SheetPresetConfig {
-  id: SheetPresetId;
+interface DimensionPresetConfig {
+  id: DimensionPresetId;
   label: string;
-  sub: string;
-  paper: '4x6' | 'a4';
-  cols: number;
-  rows: number;
-  defaultCopies: number;
+  portalBadge: string;
+  sizeLabel: string;
+  widthPx: number; // Exact 300 DPI pixel width
+  heightPx: number; // Exact 300 DPI pixel height
+  defaultTargetKb: TargetKbOption;
+  fileSlug: string;
+  suggestDop?: boolean;
 }
 
-const SHEET_PRESETS: SheetPresetConfig[] = [
-  { id: '4x6-8', label: '4×6 (8)', sub: '4×2 grid', paper: '4x6', cols: 4, rows: 2, defaultCopies: 8 },
-  { id: '4x6-6', label: '4×6 (6)', sub: '3×2 grid', paper: '4x6', cols: 3, rows: 2, defaultCopies: 6 },
-  { id: 'a4-30', label: 'A4 (30)', sub: '5×6 grid', paper: 'a4', cols: 5, rows: 6, defaultCopies: 30 },
-  { id: 'a4-36', label: 'A4 (36)', sub: '6×6 grid', paper: 'a4', cols: 6, rows: 6, defaultCopies: 36 },
-  { id: 'single', label: 'Single', sub: '1 photo', paper: '4x6', cols: 1, rows: 1, defaultCopies: 1 },
+const DIMENSION_PRESETS: DimensionPresetConfig[] = [
+  {
+    id: 'indian-passport',
+    label: 'Indian Passport',
+    portalBadge: 'MEA / Seva',
+    sizeLabel: '35 × 45 mm',
+    widthPx: 413,
+    heightPx: 531,
+    defaultTargetKb: 100,
+    fileSlug: 'IndianPassport_35x45mm',
+  },
+  {
+    id: 'pan-nsdl',
+    label: 'PAN Card',
+    portalBadge: '2.5×3.5 cm',
+    sizeLabel: '2.5 × 3.5 cm',
+    widthPx: 295,
+    heightPx: 413,
+    defaultTargetKb: 50,
+    fileSlug: 'PAN_25x35mm',
+  },
+  {
+    id: 'pan-square',
+    label: 'PAN Portal',
+    portalBadge: '213×213 px',
+    sizeLabel: '213 × 213 px',
+    widthPx: 213,
+    heightPx: 213,
+    defaultTargetKb: 50,
+    fileSlug: 'PAN_213x213px',
+  },
+  {
+    id: 'ssc-upsc',
+    label: 'SSC / UPSC / TNPSC',
+    portalBadge: 'Govt Exam',
+    sizeLabel: '3.5 × 4.5 cm',
+    widthPx: 413,
+    heightPx: 531,
+    defaultTargetKb: 50,
+    fileSlug: 'SSC_UPSC_TNPSC_35x45mm',
+    suggestDop: true,
+  },
+  {
+    id: 'stamp-size',
+    label: 'Stamp Size',
+    portalBadge: '20×25 mm',
+    sizeLabel: '20 × 25 mm',
+    widthPx: 236,
+    heightPx: 295,
+    defaultTargetKb: 20,
+    fileSlug: 'StampSize_20x25mm',
+  },
 ];
 
-const COPIES_OPTIONS = [1, 4, 6, 8, 12, 16, 24, 30, 36];
+const TARGET_KB_OPTIONS: { value: TargetKbOption; label: string; sub: string }[] = [
+  { value: 20, label: '< 20 KB', sub: 'Stamp / Strict' },
+  { value: 50, label: '< 50 KB', sub: 'PAN / SSC / UPSC' },
+  { value: 100, label: '< 100 KB', sub: 'Passport / Visa' },
+  { value: 'best', label: 'Max HD', sub: '300 DPI Crisp' },
+];
+
+const PAPER_DIMS: Record<PaperType, { w: number; h: number; label: string; marginPx: number; pdfW: number; pdfH: number; cssPage: string }> = {
+  '4x6': {
+    w: 1800,
+    h: 1200,
+    label: '4×6" Photo Paper',
+    marginPx: 26,
+    pdfW: 432,
+    pdfH: 288,
+    cssPage: '6in 4in',
+  },
+  a4: {
+    w: 2480,
+    h: 3508,
+    label: 'A4 Sheet',
+    marginPx: 48,
+    pdfW: 595.28,
+    pdfH: 841.89,
+    cssPage: 'A4 portrait',
+  },
+};
+
+function getTodayFormatted(): string {
+  const d = new Date();
+  const day = String(d.getDate()).padStart(2, '0');
+  const month = String(d.getMonth() + 1).padStart(2, '0');
+  const year = d.getFullYear();
+  return `${day}/${month}/${year}`;
+}
+
+function estimateBase64Bytes(dataUrl: string): number {
+  const commaIdx = dataUrl.indexOf(',');
+  if (commaIdx === -1) return 0;
+  const b64 = dataUrl.slice(commaIdx + 1);
+  let padding = 0;
+  if (b64.endsWith('==')) padding = 2;
+  else if (b64.endsWith('=')) padding = 1;
+  return Math.max(0, Math.floor((b64.length * 3) / 4) - padding);
+}
+
+interface CompressedPhotoResult {
+  dataUrl: string;
+  sizeKb: number;
+  quality: number;
+  width: number;
+  height: number;
+}
+
+/**
+ * Pure Canvas binary-search JPEG compressor (0 external libraries, <15ms on mobile).
+ * Guarantees output stays strictly under maxKb when a target KB is selected.
+ */
+function compressCanvasToTargetKb(
+  sourceCanvas: HTMLCanvasElement,
+  targetKb: TargetKbOption
+): CompressedPhotoResult {
+  if (targetKb === 'best') {
+    const dataUrl = sourceCanvas.toDataURL('image/jpeg', 0.94);
+    return {
+      dataUrl,
+      sizeKb: estimateBase64Bytes(dataUrl) / 1024,
+      quality: 0.94,
+      width: sourceCanvas.width,
+      height: sourceCanvas.height,
+    };
+  }
+
+  // Keep a tiny 400-byte safety headroom so strict portals never reject boundary sizes
+  const maxBytes = Math.max(2048, targetKb * 1024 - 400);
+
+  const runBinarySearch = (canvasToEncode: HTMLCanvasElement): CompressedPhotoResult | null => {
+    const maxQData = canvasToEncode.toDataURL('image/jpeg', 0.95);
+    const maxQBytes = estimateBase64Bytes(maxQData);
+    if (maxQBytes <= maxBytes) {
+      return {
+        dataUrl: maxQData,
+        sizeKb: maxQBytes / 1024,
+        quality: 0.95,
+        width: canvasToEncode.width,
+        height: canvasToEncode.height,
+      };
+    }
+
+    const minQData = canvasToEncode.toDataURL('image/jpeg', 0.14);
+    const minQBytes = estimateBase64Bytes(minQData);
+    if (minQBytes > maxBytes) {
+      return null;
+    }
+
+    let low = 0.14;
+    let high = 0.95;
+    let bestDataUrl = minQData;
+    let bestBytes = minQBytes;
+    let bestQ = 0.14;
+
+    for (let i = 0; i < 7; i++) {
+      const mid = (low + high) / 2;
+      const url = canvasToEncode.toDataURL('image/jpeg', mid);
+      const bytes = estimateBase64Bytes(url);
+      if (bytes <= maxBytes) {
+        bestDataUrl = url;
+        bestBytes = bytes;
+        bestQ = mid;
+        low = mid;
+      } else {
+        high = mid;
+      }
+    }
+
+    return {
+      dataUrl: bestDataUrl,
+      sizeKb: bestBytes / 1024,
+      quality: bestQ,
+      width: canvasToEncode.width,
+      height: canvasToEncode.height,
+    };
+  };
+
+  // First try native 300 DPI dimensions
+  const nativeHit = runBinarySearch(sourceCanvas);
+  if (nativeHit) return nativeHit;
+
+  // Fallback for ultra-detailed noisy photos at strict <20 KB: gentle proportional step-down
+  const scales = [0.85, 0.72, 0.6, 0.5];
+  const scratch = document.createElement('canvas');
+  const sCtx = scratch.getContext('2d');
+  if (sCtx) {
+    for (const scale of scales) {
+      scratch.width = Math.max(120, Math.round(sourceCanvas.width * scale));
+      scratch.height = Math.max(120, Math.round(sourceCanvas.height * scale));
+      sCtx.fillStyle = '#FFFFFF';
+      sCtx.fillRect(0, 0, scratch.width, scratch.height);
+      sCtx.imageSmoothingEnabled = true;
+      sCtx.imageSmoothingQuality = 'high';
+      sCtx.drawImage(sourceCanvas, 0, 0, scratch.width, scratch.height);
+      const hit = runBinarySearch(scratch);
+      if (hit) return hit;
+    }
+  }
+
+  const fallbackUrl = sourceCanvas.toDataURL('image/jpeg', 0.14);
+  return {
+    dataUrl: fallbackUrl,
+    sizeKb: estimateBase64Bytes(fallbackUrl) / 1024,
+    quality: 0.14,
+    width: sourceCanvas.width,
+    height: sourceCanvas.height,
+  };
+}
+
+function computeSheetCapacity(
+  paper: PaperType,
+  photoW: number,
+  photoH: number,
+  gapMm: number
+): { cols: number; rows: number; maxSlots: number; gapPx: number } {
+  const conf = PAPER_DIMS[paper];
+  const gapPx = Math.round((gapMm / 25.4) * 300);
+  const usableW = conf.w - conf.marginPx * 2;
+  const usableH = conf.h - conf.marginPx * 2;
+  const cols = Math.max(1, Math.floor((usableW + gapPx) / (photoW + gapPx)));
+  const rows = Math.max(1, Math.floor((usableH + gapPx) / (photoH + gapPx)));
+  return { cols, rows, maxSlots: cols * rows, gapPx };
+}
 
 export const PassportPhotoStudioPage: React.FC<PassportPhotoStudioPageProps> = ({ onBack }) => {
-  // Source photo URL / Data URL
+  // Source photo state
   const [photoSrc, setPhotoSrc] = useState<string>(() => getStockDemoPortraitDataUrl());
   const [selectedSampleId, setSelectedSampleId] = useState<string>('studio-male');
   const [isStockModel, setIsStockModel] = useState<boolean>(true);
   const [loadedPhotoImg, setLoadedPhotoImg] = useState<HTMLImageElement | null>(null);
   const [isImageLoading, setIsImageLoading] = useState<boolean>(false);
   const [isDragOver, setIsDragOver] = useState<boolean>(false);
+  const [uploadError, setUploadError] = useState<string | null>(null);
 
-  // Biometric Framing Overlay Guide (70-80% face coverage & eye-level line)
-  const [showBiometricGuide, setShowBiometricGuide] = useState<boolean>(false);
+  // Dimension Preset (Official Indian Portal Standards @ 300 DPI)
+  const [dimensionId, setDimensionId] = useState<DimensionPresetId>('indian-passport');
+  const activeDim = useMemo(
+    () => DIMENSION_PRESETS.find((d) => d.id === dimensionId) || DIMENSION_PRESETS[0],
+    [dimensionId]
+  );
 
-  // Crop / Zoom / Pan state
+  // Interactive Framing & Face Guide
+  const [showFaceGuide, setShowFaceGuide] = useState<boolean>(true);
   const [zoom, setZoom] = useState<number>(1.0);
-  const [panX, setPanX] = useState<number>(0);
-  const [panY, setPanY] = useState<number>(0);
-  const [showCropAdjuster, setShowCropAdjuster] = useState<boolean>(false);
+  const [panX, setPanX] = useState<number>(0); // normalized -100..+100 (% of frame width)
+  const [panY, setPanY] = useState<number>(0); // normalized -100..+100 (% of frame height)
+  const [fineRotation, setFineRotation] = useState<number>(0); // -15..+15 deg
+  const [baseRotate90, setBaseRotate90] = useState<number>(0); // 0, 90, 180, 270
+  const [isPanning, setIsPanning] = useState<boolean>(false);
 
-  // Image Adjustments
+  // Studio Image Adjustments
   const [brightness, setBrightness] = useState<number>(100);
   const [contrast, setContrast] = useState<number>(100);
   const [saturation, setSaturation] = useState<number>(100);
 
-  // Sheet Layout & Copies
-  const [selectedPreset, setSelectedPreset] = useState<SheetPresetId>('4x6-8');
-  const [totalCopies, setTotalCopies] = useState<number>(8);
-
-  // Advanced Border & Cutting Settings
-  const [isAccordionOpen, setIsAccordionOpen] = useState<boolean>(false);
-  const [borderThickness, setBorderThickness] = useState<BorderThickness>('standard');
-  const [borderColor, setBorderColor] = useState<string>('#000000');
-  const [cornerStyle, setCornerStyle] = useState<'sharp' | 'rounded'>('sharp');
-
-  // Cutting & Alignment Settings
-  const [cutGuideStyle, setCutGuideStyle] = useState<CutGuideStyle>('dotted');
-  const [cutGuideColor, setCutGuideColor] = useState<string>('#94A3B8');
-  const [showScissorIcons, setShowScissorIcons] = useState<boolean>(true);
-  const [cellGap, setCellGap] = useState<number>(2); // mm gap
-
-  // Candidate Name & Date Stamp (Govt Exam Requirement: SSC/UPSC)
+  // Name & Date of Photo (DOP) Strip
   const [withNameDate, setWithNameDate] = useState<boolean>(false);
   const [candidateName, setCandidateName] = useState<string>('ANIS SHAIKH');
-  const [dopText, setDopText] = useState<string>(() => {
-    const d = new Date();
-    const day = String(d.getDate()).padStart(2, '0');
-    const month = String(d.getMonth() + 1).padStart(2, '0');
-    const year = d.getFullYear();
-    return `DOP: ${day}/${month}/${year}`;
-  });
+  const [dopText, setDopText] = useState<string>(() => `DOP: ${getTodayFormatted()}`);
 
-  // Canvas Refs & Hidden Inputs
+  // Target KB Compression for Single Photo Download
+  const [targetKb, setTargetKb] = useState<TargetKbOption>(50);
+  const [estimatedSingleInfo, setEstimatedSingleInfo] = useState<{
+    sizeKb: number;
+    width: number;
+    height: number;
+  } | null>(null);
+
+  // Print Sheet Layout & Cutting Guides
+  const [paperType, setPaperType] = useState<PaperType>('4x6');
+  const [totalCopies, setTotalCopies] = useState<number>(8);
+  const [borderThickness, setBorderThickness] = useState<BorderThickness>('standard');
+  const [borderColor, setBorderColor] = useState<string>('#0F172A');
+  const [cutGuideStyle, setCutGuideStyle] = useState<CutGuideStyle>('dotted');
+  const [cutGuideColor, setCutGuideColor] = useState<string>('#64748B');
+  const [showScissorIcons, setShowScissorIcons] = useState<boolean>(true);
+  const [cellGap, setCellGap] = useState<number>(2.5); // mm gap
+  const [showFineTuning, setShowFineTuning] = useState<boolean>(false);
+  const [isExportingPdf, setIsExportingPdf] = useState<boolean>(false);
+
+  // Refs
   const previewCanvasRef = useRef<HTMLCanvasElement>(null);
+  const previewFrameRef = useRef<HTMLDivElement>(null);
   const sheetCanvasRef = useRef<HTMLCanvasElement>(null);
   const fileInputRef = useRef<HTMLInputElement>(null);
   const cameraInputRef = useRef<HTMLInputElement>(null);
 
-  // Preload Image Element safely whenever photoSrc changes
-  // Guarded crossOrigin avoids CORS/Security blocking on Data URLs and Blob URLs in mobile browsers!
+  // Pointer tracking for silky 1-finger pan + 2-finger pinch zoom on mobile
+  const activePointersRef = useRef<Map<number, { x: number; y: number }>>(new Map());
+  const gestureStateRef = useRef<{
+    startPanX: number;
+    startPanY: number;
+    startClientX: number;
+    startClientY: number;
+    pinchStartDist: number;
+    pinchStartZoom: number;
+  }>({
+    startPanX: 0,
+    startPanY: 0,
+    startClientX: 0,
+    startClientY: 0,
+    pinchStartDist: 0,
+    pinchStartZoom: 1,
+  });
+
+  // Sheet capacity based on active dimension preset + paper
+  const sheetCapacity = useMemo(
+    () => computeSheetCapacity(paperType, activeDim.widthPx, activeDim.heightPx, cellGap),
+    [paperType, activeDim.widthPx, activeDim.heightPx, cellGap]
+  );
+
+  // Smart copy choices for the active sheet & dimension preset
+  const copyChoices = useMemo(() => {
+    const max = sheetCapacity.maxSlots;
+    const base = [1, 2, 4, 6, 8, 10, 12, 16, 18, 24, 30, 36, 48, 60];
+    const filtered = base.filter((n) => n <= max);
+    if (!filtered.includes(max)) filtered.push(max);
+    // Keep UI tidy on mobile (max ~8 pills)
+    if (filtered.length > 8) {
+      const picked = [
+        filtered[0],
+        filtered[2],
+        filtered[3],
+        filtered[4],
+        filtered[5],
+        filtered[filtered.length - 3],
+        filtered[filtered.length - 2],
+        max,
+      ];
+      return Array.from(new Set(picked)).sort((a, b) => a - b);
+    }
+    return filtered;
+  }, [sheetCapacity.maxSlots]);
+
+  // Keep totalCopies within current sheet capacity when preset/paper changes
+  useEffect(() => {
+    setTotalCopies((prev) => {
+      if (prev > sheetCapacity.maxSlots) return sheetCapacity.maxSlots;
+      return prev;
+    });
+  }, [sheetCapacity.maxSlots]);
+
+  // Preload image safely whenever photoSrc changes
   useEffect(() => {
     if (!photoSrc) return;
     setIsImageLoading(true);
-
     const img = new Image();
     const isHttp = photoSrc.startsWith('http://') || photoSrc.startsWith('https://');
-    if (isHttp) {
-      img.crossOrigin = 'anonymous';
-    }
+    if (isHttp) img.crossOrigin = 'anonymous';
 
     img.onload = () => {
       setLoadedPhotoImg(img);
       setIsImageLoading(false);
     };
-
     img.onerror = () => {
-      console.warn('Primary portrait failed to load, falling back to guaranteed vector portrait');
       if (photoSrc !== DEFAULT_STUDIO_MALE_SVG) {
         setPhotoSrc(DEFAULT_STUDIO_MALE_SVG);
         setSelectedSampleId('studio-vector-male');
       }
       setIsImageLoading(false);
     };
-
     img.src = photoSrc;
   }, [photoSrc]);
 
-  // Handle Preset Switch
-  const handleSelectPreset = (presetId: SheetPresetId) => {
-    setSelectedPreset(presetId);
-    const conf = SHEET_PRESETS.find((p) => p.id === presetId);
-    if (conf) {
-      setTotalCopies(conf.defaultCopies);
+  const handleSelectDimension = (preset: DimensionPresetConfig) => {
+    setDimensionId(preset.id);
+    setTargetKb(preset.defaultTargetKb);
+    const nextCap = computeSheetCapacity(paperType, preset.widthPx, preset.heightPx, cellGap);
+    if (paperType === '4x6') {
+      setTotalCopies(Math.min(nextCap.maxSlots, preset.id === 'stamp-size' ? 12 : nextCap.maxSlots));
+    } else {
+      setTotalCopies(Math.min(nextCap.maxSlots, 30));
     }
   };
 
-  // Safe file reader handler (supports any file input event or drop)
-  const processImageFile = (file: File) => {
+  const handleSelectPaper = (nextPaper: PaperType) => {
+    setPaperType(nextPaper);
+    const nextCap = computeSheetCapacity(nextPaper, activeDim.widthPx, activeDim.heightPx, cellGap);
+    setTotalCopies(nextPaper === '4x6' ? Math.min(nextCap.maxSlots, 12) : Math.min(nextCap.maxSlots, 30));
+  };
+
+  const processImageFile = useCallback((file: File) => {
     if (!file.type.startsWith('image/')) {
-      alert('Please upload a valid image file (JPG, PNG, WEBP).');
+      setUploadError('Please select a valid JPG, PNG, or WEBP portrait image.');
       return;
     }
-
+    setUploadError(null);
     const reader = new FileReader();
     reader.onload = () => {
       if (typeof reader.result === 'string') {
@@ -168,31 +460,28 @@ export const PassportPhotoStudioPage: React.FC<PassportPhotoStudioPageProps> = (
         setZoom(1.0);
         setPanX(0);
         setPanY(0);
+        setFineRotation(0);
+        setBaseRotate90(0);
       }
     };
+    reader.onerror = () => {
+      setUploadError('Could not read the selected image file. Please try another photo.');
+    };
     reader.readAsDataURL(file);
-  };
+  }, []);
 
-  // Handle Photo Upload from file picker
   const handleFileUpload = (e: React.ChangeEvent<HTMLInputElement>) => {
     const file = e.target.files?.[0];
-    if (file) {
-      processImageFile(file);
-    }
-    // Crucial: reset target value so uploading the same image or re-selecting works every time!
+    if (file) processImageFile(file);
     e.target.value = '';
   };
 
-  // Handle Camera Capture
   const handleCameraCapture = (e: React.ChangeEvent<HTMLInputElement>) => {
     const file = e.target.files?.[0];
-    if (file) {
-      processImageFile(file);
-    }
+    if (file) processImageFile(file);
     e.target.value = '';
   };
 
-  // Drag and Drop support
   const handleDragOver = (e: React.DragEvent) => {
     e.preventDefault();
     setIsDragOver(true);
@@ -205,12 +494,10 @@ export const PassportPhotoStudioPage: React.FC<PassportPhotoStudioPageProps> = (
     e.preventDefault();
     setIsDragOver(false);
     const file = e.dataTransfer.files?.[0];
-    if (file) {
-      processImageFile(file);
-    }
+    if (file) processImageFile(file);
   };
 
-  // Clipboard Paste Support (Ctrl+V anywhere in document or page)
+  // Clipboard paste support
   useEffect(() => {
     const handlePaste = (e: ClipboardEvent) => {
       const items = e.clipboardData?.items;
@@ -227,194 +514,250 @@ export const PassportPhotoStudioPage: React.FC<PassportPhotoStudioPageProps> = (
     };
     window.addEventListener('paste', handlePaste);
     return () => window.removeEventListener('paste', handlePaste);
-  }, []);
+  }, [processImageFile]);
 
-  // Quick switch to sample portrait
   const handleSelectSample = (sample: SamplePortrait) => {
+    setUploadError(null);
     setPhotoSrc(sample.url);
     setSelectedSampleId(sample.id);
     setIsStockModel(true);
     setZoom(1.0);
     setPanX(0);
     setPanY(0);
+    setFineRotation(0);
+    setBaseRotate90(0);
   };
 
-  // Reset Adjustments
+  const handleResetFraming = () => {
+    setZoom(1.0);
+    setPanX(0);
+    setPanY(0);
+    setFineRotation(0);
+    setBaseRotate90(0);
+  };
+
   const handleResetAdjustments = () => {
     setBrightness(100);
     setContrast(100);
     setSaturation(100);
   };
 
-  // Reset Crop & Framing
-  const handleResetCrop = () => {
-    setZoom(1.0);
-    setPanX(0);
-    setPanY(0);
+  // =========================================================================
+  // INTERACTIVE POINTER HANDLERS (1-Finger Drag/Pan + 2-Finger Pinch Zoom)
+  // =========================================================================
+  const handlePointerDown = (e: React.PointerEvent<HTMLDivElement>) => {
+    e.currentTarget.setPointerCapture(e.pointerId);
+    activePointersRef.current.set(e.pointerId, { x: e.clientX, y: e.clientY });
+    setIsPanning(true);
+
+    if (activePointersRef.current.size === 1) {
+      gestureStateRef.current.startPanX = panX;
+      gestureStateRef.current.startPanY = panY;
+      gestureStateRef.current.startClientX = e.clientX;
+      gestureStateRef.current.startClientY = e.clientY;
+    } else if (activePointersRef.current.size === 2) {
+      const pts = Array.from(activePointersRef.current.values());
+      const dist = Math.hypot(pts[0].x - pts[1].x, pts[0].y - pts[1].y);
+      gestureStateRef.current.pinchStartDist = Math.max(10, dist);
+      gestureStateRef.current.pinchStartZoom = zoom;
+    }
   };
 
-  // Helper: Border pixel width
+  const handlePointerMove = (e: React.PointerEvent<HTMLDivElement>) => {
+    if (!activePointersRef.current.has(e.pointerId)) return;
+    activePointersRef.current.set(e.pointerId, { x: e.clientX, y: e.clientY });
+
+    const frame = previewFrameRef.current;
+    if (!frame) return;
+
+    if (activePointersRef.current.size === 1) {
+      const rect = frame.getBoundingClientRect();
+      const dx = e.clientX - gestureStateRef.current.startClientX;
+      const dy = e.clientY - gestureStateRef.current.startClientY;
+      // Convert display pixels to normalized pan % (-100..+100) for 1:1 finger tracking
+      const deltaPctX = (dx / Math.max(60, rect.width)) * 100;
+      const deltaPctY = (dy / Math.max(60, rect.height)) * 100;
+      const nextX = Math.max(-100, Math.min(100, gestureStateRef.current.startPanX + deltaPctX));
+      const nextY = Math.max(-100, Math.min(100, gestureStateRef.current.startPanY + deltaPctY));
+      setPanX(Math.round(nextX * 2) / 2);
+      setPanY(Math.round(nextY * 2) / 2);
+    } else if (activePointersRef.current.size === 2) {
+      const pts = Array.from(activePointersRef.current.values());
+      const dist = Math.hypot(pts[0].x - pts[1].x, pts[0].y - pts[1].y);
+      const ratio = dist / Math.max(10, gestureStateRef.current.pinchStartDist);
+      const nextZoom = Math.max(0.7, Math.min(2.8, gestureStateRef.current.pinchStartZoom * ratio));
+      setZoom(Math.round(nextZoom * 100) / 100);
+    }
+  };
+
+  const handlePointerUpOrCancel = (e: React.PointerEvent<HTMLDivElement>) => {
+    activePointersRef.current.delete(e.pointerId);
+    if (activePointersRef.current.size === 0) {
+      setIsPanning(false);
+    } else if (activePointersRef.current.size === 1) {
+      const remaining = Array.from(activePointersRef.current.values())[0];
+      gestureStateRef.current.startPanX = panX;
+      gestureStateRef.current.startPanY = panY;
+      gestureStateRef.current.startClientX = remaining.x;
+      gestureStateRef.current.startClientY = remaining.y;
+    }
+  };
+
   const getBorderPx = (thickness: BorderThickness): number => {
     switch (thickness) {
-      case 'none': return 0;
-      case 'thin': return 1.2;
-      case 'standard': return 2.2;
-      case 'bold': return 4.0;
+      case 'none':
+        return 0;
+      case 'thin':
+        return 1.2;
+      case 'standard':
+        return 2.2;
+      case 'bold':
+        return 4.0;
     }
   };
 
+  // Compute Name & DOP strip height proportionally to photo height
+  const getStripHeight = useCallback(
+    (h: number): number => {
+      if (!withNameDate) return 0;
+      return Math.round(Math.max(36, Math.min(64, h * 0.145)));
+    },
+    [withNameDate]
+  );
+
   // =========================================================================
-  // CORE RENDERER: Single 35×45 mm Photo with Strict Boundary Clamping
+  // CORE RENDERER: Dynamic 300 DPI Photo with Smooth Pan, Zoom, Rotation & DOP
   // =========================================================================
-  const renderSinglePhoto = useCallback((
-    targetCtx: CanvasRenderingContext2D,
-    w: number,
-    h: number,
-    img: HTMLImageElement
-  ) => {
-    targetCtx.save();
+  const renderSinglePhoto = useCallback(
+    (targetCtx: CanvasRenderingContext2D, w: number, h: number, img: HTMLImageElement) => {
+      targetCtx.save();
 
-    // 1. Fill clean pure white background
-    targetCtx.fillStyle = '#FFFFFF';
-    targetCtx.fillRect(0, 0, w, h);
-
-    // 2. Compute dedicated candidate name/DOP bottom strip
-    const stripH = withNameDate ? 56 : 0;
-    const photoH = Math.max(10, h - stripH);
-
-    // 3. Mathematical cover crop with zoom & pan
-    const srcW = Math.max(1, img.naturalWidth || img.width || 413);
-    const srcH = Math.max(1, img.naturalHeight || img.height || 531);
-    const srcRatio = srcW / srcH;
-    const dstRatio = w / photoH;
-
-    let baseCropW = srcW;
-    let baseCropH = srcH;
-
-    if (srcRatio > dstRatio) {
-      baseCropW = srcH * dstRatio;
-      baseCropH = srcH;
-    } else {
-      baseCropW = srcW;
-      baseCropH = srcW / dstRatio;
-    }
-
-    // Strict clamp: crop box must NEVER exceed source image dimensions (avoids IndexSizeError)
-    const effectiveZoom = Math.max(0.6, Math.min(3.0, zoom));
-    const cropW = Math.min(srcW, Math.max(20, baseCropW / effectiveZoom));
-    const cropH = Math.min(srcH, Math.max(20, baseCropH / effectiveZoom));
-
-    // Centering and pan offset
-    const defaultYRatio = withNameDate ? 0.43 : 0.48;
-    const maxPanOffsetX = (srcW - cropW) / 2;
-    const maxPanOffsetY = (srcH - cropH) / 2;
-
-    const centerX = srcW / 2 + (panX / 100) * maxPanOffsetX;
-    const centerY = srcH * defaultYRatio + (panY / 100) * maxPanOffsetY;
-
-    // Boundary clamp: sx and sy must stay strictly within [0, src - crop]
-    const sx = Math.max(0, Math.min(Math.max(0, srcW - cropW), centerX - cropW / 2));
-    const sy = Math.max(0, Math.min(Math.max(0, srcH - cropH), centerY - cropH / 2));
-
-    const finalCropW = Math.min(cropW, srcW - sx);
-    const finalCropH = Math.min(cropH, srcH - sy);
-
-    // 4. Optional rounded corner clip
-    if (cornerStyle === 'rounded') {
-      const radius = 16;
-      targetCtx.beginPath();
-      targetCtx.moveTo(radius, 0);
-      targetCtx.lineTo(w - radius, 0);
-      targetCtx.quadraticCurveTo(w, 0, w, radius);
-      targetCtx.lineTo(w, h - radius);
-      targetCtx.quadraticCurveTo(w, h, w - radius, h);
-      targetCtx.lineTo(radius, h);
-      targetCtx.quadraticCurveTo(0, h, 0, h - radius);
-      targetCtx.lineTo(0, radius);
-      targetCtx.quadraticCurveTo(0, 0, radius, 0);
-      targetCtx.closePath();
-      targetCtx.clip();
-    }
-
-    // 5. Draw image with studio filters
-    try {
-      targetCtx.filter = `brightness(${brightness}%) contrast(${contrast}%) saturate(${saturation}%)`;
-      targetCtx.drawImage(img, sx, sy, finalCropW, finalCropH, 0, 0, w, photoH);
-      targetCtx.filter = 'none';
-    } catch (err) {
-      console.warn('Canvas drawImage fallback:', err);
-      targetCtx.fillStyle = '#E2E8F0';
-      targetCtx.fillRect(0, 0, w, photoH);
-    }
-
-    // 6. Candidate Name & Date of Photo (Govt Exam Standard)
-    if (withNameDate) {
+      // 1. Pure white studio canvas base
       targetCtx.fillStyle = '#FFFFFF';
-      targetCtx.fillRect(0, photoH, w, stripH);
+      targetCtx.fillRect(0, 0, w, h);
 
-      // Fine separator
-      targetCtx.strokeStyle = '#CBD5E1';
-      targetCtx.lineWidth = 1;
+      // 2. Proportional bottom strip for Name & DOP
+      const stripH = getStripHeight(h);
+      const photoH = Math.max(20, h - stripH);
+
+      // 3. Clip strictly to photo viewport so rotated edges never overlap DOP strip
+      targetCtx.save();
       targetCtx.beginPath();
-      targetCtx.moveTo(0, photoH);
-      targetCtx.lineTo(w, photoH);
-      targetCtx.stroke();
+      targetCtx.rect(0, 0, w, photoH);
+      targetCtx.clip();
 
-      targetCtx.fillStyle = '#000000';
-      targetCtx.textAlign = 'center';
-      targetCtx.textBaseline = 'middle';
+      const srcW = Math.max(1, img.naturalWidth || img.width || w);
+      const srcH = Math.max(1, img.naturalHeight || img.height || photoH);
 
-      // Candidate Name
-      targetCtx.font = 'bold 14px -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, sans-serif';
-      targetCtx.fillText(candidateName.trim().toUpperCase(), w / 2, photoH + stripH * 0.36);
+      const totalDeg = baseRotate90 + fineRotation;
+      const totalRad = (totalDeg * Math.PI) / 180;
+      const isQuarterTurn = Math.abs(baseRotate90) % 180 === 90;
+      const effSrcW = isQuarterTurn ? srcH : srcW;
+      const effSrcH = isQuarterTurn ? srcW : srcH;
 
-      // Date of Photo (DOP / DOB)
-      targetCtx.font = 'bold 11px -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, sans-serif';
-      targetCtx.fillText(dopText.trim(), w / 2, photoH + stripH * 0.74);
-    }
+      // Cover scale ensures the portrait fills the frame cleanly at 1.0x zoom
+      const coverScale = Math.max(w / effSrcW, photoH / effSrcH);
+      const effectiveZoom = Math.max(0.7, Math.min(2.8, zoom));
+      const finalScale = coverScale * effectiveZoom;
 
-    // 7. Outer Border
-    const borderPx = getBorderPx(borderThickness);
-    if (borderPx > 0) {
-      targetCtx.strokeStyle = borderColor;
-      targetCtx.lineWidth = borderPx;
-      if (cornerStyle === 'rounded') {
-        const radius = 16;
+      // Smooth intuitive pan offset mapped directly to frame dimensions
+      const offsetX = (panX / 100) * w;
+      const offsetY = (panY / 100) * photoH;
+
+      try {
+        targetCtx.imageSmoothingEnabled = true;
+        targetCtx.imageSmoothingQuality = 'high';
+        targetCtx.filter = `brightness(${brightness}%) contrast(${contrast}%) saturate(${saturation}%)`;
+
+        targetCtx.translate(w / 2 + offsetX, photoH / 2 + offsetY);
+        targetCtx.rotate(totalRad);
+        targetCtx.scale(finalScale, finalScale);
+        targetCtx.drawImage(img, -srcW / 2, -srcH / 2, srcW, srcH);
+        targetCtx.filter = 'none';
+      } catch (err) {
+        console.warn('Canvas drawImage fallback:', err);
+        targetCtx.fillStyle = '#E2E8F0';
+        targetCtx.fillRect(0, 0, w, photoH);
+      }
+      targetCtx.restore();
+
+      // 4. Crisp White Name & Date of Photo (DOP) Strip
+      if (withNameDate && stripH > 0) {
+        targetCtx.fillStyle = '#FFFFFF';
+        targetCtx.fillRect(0, photoH, w, stripH);
+
+        // Clean hairline separator
+        targetCtx.strokeStyle = '#CBD5E1';
+        targetCtx.lineWidth = 1;
         targetCtx.beginPath();
-        targetCtx.moveTo(radius, 0);
-        targetCtx.lineTo(w - radius, 0);
-        targetCtx.quadraticCurveTo(w, 0, w, radius);
-        targetCtx.lineTo(w, h - radius);
-        targetCtx.quadraticCurveTo(w, h, w - radius, h);
-        targetCtx.lineTo(radius, h);
-        targetCtx.quadraticCurveTo(0, h, 0, h - radius);
-        targetCtx.lineTo(0, radius);
-        targetCtx.quadraticCurveTo(0, 0, radius, 0);
-        targetCtx.closePath();
+        targetCtx.moveTo(0, photoH + 0.5);
+        targetCtx.lineTo(w, photoH + 0.5);
         targetCtx.stroke();
-      } else {
+
+        targetCtx.fillStyle = '#000000';
+        targetCtx.textAlign = 'center';
+        targetCtx.textBaseline = 'middle';
+
+        const maxTextW = w - Math.max(12, Math.round(w * 0.06));
+        const safeName = candidateName.trim().toUpperCase();
+        const safeDop = dopText.trim();
+        const hasBoth = safeName.length > 0 && safeDop.length > 0;
+
+        // Auto-fit font helper so long names never clip on small presets (213×213 / Stamp)
+        const drawFittedText = (text: string, baseSize: number, yCenter: number, weight = '800') => {
+          if (!text) return;
+          let fontSize = baseSize;
+          targetCtx.font = `${weight} ${fontSize}px -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, sans-serif`;
+          while (fontSize > 8 && targetCtx.measureText(text).width > maxTextW) {
+            fontSize -= 0.75;
+            targetCtx.font = `${weight} ${fontSize}px -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, sans-serif`;
+          }
+          targetCtx.fillText(text, w / 2, yCenter, maxTextW);
+        };
+
+        const nameBaseFont = Math.max(10, Math.min(18, Math.round(stripH * 0.31)));
+        const dopBaseFont = Math.max(9, Math.min(14, Math.round(stripH * 0.24)));
+
+        if (hasBoth) {
+          drawFittedText(safeName, nameBaseFont, photoH + stripH * 0.34, '800');
+          drawFittedText(safeDop, dopBaseFont, photoH + stripH * 0.72, '700');
+        } else if (safeName) {
+          drawFittedText(safeName, nameBaseFont + 1, photoH + stripH * 0.52, '800');
+        } else if (safeDop) {
+          drawFittedText(safeDop, dopBaseFont + 1, photoH + stripH * 0.52, '700');
+        }
+      }
+
+      // 5. Outer Photo Border
+      const borderPx = getBorderPx(borderThickness);
+      if (borderPx > 0) {
+        targetCtx.strokeStyle = borderColor;
+        targetCtx.lineWidth = borderPx;
         targetCtx.strokeRect(borderPx / 2, borderPx / 2, w - borderPx, h - borderPx);
       }
-    }
 
-    targetCtx.restore();
-  }, [
-    zoom,
-    panX,
-    panY,
-    brightness,
-    contrast,
-    saturation,
-    borderThickness,
-    borderColor,
-    cornerStyle,
-    withNameDate,
-    candidateName,
-    dopText,
-  ]);
+      targetCtx.restore();
+    },
+    [
+      getStripHeight,
+      baseRotate90,
+      fineRotation,
+      zoom,
+      panX,
+      panY,
+      brightness,
+      contrast,
+      saturation,
+      withNameDate,
+      candidateName,
+      dopText,
+      borderThickness,
+      borderColor,
+    ]
+  );
 
   // =========================================================================
-  // SYNCHRONOUS CANVAS 1: Single 35×45 mm Preview (413×531 px at 300 DPI)
+  // CANVAS 1 (60fps Instant): Single Cropped Photo Preview
   // =========================================================================
   useEffect(() => {
     const canvas = previewCanvasRef.current;
@@ -422,156 +765,135 @@ export const PassportPhotoStudioPage: React.FC<PassportPhotoStudioPageProps> = (
     const ctx = canvas.getContext('2d');
     if (!ctx) return;
 
-    canvas.width = 413;
-    canvas.height = 531;
+    canvas.width = activeDim.widthPx;
+    canvas.height = activeDim.heightPx;
     ctx.clearRect(0, 0, canvas.width, canvas.height);
-    renderSinglePhoto(ctx, 413, 531, loadedPhotoImg);
-  }, [loadedPhotoImg, renderSinglePhoto]);
+    renderSinglePhoto(ctx, activeDim.widthPx, activeDim.heightPx, loadedPhotoImg);
+  }, [loadedPhotoImg, activeDim.widthPx, activeDim.heightPx, renderSinglePhoto]);
+
+  // Debounced live KB estimate for Single Photo Download (keeps drag/sliders 60fps on mobile)
+  useEffect(() => {
+    const canvas = previewCanvasRef.current;
+    if (!canvas || !loadedPhotoImg) return;
+    const timer = window.setTimeout(() => {
+      const res = compressCanvasToTargetKb(canvas, targetKb);
+      setEstimatedSingleInfo({
+        sizeKb: res.sizeKb,
+        width: res.width,
+        height: res.height,
+      });
+    }, 140);
+    return () => window.clearTimeout(timer);
+  }, [loadedPhotoImg, activeDim.widthPx, activeDim.heightPx, targetKb, renderSinglePhoto]);
 
   // =========================================================================
-  // SYNCHRONOUS CANVAS 2: High-Performance Live Print Sheet
-  // (Uses single offscreen cache before tiling to prevent memory spikes)
+  // CANVAS 2 (Debounced + Offscreen Cached): 4×6 & A4 Print Sheet with Cut Guides
   // =========================================================================
   useEffect(() => {
-    const sheetCanvas = sheetCanvasRef.current;
-    if (!sheetCanvas || !loadedPhotoImg) return;
-    const ctx = sheetCanvas.getContext('2d');
-    if (!ctx) return;
+    if (!loadedPhotoImg) return;
 
-    const activeConf = SHEET_PRESETS.find((p) => p.id === selectedPreset) || SHEET_PRESETS[0];
+    const timer = window.setTimeout(() => {
+      const sheetCanvas = sheetCanvasRef.current;
+      if (!sheetCanvas) return;
+      const ctx = sheetCanvas.getContext('2d');
+      if (!ctx) return;
 
-    // Sheet pixel dimensions:
-    // 4x6 inch @ 300 DPI = 1800 x 1200 px (Landscape)
-    // A4 @ 300 DPI = 2480 x 3508 px (Portrait)
-    const isA4 = activeConf.paper === 'a4';
-    const sheetW = isA4 ? 2480 : 1800;
-    const sheetH = isA4 ? 3508 : 1200;
+      const paperConf = PAPER_DIMS[paperType];
+      const sheetW = paperConf.w;
+      const sheetH = paperConf.h;
 
-    sheetCanvas.width = sheetW;
-    sheetCanvas.height = sheetH;
+      sheetCanvas.width = sheetW;
+      sheetCanvas.height = sheetH;
 
-    // 1. Fill Crisp Pure White Print Sheet
-    ctx.fillStyle = '#FFFFFF';
-    ctx.fillRect(0, 0, sheetW, sheetH);
+      // 1. Pure white glossy paper base
+      ctx.fillStyle = '#FFFFFF';
+      ctx.fillRect(0, 0, sheetW, sheetH);
 
-    // Single photo dimensions: 35x45 mm @ 300 DPI (~413 x 531 px)
-    const photoW = 413;
-    const photoH = 531;
+      const photoW = activeDim.widthPx;
+      const photoH = activeDim.heightPx;
 
-    // Render single photo ONCE to an offscreen cache canvas for instant tiling
-    const offscreenCanvas = document.createElement('canvas');
-    offscreenCanvas.width = photoW;
-    offscreenCanvas.height = photoH;
-    const offCtx = offscreenCanvas.getContext('2d');
-    if (offCtx) {
-      renderSinglePhoto(offCtx, photoW, photoH, loadedPhotoImg);
-    }
-
-    // Grid arrangement
-    const cols = activeConf.cols;
-    const rows = activeConf.rows;
-    const maxSlots = cols * rows;
-    const copiesToDraw = Math.min(totalCopies, maxSlots);
-
-    // Calculate gap in px at 300 DPI (1 inch = 25.4 mm)
-    const gapPx = (cellGap / 25.4) * 300;
-
-    // Helper function to draw a single photo slot and its cutting guides
-    const drawPhotoSlot = (x: number, y: number, r: number, c: number) => {
-      // Paint photo directly from cached offscreen canvas
-      ctx.drawImage(offscreenCanvas, x, y);
-
-      // Cutting Guides
-      if (cutGuideStyle === 'dotted') {
-        ctx.save();
-        ctx.strokeStyle = cutGuideColor;
-        ctx.lineWidth = 1.5;
-        ctx.setLineDash([8, 6]);
-        ctx.strokeRect(x - gapPx / 2, y - gapPx / 2, photoW + gapPx, photoH + gapPx);
-        ctx.restore();
-      } else if (cutGuideStyle === 'solid') {
-        ctx.save();
-        ctx.strokeStyle = cutGuideColor;
-        ctx.lineWidth = 1.0;
-        ctx.strokeRect(x - gapPx / 2, y - gapPx / 2, photoW + gapPx, photoH + gapPx);
-        ctx.restore();
-      } else if (cutGuideStyle === 'crop-marks') {
-        const markLen = 18;
-        ctx.save();
-        ctx.strokeStyle = cutGuideColor;
-        ctx.lineWidth = 1.5;
-
-        // Top-left corner
-        ctx.beginPath();
-        ctx.moveTo(x - 2, y - markLen);
-        ctx.lineTo(x - 2, y - 2);
-        ctx.lineTo(x - markLen, y - 2);
-        ctx.stroke();
-
-        // Top-right corner
-        ctx.beginPath();
-        ctx.moveTo(x + photoW + 2, y - markLen);
-        ctx.lineTo(x + photoW + 2, y - 2);
-        ctx.lineTo(x + photoW + markLen, y - 2);
-        ctx.stroke();
-
-        // Bottom-left corner
-        ctx.beginPath();
-        ctx.moveTo(x - 2, y + photoH + markLen);
-        ctx.lineTo(x - 2, y + photoH + 2);
-        ctx.lineTo(x - markLen, y + photoH + 2);
-        ctx.stroke();
-
-        // Bottom-right corner
-        ctx.beginPath();
-        ctx.moveTo(x + photoW + 2, y + photoH + markLen);
-        ctx.lineTo(x + photoW + 2, y + photoH + 2);
-        ctx.lineTo(x + photoW + markLen, y + photoH + 2);
-        ctx.stroke();
-
-        ctx.restore();
+      // Render single photo ONCE to offscreen buffer for rapid tiling
+      const offscreen = document.createElement('canvas');
+      offscreen.width = photoW;
+      offscreen.height = photoH;
+      const offCtx = offscreen.getContext('2d');
+      if (offCtx) {
+        renderSinglePhoto(offCtx, photoW, photoH, loadedPhotoImg);
       }
 
-      // Optional Scissor Icons on edge
-      if (showScissorIcons && cutGuideStyle !== 'none') {
-        ctx.save();
-        ctx.fillStyle = cutGuideColor;
-        ctx.font = '14px system-ui, sans-serif';
-        ctx.textAlign = 'center';
-        ctx.textBaseline = 'middle';
-        if (r === 0) {
-          ctx.fillText('✂', x + photoW / 2, y - gapPx / 2 - 8);
+      const { cols, maxSlots, gapPx } = computeSheetCapacity(paperType, photoW, photoH, cellGap);
+      const copiesToDraw = Math.max(1, Math.min(totalCopies, maxSlots));
+
+      const drawPhotoSlot = (x: number, y: number, r: number, c: number) => {
+        ctx.drawImage(offscreen, x, y);
+
+        // Subtle dashed scissor-cut borders around every photo
+        if (cutGuideStyle === 'dotted') {
+          ctx.save();
+          ctx.strokeStyle = cutGuideColor;
+          ctx.lineWidth = 1.6;
+          ctx.setLineDash([9, 6]);
+          const pad = Math.max(3, Math.round(gapPx / 2));
+          ctx.strokeRect(x - pad, y - pad, photoW + pad * 2, photoH + pad * 2);
+          ctx.restore();
+        } else if (cutGuideStyle === 'solid') {
+          ctx.save();
+          ctx.strokeStyle = cutGuideColor;
+          ctx.lineWidth = 1.1;
+          const pad = Math.max(2, Math.round(gapPx / 2));
+          ctx.strokeRect(x - pad, y - pad, photoW + pad * 2, photoH + pad * 2);
+          ctx.restore();
+        } else if (cutGuideStyle === 'crop-marks') {
+          const markLen = 18;
+          ctx.save();
+          ctx.strokeStyle = cutGuideColor;
+          ctx.lineWidth = 1.6;
+          const corners = [
+            [x - 2, y - markLen, x - 2, y - 2, x - markLen, y - 2],
+            [x + photoW + 2, y - markLen, x + photoW + 2, y - 2, x + photoW + markLen, y - 2],
+            [x - 2, y + photoH + markLen, x - 2, y + photoH + 2, x - markLen, y + photoH + 2],
+            [
+              x + photoW + 2,
+              y + photoH + markLen,
+              x + photoW + 2,
+              y + photoH + 2,
+              x + photoW + markLen,
+              y + photoH + 2,
+            ],
+          ];
+          for (const [x1, y1, x2, y2, x3, y3] of corners) {
+            ctx.beginPath();
+            ctx.moveTo(x1, y1);
+            ctx.lineTo(x2, y2);
+            ctx.lineTo(x3, y3);
+            ctx.stroke();
+          }
+          ctx.restore();
         }
-        if (c === 0) {
-          ctx.fillText('✂', x - gapPx / 2 - 12, y + photoH / 2);
+
+        // Scissor marks along top & left cut edges
+        if (showScissorIcons && cutGuideStyle !== 'none') {
+          ctx.save();
+          ctx.fillStyle = cutGuideColor;
+          ctx.font = '15px system-ui, sans-serif';
+          ctx.textAlign = 'center';
+          ctx.textBaseline = 'middle';
+          const pad = Math.max(3, Math.round(gapPx / 2));
+          if (r === 0 && y - pad - 10 >= 10) {
+            ctx.fillText('✂', x + photoW / 2, y - pad - 10);
+          }
+          if (c === 0 && x - pad - 12 >= 10) {
+            ctx.fillText('✂', x - pad - 12, y + photoH / 2);
+          }
+          ctx.restore();
         }
-        ctx.restore();
-      }
-    };
+      };
 
-    // Center single copy or grid
-    if (copiesToDraw === 1 || selectedPreset === 'single') {
-      const x = Math.round((sheetW - photoW) / 2);
-      const y = Math.round((sheetH - photoH) / 2);
-      drawPhotoSlot(x, y, 0, 0);
-    } else {
-      let effectiveCols = Math.min(cols, copiesToDraw);
-      let effectiveRows = Math.ceil(copiesToDraw / effectiveCols);
-
-      if (copiesToDraw === 4 && cols >= 2) {
-        effectiveCols = 2;
-        effectiveRows = 2;
-      } else if (copiesToDraw === 6 && cols >= 3) {
-        effectiveCols = 3;
-        effectiveRows = 2;
-      } else if (copiesToDraw === 8 && cols >= 4) {
-        effectiveCols = 4;
-        effectiveRows = 2;
-      }
+      const effectiveCols = Math.min(cols, copiesToDraw);
+      const effectiveRows = Math.ceil(copiesToDraw / effectiveCols);
 
       const totalGridW = effectiveCols * photoW + (effectiveCols - 1) * gapPx;
       const totalGridH = effectiveRows * photoH + (effectiveRows - 1) * gapPx;
-
       const startX = Math.round((sheetW - totalGridW) / 2);
       const startY = Math.round((sheetH - totalGridH) / 2);
 
@@ -585,10 +907,14 @@ export const PassportPhotoStudioPage: React.FC<PassportPhotoStudioPageProps> = (
           drawn++;
         }
       }
-    }
+    }, 95);
+
+    return () => window.clearTimeout(timer);
   }, [
     loadedPhotoImg,
-    selectedPreset,
+    paperType,
+    activeDim.widthPx,
+    activeDim.heightPx,
     totalCopies,
     cellGap,
     cutGuideStyle,
@@ -597,14 +923,68 @@ export const PassportPhotoStudioPage: React.FC<PassportPhotoStudioPageProps> = (
     renderSinglePhoto,
   ]);
 
-  // Actions: Safe Iframe Printing (Avoids popup blockers and iframe sandbox restrictions)
+  // =========================================================================
+  // EXPORTS: Single Compressed JPG, Print Sheet JPG, Print Sheet PDF, Direct Print
+  // =========================================================================
+  const handleDownloadSingleJpg = () => {
+    const canvas = previewCanvasRef.current;
+    if (!canvas) return;
+    const compressed = compressCanvasToTargetKb(canvas, targetKb);
+    setEstimatedSingleInfo({
+      sizeKb: compressed.sizeKb,
+      width: compressed.width,
+      height: compressed.height,
+    });
+    const suffix = targetKb === 'best' ? '300DPI' : `Under${targetKb}KB`;
+    const link = document.createElement('a');
+    link.href = compressed.dataUrl;
+    link.download = `AOS_${activeDim.fileSlug}_${suffix}.jpg`;
+    link.click();
+  };
+
+  const handleDownloadSheetJpg = () => {
+    const canvas = sheetCanvasRef.current;
+    if (!canvas) return;
+    const url = canvas.toDataURL('image/jpeg', 0.96);
+    const link = document.createElement('a');
+    link.href = url;
+    link.download = `AOS_${activeDim.fileSlug}_${totalCopies}x_${paperType.toUpperCase()}.jpg`;
+    link.click();
+  };
+
+  const handleDownloadPdf = async () => {
+    const canvas = sheetCanvasRef.current;
+    if (!canvas || isExportingPdf) return;
+    setIsExportingPdf(true);
+    try {
+      const conf = PAPER_DIMS[paperType];
+      const pdfDoc = await PDFDocument.create();
+      const page = pdfDoc.addPage([conf.pdfW, conf.pdfH]);
+      const jpgDataUrl = canvas.toDataURL('image/jpeg', 0.96);
+      const jpgBytes = await (await fetch(jpgDataUrl)).arrayBuffer();
+      const embeddedJpg = await pdfDoc.embedJpg(jpgBytes);
+      page.drawImage(embeddedJpg, { x: 0, y: 0, width: conf.pdfW, height: conf.pdfH });
+
+      const pdfBytes = await pdfDoc.save();
+      const blob = new Blob([pdfBytes as BlobPart], { type: 'application/pdf' });
+      const url = URL.createObjectURL(blob);
+      const link = document.createElement('a');
+      link.href = url;
+      link.download = `AOS_${activeDim.fileSlug}_${totalCopies}x_${paperType.toUpperCase()}.pdf`;
+      link.click();
+      setTimeout(() => URL.revokeObjectURL(url), 1000);
+    } catch (err) {
+      console.error('PDF generation error:', err);
+    } finally {
+      setIsExportingPdf(false);
+    }
+  };
+
   const handleDirectPrint = () => {
     const canvas = sheetCanvasRef.current;
     if (!canvas) return;
-    const dataUrl = canvas.toDataURL('image/jpeg', 0.98);
-
-    const isA4 = SHEET_PRESETS.find((p) => p.id === selectedPreset)?.paper === 'a4';
-    const paperSizeCss = isA4 ? 'A4 portrait' : '4in 6in landscape';
+    const dataUrl = canvas.toDataURL('image/jpeg', 0.96);
+    const conf = PAPER_DIMS[paperType];
 
     const iframe = document.createElement('iframe');
     iframe.style.position = 'fixed';
@@ -621,116 +1001,57 @@ export const PassportPhotoStudioPage: React.FC<PassportPhotoStudioPageProps> = (
       return;
     }
 
-    iframeDoc.write(`
-      <!DOCTYPE html>
-      <html>
-        <head>
-          <title>AOS Passport Photo Studio - Print Sheet</title>
-          <style>
-            @page {
-              size: ${paperSizeCss};
-              margin: 0;
-            }
-            body {
-              margin: 0;
-              padding: 0;
-              display: flex;
-              align-items: center;
-              justify-content: center;
-              background: #ffffff;
-            }
-            img {
-              width: 100%;
-              height: 100%;
-              object-fit: contain;
-              display: block;
-            }
-          </style>
-        </head>
-        <body>
-          <img src="${dataUrl}" onload="window.print();" />
-        </body>
-      </html>
-    `);
+    iframeDoc.write(`<!DOCTYPE html>
+<html>
+  <head>
+    <title>AOS Passport Photo Studio — ${conf.label}</title>
+    <style>
+      @page { size: ${conf.cssPage}; margin: 0; }
+      html, body { margin: 0; padding: 0; width: 100%; height: 100%; background: #fff; display: flex; align-items: center; justify-content: center; }
+      img { width: 100%; height: 100%; object-fit: contain; display: block; }
+    </style>
+  </head>
+  <body>
+    <img src="${dataUrl}" onload="window.print();" />
+  </body>
+</html>`);
     iframeDoc.close();
 
     setTimeout(() => {
       try {
         document.body.removeChild(iframe);
-      } catch (e) {
+      } catch {
         // Ignored
       }
-    }, 4000);
+    }, 4500);
   };
 
-  // Actions: Download PDF Sheet (using pdf-lib)
-  const handleDownloadPdf = async () => {
-    const canvas = sheetCanvasRef.current;
-    if (!canvas) return;
-
-    try {
-      const activeConf = SHEET_PRESETS.find((p) => p.id === selectedPreset) || SHEET_PRESETS[0];
-      const isA4 = activeConf.paper === 'a4';
-
-      const pageW = isA4 ? 595.28 : 432;
-      const pageH = isA4 ? 841.89 : 288;
-
-      const pdfDoc = await PDFDocument.create();
-      const page = pdfDoc.addPage([pageW, pageH]);
-
-      const jpgDataUrl = canvas.toDataURL('image/jpeg', 0.98);
-      const jpgBytes = await (await fetch(jpgDataUrl)).arrayBuffer();
-      const embeddedJpg = await pdfDoc.embedJpg(jpgBytes);
-
-      page.drawImage(embeddedJpg, {
-        x: 0,
-        y: 0,
-        width: pageW,
-        height: pageH,
-      });
-
-      const pdfBytes = await pdfDoc.save();
-      const blob = new Blob([pdfBytes as any], { type: 'application/pdf' });
-      const url = URL.createObjectURL(blob);
-
-      const link = document.createElement('a');
-      link.href = url;
-      link.download = `AOS_Passport_Photo_Studio_${totalCopies}Photos_${activeConf.paper}.pdf`;
-      link.click();
-      URL.revokeObjectURL(url);
-    } catch (err) {
-      console.error('PDF generation error:', err);
+  // Display dimensions for interactive preview box (preserves exact preset aspect ratio on mobile)
+  const previewBoxStyle = useMemo(() => {
+    const ratio = activeDim.widthPx / activeDim.heightPx;
+    const maxH = 278;
+    const maxW = 248;
+    let displayW = Math.round(maxH * ratio);
+    let displayH = maxH;
+    if (displayW > maxW) {
+      displayW = maxW;
+      displayH = Math.round(maxW / ratio);
     }
-  };
+    return {
+      width: `${displayW}px`,
+      height: `${displayH}px`,
+    };
+  }, [activeDim.widthPx, activeDim.heightPx]);
 
-  // Actions: Download High-Res Sheet JPG
-  const handleDownloadSheetJpg = () => {
-    const canvas = sheetCanvasRef.current;
-    if (!canvas) return;
-    const url = canvas.toDataURL('image/jpeg', 0.98);
-    const link = document.createElement('a');
-    link.href = url;
-    link.download = `AOS_Passport_Photo_Studio_${totalCopies}Photos.jpg`;
-    link.click();
-  };
-
-  // Actions: Download Single Photo JPG for Online Govt Portals (SSC/UPSC/Passport)
-  const handleDownloadSingleJpg = () => {
-    const canvas = previewCanvasRef.current;
-    if (!canvas) return;
-    const url = canvas.toDataURL('image/jpeg', 0.88);
-    const link = document.createElement('a');
-    link.href = url;
-    link.download = `AOS_Passport_Single_35x45mm_GovtReady.jpg`;
-    link.click();
-  };
-
-  const activePaperLabel = SHEET_PRESETS.find((p) => p.id === selectedPreset)?.paper === 'a4' ? 'A4 Paper' : '4×6" Paper';
+  // Height % of the actual photo region above the DOP strip (keeps Face Guide aligned cleanly)
+  const photoRegionPercent = useMemo(() => {
+    const stripH = getStripHeight(activeDim.heightPx);
+    return ((activeDim.heightPx - stripH) / activeDim.heightPx) * 100;
+  }, [activeDim.heightPx, getStripHeight]);
 
   return (
-    <div className="w-full max-w-4xl mx-auto space-y-6 pb-20 animate-in fade-in duration-200">
-      
-      {/* Hidden file and camera inputs */}
+    <div className="w-full max-w-4xl mx-auto space-y-5 pb-12 animate-in fade-in duration-200">
+      {/* Hidden File & Mobile Camera Inputs (Single Source — Zero Duplicates) */}
       <input
         type="file"
         ref={fileInputRef}
@@ -747,104 +1068,179 @@ export const PassportPhotoStudioPage: React.FC<PassportPhotoStudioPageProps> = (
         className="hidden"
       />
 
-      {/* TOP NAVIGATION & HEADER */}
-      <div className="flex items-center justify-between gap-4">
+      {/* TOP NAVIGATION BAR */}
+      <div className="flex items-center justify-between gap-3">
         <button
+          type="button"
           onClick={onBack}
-          className="inline-flex items-center gap-1.5 px-3 py-1.5 rounded-full liquid-glass-sub hover:border-[#0284c7]/50 text-slate-700 dark:text-slate-300 hover:text-slate-900 dark:hover:text-white text-xs font-semibold transition-all cursor-pointer shadow-sm active:scale-95"
+          className="aos-btn-soft inline-flex items-center gap-1.5 px-3.5 py-2 min-h-[40px] text-xs font-bold cursor-pointer"
         >
           <ArrowLeft className="w-3.5 h-3.5" />
           <span>Back to Tools</span>
         </button>
 
-        <div className="flex items-center gap-2">
-          <span className="text-[11px] font-mono text-emerald-600 dark:text-emerald-400 bg-emerald-50 dark:bg-emerald-950/70 border border-emerald-500/30 px-2 py-0.5 rounded-md flex items-center gap-1">
-            <span className="w-1.5 h-1.5 rounded-full bg-emerald-500 dark:bg-emerald-400 animate-pulse" />
-            300 DPI Studio Quality
-          </span>
-        </div>
+        <span className="inline-flex items-center gap-1.5 px-3 py-1.5 rounded-full text-[11px] font-mono font-semibold text-emerald-700 dark:text-emerald-300 bg-emerald-50 dark:bg-emerald-950/60 border border-emerald-500/30">
+          <span className="w-1.5 h-1.5 rounded-full bg-emerald-500 dark:bg-emerald-400 animate-pulse" />
+          300 DPI • 100% On-Device
+        </span>
       </div>
 
-      {/* Main Studio Title & Upload Control Card */}
-      <div className="p-4 sm:p-5 rounded-2xl liquid-glass shadow-xl flex flex-col sm:flex-row sm:items-center justify-between gap-4">
-        <div className="flex items-center gap-3">
-          <div className="w-10 h-10 rounded-xl bg-[#0284c7] flex items-center justify-center text-white shadow-lg shadow-[#0284c7]/30 shrink-0">
-            <Crop className="w-5 h-5 stroke-[2.5]" />
-          </div>
-          <div>
-            <div className="flex flex-wrap items-center gap-2">
-              <h1 className="text-base sm:text-lg font-black text-slate-900 dark:text-white tracking-tight">
-                Passport Photo Studio
-              </h1>
-              <span className="text-[10px] font-bold uppercase tracking-wider px-2.5 py-0.5 rounded-full bg-sky-100 dark:bg-[#072642] border border-sky-400/40 text-[#0284c7] dark:text-[#38bdf8] whitespace-nowrap shrink-0 inline-flex items-center">
-                STUDIO CROP &amp; PRINT
-              </span>
+      {/* STUDIO HEADER & PRIMARY UPLOAD BAR */}
+      <div className="p-4 sm:p-5 rounded-3xl liquid-glass border border-slate-200 dark:border-sky-400/20 shadow-xl space-y-4">
+        <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-4">
+          <div className="flex items-start gap-3 min-w-0">
+            <div className="w-11 h-11 rounded-2xl bg-gradient-to-br from-[#0ea5e9] via-[#0284c7] to-[#0B192C] flex items-center justify-center text-white shadow-lg shadow-[#0284c7]/30 shrink-0 border border-sky-300/30">
+              <Crop className="w-5 h-5 stroke-[2.4]" />
             </div>
-            <p className="text-xs text-slate-600 dark:text-slate-300 mt-0.5">
-              Instant 35×45 mm Passport cropping • 4×6 &amp; A4 sheets • 100% private
-            </p>
-            <StarRatingWidget toolId="passport-photo-studio" toolName="Passport Photo Studio" className="pt-2" />
+            <div className="min-w-0">
+              <div className="flex flex-wrap items-center gap-2">
+                <h1 className="text-base sm:text-lg font-black text-slate-900 dark:text-white tracking-tight">
+                  Passport Photo Studio
+                </h1>
+                <span className="text-[10px] font-bold uppercase tracking-wider px-2.5 py-0.5 rounded-full bg-sky-100 dark:bg-[#0B192C] border border-sky-400/40 text-[#0284c7] dark:text-[#38bdf8]">
+                  300 DPI STUDIO
+                </span>
+              </div>
+              <p className="text-xs text-slate-600 dark:text-slate-300 mt-0.5">
+                Passport, PAN, SSC/UPSC &amp; Stamp presets • Drag framing • Target KB &amp; 4×6 / A4 cut sheets
+              </p>
+              <StarRatingWidget
+                toolId="passport-photo-studio"
+                toolName="Passport Photo Studio"
+                className="pt-2"
+              />
+            </div>
+          </div>
+
+          {/* Primary Soft-UI Upload & Camera Triggers */}
+          <div className="flex items-center gap-2.5 shrink-0">
+            <button
+              type="button"
+              onClick={() => fileInputRef.current?.click()}
+              className="aos-btn-primary flex-1 sm:flex-initial px-4 py-2.5 min-h-[44px] font-bold text-xs sm:text-sm inline-flex items-center justify-center gap-2 cursor-pointer"
+            >
+              <Upload className="w-4 h-4" />
+              <span>Upload Photo</span>
+            </button>
+
+            <button
+              type="button"
+              onClick={() => cameraInputRef.current?.click()}
+              className="aos-btn-soft px-4 py-2.5 min-h-[44px] text-xs font-bold inline-flex items-center justify-center gap-1.5 cursor-pointer"
+              title="Capture portrait with camera"
+            >
+              <Camera className="w-4 h-4 text-[#0284c7] dark:text-[#38bdf8]" />
+              <span>Camera</span>
+            </button>
           </div>
         </div>
 
-        {/* Upload Buttons */}
-        <div className="flex items-center gap-2 shrink-0 flex-wrap sm:flex-nowrap">
-          <button
-            onClick={() => fileInputRef.current?.click()}
-            className="px-4 py-2 rounded-xl bg-[#0284c7] hover:bg-[#0369a1] text-white font-bold text-xs sm:text-sm flex items-center gap-2 shadow-lg shadow-[#0284c7]/30 transition-all cursor-pointer active:scale-95"
-            title="Upload any portrait photo from your computer or phone"
-          >
-            <Upload className="w-4 h-4" />
-            <span>Upload Photo</span>
-          </button>
+        {/* Inline Dismissible Upload Error Banner (Zero window.alert) */}
+        {uploadError && (
+          <div className="flex items-center justify-between gap-2 p-3 rounded-2xl bg-rose-50 dark:bg-rose-950/50 border border-rose-300 dark:border-rose-500/40 text-rose-700 dark:text-rose-200 text-xs font-semibold">
+            <div className="flex items-center gap-2 min-w-0">
+              <AlertCircle className="w-4 h-4 shrink-0 text-rose-500" />
+              <span>{uploadError}</span>
+            </div>
+            <button
+              type="button"
+              onClick={() => setUploadError(null)}
+              className="p-1 rounded-full hover:bg-rose-200/50 dark:hover:bg-rose-800/50 cursor-pointer"
+              aria-label="Dismiss error"
+            >
+              <X className="w-3.5 h-3.5" />
+            </button>
+          </div>
+        )}
 
-          <button
-            onClick={() => cameraInputRef.current?.click()}
-            className="px-3 py-2 rounded-xl liquid-glass-sub hover:border-[#0284c7]/50 text-slate-700 dark:text-slate-200 hover:text-slate-900 dark:hover:text-white text-xs font-semibold flex items-center gap-1.5 transition-all cursor-pointer active:scale-95"
-            title="Take a photo with your device camera"
-          >
-            <Camera className="w-4 h-4 text-[#0284c7]" />
-            <span className="hidden sm:inline">Camera</span>
-          </button>
+        {/* Compact 1-Click Sample Portraits Strip */}
+        <div className="pt-3 border-t border-slate-200/80 dark:border-sky-400/15 space-y-2">
+          <div className="flex items-center justify-between text-[11px]">
+            <span className="font-bold text-slate-700 dark:text-slate-300 flex items-center gap-1.5">
+              <Sparkles className="w-3.5 h-3.5 text-[#0284c7] dark:text-[#38bdf8]" />
+              <span>Try Sample Portrait</span>
+            </span>
+            <span className="font-mono text-[10px] text-slate-500 dark:text-slate-400">
+              {isStockModel ? 'Demo Photo' : 'Your Photo Active'}
+            </span>
+          </div>
+          <div className="flex items-center gap-2 overflow-x-auto pb-1">
+            {SAMPLE_PORTRAITS.map((sample) => {
+              const isSelected = selectedSampleId === sample.id;
+              return (
+                <button
+                  key={sample.id}
+                  type="button"
+                  onClick={() => handleSelectSample(sample)}
+                  className={`shrink-0 px-2.5 py-1.5 min-h-[40px] text-left cursor-pointer flex items-center gap-2 ${
+                    isSelected ? 'aos-btn-soft-active' : 'aos-btn-soft'
+                  }`}
+                >
+                  <div className="w-6 h-7 rounded-md border border-white/40 bg-slate-100 dark:bg-slate-800 overflow-hidden shrink-0">
+                    <img src={sample.url} alt="" className="w-full h-full object-cover" />
+                  </div>
+                  <div className="min-w-0 pr-1">
+                    <div className="text-[11px] font-bold leading-tight whitespace-nowrap">
+                      {sample.name}
+                    </div>
+                    <div
+                      className={`text-[9px] leading-tight whitespace-nowrap ${
+                        isSelected ? 'text-sky-100' : 'text-slate-500 dark:text-slate-400'
+                      }`}
+                    >
+                      {sample.tag}
+                    </div>
+                  </div>
+                  {isSelected && <Check className="w-3.5 h-3.5 text-white shrink-0" />}
+                </button>
+              );
+            })}
+          </div>
         </div>
       </div>
 
-      {/* Illustrative Architecture & Precision Standard Card */}
-      <PassportStudioGraphicCard />
-
-      {/* SAMPLE PORTRAITS QUICK SWITCHER */}
-      <div className="p-3 rounded-xl liquid-glass-sub border border-slate-200 dark:border-white/10 space-y-2">
-        <div className="flex items-center justify-between text-xs">
-          <span className="font-bold text-slate-700 dark:text-slate-300 flex items-center gap-1.5">
-            <Sparkles className="w-3.5 h-3.5 text-[#0284c7]" />
-            <span>Instant Sample Portraits (Test Any Image in 1-Click):</span>
-          </span>
-          <span className="text-[11px] font-mono text-slate-500 dark:text-slate-400">
-            {isStockModel ? 'Sample Active' : 'Custom Upload Active'}
+      {/* =========================================================================
+          STEP 1: OFFICIAL PORTAL DIMENSION PRESETS (300 DPI ONE-CLICK PILLS)
+          ========================================================================= */}
+      <div className="p-4 sm:p-5 rounded-3xl liquid-glass border border-slate-200 dark:border-sky-400/20 shadow-xl space-y-3.5">
+        <div className="flex items-center justify-between gap-2 flex-wrap">
+          <div className="flex items-center gap-2">
+            <FileCheck2 className="w-4 h-4 text-[#0284c7] dark:text-[#38bdf8]" />
+            <h2 className="text-xs sm:text-sm font-extrabold uppercase tracking-wider text-slate-900 dark:text-white">
+              1. Official Portal Size Preset (300 DPI)
+            </h2>
+          </div>
+          <span className="text-[11px] font-mono font-bold text-[#0284c7] dark:text-[#38bdf8]">
+            {activeDim.widthPx} × {activeDim.heightPx} px
           </span>
         </div>
 
-        <div className="grid grid-cols-2 sm:grid-cols-4 gap-2">
-          {SAMPLE_PORTRAITS.map((sample) => {
-            const isSelected = selectedSampleId === sample.id;
+        <div className="grid grid-cols-2 sm:grid-cols-3 lg:grid-cols-5 gap-2.5">
+          {DIMENSION_PRESETS.map((preset) => {
+            const isSelected = dimensionId === preset.id;
             return (
               <button
-                key={sample.id}
-                onClick={() => handleSelectSample(sample)}
-                className={`p-2 rounded-lg border text-left transition-all cursor-pointer flex items-center gap-2 ${
-                  isSelected
-                    ? 'border-[#0284c7] bg-[#0284c7]/15 text-[#0284c7] dark:text-white font-bold shadow-sm'
-                    : 'liquid-glass text-slate-700 dark:text-slate-300 hover:border-slate-400 dark:hover:border-white/20'
+                key={preset.id}
+                type="button"
+                onClick={() => handleSelectDimension(preset)}
+                className={`px-3.5 py-2.5 min-h-[56px] rounded-2xl text-left flex flex-col justify-center cursor-pointer ${
+                  isSelected ? 'aos-btn-soft-active' : 'aos-btn-soft'
                 }`}
               >
-                <div className="w-6 h-7 rounded border border-slate-300 dark:border-white/20 bg-slate-100 dark:bg-slate-800 overflow-hidden shrink-0">
-                  <img src={sample.url} alt="" className="w-full h-full object-cover" />
+                <div className="flex items-center justify-between gap-1 w-full">
+                  <span className="text-xs font-extrabold leading-tight truncate">
+                    {preset.label}
+                  </span>
+                  {isSelected && <Check className="w-3.5 h-3.5 text-white shrink-0" />}
                 </div>
-                <div className="min-w-0">
-                  <div className="text-[11px] font-bold truncate">{sample.name}</div>
-                  <div className="text-[9px] text-slate-500 dark:text-slate-400 truncate">{sample.tag}</div>
+                <div
+                  className={`text-[10px] font-mono mt-0.5 flex items-center justify-between gap-1 ${
+                    isSelected ? 'text-sky-100' : 'text-slate-500 dark:text-slate-400'
+                  }`}
+                >
+                  <span>{preset.sizeLabel}</span>
+                  <span className="opacity-80">{preset.portalBadge}</span>
                 </div>
-                {isSelected && <Check className="w-3.5 h-3.5 text-[#0284c7] ml-auto shrink-0" />}
               </button>
             );
           })}
@@ -852,297 +1248,508 @@ export const PassportPhotoStudioPage: React.FC<PassportPhotoStudioPageProps> = (
       </div>
 
       {/* =========================================================================
-          SECTION 1: CROPPED PHOTO PREVIEW (With Proper 35×45 mm 7:9 Shape)
+          STEP 2: INTERACTIVE FRAMING, HEAD & SHOULDERS GUIDE + NAME/DOP STRIP
           ========================================================================= */}
-      <div className="rounded-2xl liquid-glass p-5 shadow-xl space-y-4">
-        <div className="flex items-center justify-between border-b border-slate-200 dark:border-white/10 pb-3 flex-wrap gap-2">
-          <div className="flex items-center gap-2">
-            <Crop className="w-4 h-4 text-[#0284c7]" />
-            <span className="text-xs font-bold text-slate-900 dark:text-white tracking-wider uppercase">
-              CROPPED PHOTO PREVIEW
-            </span>
-            <span className="text-[10px] font-mono px-2 py-0.5 rounded liquid-glass-sub text-slate-700 dark:text-slate-300">
-              35 × 45 mm (India Standard 7:9)
-            </span>
+      <div className="p-4 sm:p-5 rounded-3xl liquid-glass border border-slate-200 dark:border-sky-400/20 shadow-xl space-y-5">
+        <div className="flex items-center justify-between gap-2 flex-wrap border-b border-slate-200 dark:border-sky-400/15 pb-3">
+          <div className="flex items-center gap-2 min-w-0">
+            <Move className="w-4 h-4 text-[#0284c7] dark:text-[#38bdf8] shrink-0" />
+            <h2 className="text-xs sm:text-sm font-extrabold uppercase tracking-wider text-slate-900 dark:text-white truncate">
+              2. Interactive Framing &amp; Face Guide
+            </h2>
           </div>
+
           <div className="flex items-center gap-2">
             <button
-              onClick={() => setShowBiometricGuide(!showBiometricGuide)}
-              className={`px-2.5 py-1 rounded-md text-[11px] font-semibold border flex items-center gap-1.5 transition-all cursor-pointer ${
-                showBiometricGuide
-                  ? 'border-[#0284c7] bg-[#0284c7] text-white shadow-sm'
-                  : 'liquid-glass-sub text-slate-700 dark:text-slate-300 hover:border-[#0284c7]/40'
+              type="button"
+              onClick={() => setShowFaceGuide((v) => !v)}
+              className={`px-3 py-1.5 min-h-[36px] text-[11px] font-bold inline-flex items-center gap-1.5 cursor-pointer ${
+                showFaceGuide ? 'aos-btn-soft-active' : 'aos-btn-soft'
               }`}
-              title="Show official passport face measurement guidelines"
             >
               <UserCheck className="w-3.5 h-3.5" />
-              <span>Face Guidelines</span>
+              <span>Face Guide {showFaceGuide ? 'ON' : 'OFF'}</span>
             </button>
-            <span className="text-[9px] font-black uppercase px-2 py-1 rounded bg-[#0284c7] text-white">
-              STANDARD
-            </span>
+
+            <button
+              type="button"
+              onClick={handleResetFraming}
+              className="aos-btn-soft px-3 py-1.5 min-h-[36px] text-[11px] font-bold inline-flex items-center gap-1 cursor-pointer"
+              title="Reset position, zoom & rotation"
+            >
+              <RotateCcw className="w-3 h-3 text-[#0284c7] dark:text-[#38bdf8]" />
+              <span>Reset</span>
+            </button>
           </div>
         </div>
 
-        {/* Center Cropped Photo Stage with Drag & Drop */}
-        <div
-          onDragOver={handleDragOver}
-          onDragLeave={handleDragLeave}
-          onDrop={handleDrop}
-          className={`relative w-full py-8 flex flex-col items-center justify-center liquid-glass-sub rounded-2xl border transition-all overflow-hidden ${
-            isDragOver
-              ? 'border-[#0284c7] bg-[#0284c7]/10 ring-2 ring-[#0284c7]'
-              : 'border-slate-200 dark:border-white/10'
-          }`}
-        >
-          {isDragOver && (
-            <div className="absolute inset-0 bg-[#072642]/80 backdrop-blur-sm z-30 flex flex-col items-center justify-center text-white p-4">
-              <Upload className="w-10 h-10 text-sky-400 animate-bounce mb-2" />
-              <div className="text-sm font-bold">Drop photo here to apply instantly!</div>
-              <div className="text-xs text-sky-200 mt-1">Supports JPG, PNG, WEBP</div>
-            </div>
-          )}
+        <div className="grid grid-cols-1 lg:grid-cols-12 gap-5 items-start">
+          {/* LEFT: Touch-Interactive Photo Stage with Transparent Head & Shoulders SVG Overlay */}
+          <div
+            onDragOver={handleDragOver}
+            onDragLeave={handleDragLeave}
+            onDrop={handleDrop}
+            className={`lg:col-span-6 relative rounded-2xl p-4 sm:p-5 flex flex-col items-center justify-center liquid-glass-sub border transition-colors ${
+              isDragOver
+                ? 'border-[#0284c7] ring-2 ring-[#0284c7]/50'
+                : 'border-slate-200 dark:border-sky-400/15'
+            }`}
+          >
+            {isDragOver && (
+              <div className="absolute inset-0 rounded-2xl bg-[#0B192C]/85 z-30 flex flex-col items-center justify-center text-white p-4">
+                <Upload className="w-9 h-9 text-sky-400 animate-bounce mb-2" />
+                <div className="text-sm font-bold">Drop Portrait Photo Here</div>
+                <div className="text-[11px] text-sky-200 mt-0.5">JPG, PNG, or WEBP</div>
+              </div>
+            )}
 
-          {/* Proportional Preview Container: Guaranteed 35×45 mm aspect ratio */}
-          <div className="relative group flex flex-col items-center">
+            {/* Live Touch/Mouse Draggable Frame */}
             <div
-              className="relative rounded-xl overflow-hidden shadow-2xl border-2 border-slate-300 dark:border-sky-500/30 bg-white transition-transform"
-              style={{
-                width: '210px',
-                height: '270px',
-                maxWidth: '90vw',
-                aspectRatio: '35 / 45',
-              }}
+              ref={previewFrameRef}
+              onPointerDown={handlePointerDown}
+              onPointerMove={handlePointerMove}
+              onPointerUp={handlePointerUpOrCancel}
+              onPointerCancel={handlePointerUpOrCancel}
+              style={previewBoxStyle}
+              className={`relative rounded-xl overflow-hidden shadow-2xl border-2 bg-white touch-none select-none ${
+                isPanning
+                  ? 'border-[#38bdf8] cursor-grabbing ring-4 ring-sky-400/20'
+                  : 'border-slate-300 dark:border-sky-400/40 cursor-grab'
+              }`}
+              aria-label="Interactive photo framing canvas. Drag to pan face position."
             >
               <canvas
                 ref={previewCanvasRef}
-                width={413}
-                height={531}
-                style={{
-                  width: '100%',
-                  height: '100%',
-                  display: 'block',
-                  objectFit: 'contain',
-                }}
+                width={activeDim.widthPx}
+                height={activeDim.heightPx}
+                className="w-full h-full block pointer-events-none"
               />
 
-              {/* Biometric Face Guide Lines Overlay */}
-              {showBiometricGuide && (
-                <div className="absolute inset-0 pointer-events-none z-10 flex flex-col justify-between p-3 border-2 border-dashed border-sky-400/70">
-                  <div className="text-[8px] font-mono font-bold text-sky-600 bg-white/80 px-1 py-0.5 rounded self-center shadow-xs">
-                    Crown (Top of Head)
+              {isImageLoading && (
+                <div className="absolute inset-0 bg-[#0B192C]/40 flex items-center justify-center">
+                  <div className="w-6 h-6 rounded-full border-2 border-white border-t-transparent animate-spin" />
+                </div>
+              )}
+
+              {/* Transparent Head & Shoulders Dotted Alignment Guide (Non-Exported Overlay) */}
+              {showFaceGuide && (
+                <div
+                  className="absolute top-0 left-0 right-0 pointer-events-none z-10 overflow-hidden"
+                  style={{ height: `${photoRegionPercent}%` }}
+                >
+                  <svg
+                    viewBox="0 0 200 260"
+                    preserveAspectRatio="none"
+                    className="w-full h-full"
+                    aria-hidden="true"
+                  >
+                    {/* Subtle contrast halo behind dotted lines so guide stays legible on white & dark walls */}
+                    <g fill="none" stroke="rgba(11, 25, 44, 0.52)" strokeWidth="2.8">
+                      <line x1="100" y1="8" x2="100" y2="252" strokeDasharray="3 5" />
+                      <line x1="14" y1="30" x2="186" y2="30" strokeDasharray="4 4" />
+                      <line x1="14" y1="108" x2="186" y2="108" strokeDasharray="5 4" />
+                      <line x1="30" y1="176" x2="170" y2="176" strokeDasharray="4 4" />
+                      <ellipse cx="100" cy="106" rx="46" ry="66" strokeDasharray="5 4" />
+                      <path
+                        d="M 12 256 C 18 205, 52 186, 76 184 L 124 184 C 148 186, 182 205, 188 256"
+                        strokeDasharray="6 4"
+                      />
+                    </g>
+
+                    {/* Crisp Sapphire/Cyan Dotted Alignment Silhouette */}
+                    <g fill="none" stroke="#38bdf8" strokeWidth="1.5">
+                      {/* Center Axis */}
+                      <line x1="100" y1="8" x2="100" y2="252" strokeDasharray="3 5" opacity="0.7" />
+                      {/* Crown Line */}
+                      <line x1="14" y1="30" x2="186" y2="30" strokeDasharray="4 4" opacity="0.85" />
+                      {/* Eye Level Line */}
+                      <line x1="14" y1="108" x2="186" y2="108" strokeDasharray="5 4" stroke="#22d3ee" />
+                      {/* Chin Line */}
+                      <line x1="30" y1="176" x2="170" y2="176" strokeDasharray="4 4" opacity="0.85" />
+                      {/* Head Oval */}
+                      <ellipse cx="100" cy="106" rx="46" ry="66" strokeDasharray="5 4" />
+                      {/* Shoulders Arc */}
+                      <path
+                        d="M 12 256 C 18 205, 52 186, 76 184 L 124 184 C 148 186, 182 205, 188 256"
+                        strokeDasharray="6 4"
+                      />
+                    </g>
+                  </svg>
+
+                  {/* Tiny Non-Intrusive Guide Labels */}
+                  <span className="absolute top-1.5 left-1/2 -translate-x-1/2 px-1.5 py-0.5 rounded bg-[#0B192C]/75 text-[8px] font-mono font-bold text-sky-200 tracking-wide">
+                    CROWN
+                  </span>
+                  <span className="absolute top-[41.5%] -translate-y-1/2 left-1.5 px-1 py-0.5 rounded bg-[#0B192C]/75 text-[8px] font-mono font-bold text-cyan-200">
+                    EYES
+                  </span>
+                </div>
+              )}
+            </div>
+
+            <div className="mt-3 flex items-center justify-center gap-2 text-[11px] font-medium text-slate-600 dark:text-slate-300 text-center">
+              <Move className="w-3.5 h-3.5 text-[#0284c7] dark:text-[#38bdf8] shrink-0" />
+              <span>Drag photo directly to align face • Pinch or slide to zoom</span>
+            </div>
+          </div>
+
+          {/* RIGHT: Zoom, Rotation & Candidate Name / DOP Controls */}
+          <div className="lg:col-span-6 space-y-4">
+            {/* Zoom Control */}
+            <div className="p-3.5 rounded-2xl liquid-glass-sub border border-slate-200 dark:border-sky-400/15 space-y-3">
+              <div>
+                <div className="flex items-center justify-between text-xs font-bold text-slate-800 dark:text-slate-100 mb-1.5">
+                  <span className="flex items-center gap-1.5">
+                    <ZoomIn className="w-3.5 h-3.5 text-[#0284c7] dark:text-[#38bdf8]" />
+                    <span>Zoom</span>
+                  </span>
+                  <span className="font-mono text-[#0284c7] dark:text-[#38bdf8]">
+                    {zoom.toFixed(2)}×
+                  </span>
+                </div>
+                <div className="flex items-center gap-2">
+                  <button
+                    type="button"
+                    onClick={() => setZoom((z) => Math.max(0.7, Math.round((z - 0.1) * 100) / 100))}
+                    className="aos-btn-icon w-9 h-9 shrink-0 cursor-pointer"
+                    aria-label="Zoom out"
+                  >
+                    <ZoomOut className="w-4 h-4" />
+                  </button>
+                  <input
+                    type="range"
+                    min="0.7"
+                    max="2.8"
+                    step="0.02"
+                    value={zoom}
+                    onChange={(e) => setZoom(parseFloat(e.target.value))}
+                    className="flex-1 h-2 bg-slate-200 dark:bg-slate-700 rounded-lg appearance-none cursor-pointer accent-[#0284c7]"
+                    aria-label="Zoom scale"
+                  />
+                  <button
+                    type="button"
+                    onClick={() => setZoom((z) => Math.min(2.8, Math.round((z + 0.1) * 100) / 100))}
+                    className="aos-btn-icon w-9 h-9 shrink-0 cursor-pointer"
+                    aria-label="Zoom in"
+                  >
+                    <ZoomIn className="w-4 h-4" />
+                  </button>
+                </div>
+              </div>
+
+              {/* Fine Rotation + Quick 90° Turn */}
+              <div className="pt-2 border-t border-slate-200/80 dark:border-sky-400/15">
+                <div className="flex items-center justify-between text-xs font-bold text-slate-800 dark:text-slate-100 mb-1.5">
+                  <span className="flex items-center gap-1.5">
+                    <RotateCw className="w-3.5 h-3.5 text-[#0284c7] dark:text-[#38bdf8]" />
+                    <span>Fine Tilt &amp; Rotate</span>
+                  </span>
+                  <span className="font-mono text-[#0284c7] dark:text-[#38bdf8]">
+                    {fineRotation > 0 ? `+${fineRotation.toFixed(1)}°` : `${fineRotation.toFixed(1)}°`}
+                    {baseRotate90 !== 0 ? ` (${baseRotate90}°)` : ''}
+                  </span>
+                </div>
+                <div className="flex items-center gap-2">
+                  <button
+                    type="button"
+                    onClick={() => setBaseRotate90((r) => (r - 90 + 360) % 360)}
+                    className="aos-btn-icon w-9 h-9 shrink-0 cursor-pointer"
+                    title="Rotate 90° left"
+                    aria-label="Rotate 90 degrees left"
+                  >
+                    <RotateCcw className="w-4 h-4" />
+                  </button>
+                  <input
+                    type="range"
+                    min="-15"
+                    max="15"
+                    step="0.5"
+                    value={fineRotation}
+                    onChange={(e) => setFineRotation(parseFloat(e.target.value))}
+                    className="flex-1 h-2 bg-slate-200 dark:bg-slate-700 rounded-lg appearance-none cursor-pointer accent-[#0284c7]"
+                    aria-label="Fine tilt rotation"
+                  />
+                  <button
+                    type="button"
+                    onClick={() => setBaseRotate90((r) => (r + 90) % 360)}
+                    className="aos-btn-icon w-9 h-9 shrink-0 cursor-pointer"
+                    title="Rotate 90° right"
+                    aria-label="Rotate 90 degrees right"
+                  >
+                    <RotateCw className="w-4 h-4" />
+                  </button>
+                </div>
+              </div>
+            </div>
+
+            {/* Name & Date of Photo (DOP) Strip Toggle Card */}
+            <div className="p-3.5 rounded-2xl liquid-glass-sub border border-slate-200 dark:border-sky-400/15 space-y-3">
+              <div className="flex items-center justify-between gap-3">
+                <div className="min-w-0">
+                  <div className="flex items-center gap-1.5 flex-wrap">
+                    <Calendar className="w-3.5 h-3.5 text-[#0284c7] dark:text-[#38bdf8] shrink-0" />
+                    <span className="text-xs font-extrabold text-slate-900 dark:text-white">
+                      Name &amp; Date of Photo (DOP) Strip
+                    </span>
                   </div>
-                  <div className="w-full border-t border-sky-400/40 relative">
-                    <span className="absolute -top-3 left-1 text-[8px] font-mono text-sky-600 bg-white/80 px-0.5 rounded">Eye Level</span>
+                  <p className="text-[11px] text-slate-600 dark:text-slate-400 mt-0.5">
+                    Adds a clean white strip below photo (SSC / UPSC / TNPSC)
+                  </p>
+                </div>
+
+                <button
+                  type="button"
+                  role="switch"
+                  aria-checked={withNameDate}
+                  onClick={() => setWithNameDate((v) => !v)}
+                  className={`px-3.5 py-1.5 min-h-[38px] text-xs font-bold shrink-0 cursor-pointer ${
+                    withNameDate ? 'aos-btn-soft-active' : 'aos-btn-soft'
+                  }`}
+                >
+                  {withNameDate ? 'ON' : 'OFF'}
+                </button>
+              </div>
+
+              {withNameDate && (
+                <div className="space-y-2.5 pt-2 border-t border-slate-200/80 dark:border-sky-400/15 animate-in fade-in duration-150">
+                  <div>
+                    <label
+                      htmlFor="aos-candidate-name"
+                      className="block text-[10px] font-bold uppercase tracking-wider text-slate-600 dark:text-slate-300 mb-1"
+                    >
+                      Candidate Name
+                    </label>
+                    <input
+                      id="aos-candidate-name"
+                      type="text"
+                      value={candidateName}
+                      onChange={(e) => setCandidateName(e.target.value)}
+                      placeholder="e.g. ANIS SHAIKH"
+                      className="w-full px-3 py-2 min-h-[40px] rounded-xl text-xs font-bold uppercase bg-white dark:bg-[#0B192C] border border-slate-300 dark:border-sky-400/25 text-slate-900 dark:text-white focus:outline-none focus:border-[#0284c7]"
+                    />
                   </div>
-                  <div className="w-full border-t border-sky-400/40 relative">
-                    <span className="absolute -top-3 left-1 text-[8px] font-mono text-sky-600 bg-white/80 px-0.5 rounded">Chin Level</span>
-                  </div>
-                  <div className="text-[8px] font-mono font-bold text-sky-600 bg-white/80 px-1 py-0.5 rounded self-center shadow-xs">
-                    70-80% Face Coverage Standard
+
+                  <div>
+                    <div className="flex items-center justify-between mb-1">
+                      <label
+                        htmlFor="aos-dop-text"
+                        className="text-[10px] font-bold uppercase tracking-wider text-slate-600 dark:text-slate-300"
+                      >
+                        Date of Photo (DOP)
+                      </label>
+                      <button
+                        type="button"
+                        onClick={() => setDopText(`DOP: ${getTodayFormatted()}`)}
+                        className="text-[10px] font-bold text-[#0284c7] dark:text-[#38bdf8] hover:underline cursor-pointer"
+                      >
+                        Use Today
+                      </button>
+                    </div>
+                    <input
+                      id="aos-dop-text"
+                      type="text"
+                      value={dopText}
+                      onChange={(e) => setDopText(e.target.value)}
+                      placeholder="e.g. DOP: 20/11/2026"
+                      className="w-full px-3 py-2 min-h-[40px] rounded-xl text-xs font-semibold bg-white dark:bg-[#0B192C] border border-slate-300 dark:border-sky-400/25 text-slate-900 dark:text-white focus:outline-none focus:border-[#0284c7]"
+                    />
                   </div>
                 </div>
               )}
             </div>
 
-            {/* Adjust Crop Floating Pill Button */}
-            <div className="mt-4">
-              <button
-                onClick={() => setShowCropAdjuster(!showCropAdjuster)}
-                className="px-4 py-2 rounded-full liquid-glass hover:bg-[#0284c7] hover:text-white border border-slate-300 dark:border-white/20 text-slate-900 dark:text-white text-xs font-bold flex items-center gap-1.5 shadow-lg transition-all cursor-pointer active:scale-95"
-              >
-                <Crop className="w-3.5 h-3.5 text-[#0284c7] group-hover:text-white" />
-                <span>{showCropAdjuster ? 'Close Crop Adjuster' : 'Adjust Crop & Framing'}</span>
-              </button>
-            </div>
-          </div>
-
-          {/* Inline Crop / Pan / Zoom Adjuster Drawer */}
-          {showCropAdjuster && (
-            <div className="mt-4 w-full max-w-md p-4 rounded-xl liquid-glass-sub border border-slate-200 dark:border-white/10 space-y-3 animate-in fade-in zoom-in-95">
-              <div className="flex items-center justify-between text-xs font-bold text-slate-900 dark:text-white border-b border-slate-200 dark:border-white/10 pb-2">
-                <span className="flex items-center gap-1.5">
-                  <ZoomIn className="w-3.5 h-3.5 text-[#0284c7]" />
-                  <span>Face Framing &amp; Scale</span>
+            {/* Studio Brightness / Contrast / Saturation Sliders */}
+            <div className="p-3.5 rounded-2xl liquid-glass-sub border border-slate-200 dark:border-sky-400/15 space-y-2.5">
+              <div className="flex items-center justify-between">
+                <span className="text-xs font-bold text-slate-900 dark:text-white flex items-center gap-1.5">
+                  <Sliders className="w-3.5 h-3.5 text-[#0284c7] dark:text-[#38bdf8]" />
+                  <span>Lighting &amp; Tone</span>
                 </span>
                 <button
-                  onClick={handleResetCrop}
-                  className="text-[11px] text-[#0284c7] hover:underline cursor-pointer"
+                  type="button"
+                  onClick={handleResetAdjustments}
+                  className="text-[11px] font-bold text-[#0284c7] dark:text-[#38bdf8] hover:underline cursor-pointer"
                 >
-                  Reset Position
+                  Reset
                 </button>
               </div>
-
-              <div>
-                <div className="flex justify-between text-[11px] text-slate-700 dark:text-slate-300 mb-1">
-                  <span>Zoom Scale</span>
-                  <span className="font-mono text-[#0284c7] font-bold">{zoom.toFixed(1)}x</span>
+              <div className="grid grid-cols-3 gap-2.5">
+                <div>
+                  <div className="flex justify-between text-[10px] font-semibold text-slate-600 dark:text-slate-300 mb-1">
+                    <span>Bright</span>
+                    <span className="font-mono">{brightness}%</span>
+                  </div>
+                  <input
+                    type="range"
+                    min="60"
+                    max="145"
+                    value={brightness}
+                    onChange={(e) => setBrightness(parseInt(e.target.value, 10))}
+                    className="w-full h-1.5 bg-slate-200 dark:bg-slate-700 rounded-lg appearance-none cursor-pointer accent-[#0284c7]"
+                  />
                 </div>
-                <input
-                  type="range"
-                  min="0.8"
-                  max="2.5"
-                  step="0.05"
-                  value={zoom}
-                  onChange={(e) => setZoom(parseFloat(e.target.value))}
-                  className="w-full h-1.5 bg-slate-200 dark:bg-slate-700 rounded-lg appearance-none cursor-pointer accent-[#0284c7]"
-                />
-              </div>
-
-              <div>
-                <div className="flex justify-between text-[11px] text-slate-700 dark:text-slate-300 mb-1">
-                  <span>Horizontal (Left / Right)</span>
-                  <span className="font-mono text-slate-500 dark:text-slate-400">{panX > 0 ? `+${panX}%` : `${panX}%`}</span>
+                <div>
+                  <div className="flex justify-between text-[10px] font-semibold text-slate-600 dark:text-slate-300 mb-1">
+                    <span>Contrast</span>
+                    <span className="font-mono">{contrast}%</span>
+                  </div>
+                  <input
+                    type="range"
+                    min="60"
+                    max="145"
+                    value={contrast}
+                    onChange={(e) => setContrast(parseInt(e.target.value, 10))}
+                    className="w-full h-1.5 bg-slate-200 dark:bg-slate-700 rounded-lg appearance-none cursor-pointer accent-[#0284c7]"
+                  />
                 </div>
-                <input
-                  type="range"
-                  min="-50"
-                  max="50"
-                  value={panX}
-                  onChange={(e) => setPanX(parseInt(e.target.value))}
-                  className="w-full h-1.5 bg-slate-200 dark:bg-slate-700 rounded-lg appearance-none cursor-pointer accent-[#0284c7]"
-                />
-              </div>
-
-              <div>
-                <div className="flex justify-between text-[11px] text-slate-700 dark:text-slate-300 mb-1">
-                  <span>Vertical (Up / Down)</span>
-                  <span className="font-mono text-slate-500 dark:text-slate-400">{panY > 0 ? `+${panY}%` : `${panY}%`}</span>
+                <div>
+                  <div className="flex justify-between text-[10px] font-semibold text-slate-600 dark:text-slate-300 mb-1">
+                    <span>Color</span>
+                    <span className="font-mono">{saturation}%</span>
+                  </div>
+                  <input
+                    type="range"
+                    min="0"
+                    max="180"
+                    value={saturation}
+                    onChange={(e) => setSaturation(parseInt(e.target.value, 10))}
+                    className="w-full h-1.5 bg-slate-200 dark:bg-slate-700 rounded-lg appearance-none cursor-pointer accent-[#0284c7]"
+                  />
                 </div>
-                <input
-                  type="range"
-                  min="-50"
-                  max="50"
-                  value={panY}
-                  onChange={(e) => setPanY(parseInt(e.target.value))}
-                  className="w-full h-1.5 bg-slate-200 dark:bg-slate-700 rounded-lg appearance-none cursor-pointer accent-[#0284c7]"
-                />
               </div>
             </div>
+          </div>
+        </div>
+      </div>
+
+      {/* =========================================================================
+          STEP 3: SINGLE PHOTO DOWNLOAD WITH TARGET KB COMPRESSION
+          ========================================================================= */}
+      <div className="p-4 sm:p-5 rounded-3xl liquid-glass border border-slate-200 dark:border-sky-400/20 shadow-xl space-y-4">
+        <div className="flex items-center justify-between gap-2 flex-wrap border-b border-slate-200 dark:border-sky-400/15 pb-3">
+          <div className="flex items-center gap-2">
+            <Download className="w-4 h-4 text-[#0284c7] dark:text-[#38bdf8]" />
+            <h2 className="text-xs sm:text-sm font-extrabold uppercase tracking-wider text-slate-900 dark:text-white">
+              3. Single Portal Photo (Target KB Compression)
+            </h2>
+          </div>
+
+          {estimatedSingleInfo && (
+            <span className="inline-flex items-center gap-1.5 px-2.5 py-1 rounded-full text-[11px] font-mono font-bold bg-emerald-50 dark:bg-emerald-950/60 text-emerald-700 dark:text-emerald-300 border border-emerald-500/30">
+              <span>{estimatedSingleInfo.sizeKb.toFixed(1)} KB</span>
+              <span className="opacity-60">•</span>
+              <span>
+                {estimatedSingleInfo.width}×{estimatedSingleInfo.height}px
+              </span>
+            </span>
           )}
         </div>
-      </div>
 
-      {/* =========================================================================
-          SECTION 2: IMAGE ADJUSTMENTS (Brightness, Contrast, Saturation)
-          ========================================================================= */}
-      <div className="rounded-2xl liquid-glass p-5 shadow-xl space-y-4">
-        <div className="flex items-center justify-between border-b border-slate-200 dark:border-white/10 pb-3">
-          <div className="flex items-center gap-2">
-            <Sliders className="w-4 h-4 text-[#0284c7]" />
-            <span className="text-sm font-bold text-slate-900 dark:text-white">Studio Adjustments</span>
-          </div>
-          <button
-            onClick={handleResetAdjustments}
-            className="text-xs text-slate-600 dark:text-slate-400 hover:text-slate-900 dark:hover:text-white flex items-center gap-1 cursor-pointer transition-colors"
-          >
-            <RotateCcw className="w-3 h-3 text-[#0284c7]" />
-            <span>Reset Sliders</span>
-          </button>
-        </div>
-
-        <div className="grid grid-cols-1 sm:grid-cols-3 gap-4">
-          <div>
-            <div className="flex justify-between text-xs font-semibold text-slate-700 dark:text-slate-300 mb-1.5">
-              <span>Brightness</span>
-              <span className="font-mono text-slate-500 dark:text-slate-400">{brightness}%</span>
-            </div>
-            <input
-              type="range"
-              min="50"
-              max="150"
-              value={brightness}
-              onChange={(e) => setBrightness(parseInt(e.target.value))}
-              className="w-full h-1.5 bg-slate-200 dark:bg-slate-700 rounded-lg appearance-none cursor-pointer accent-[#0284c7]"
-            />
-          </div>
-
-          <div>
-            <div className="flex justify-between text-xs font-semibold text-slate-700 dark:text-slate-300 mb-1.5">
-              <span>Contrast</span>
-              <span className="font-mono text-slate-500 dark:text-slate-400">{contrast}%</span>
-            </div>
-            <input
-              type="range"
-              min="50"
-              max="150"
-              value={contrast}
-              onChange={(e) => setContrast(parseInt(e.target.value))}
-              className="w-full h-1.5 bg-slate-200 dark:bg-slate-700 rounded-lg appearance-none cursor-pointer accent-[#0284c7]"
-            />
-          </div>
-
-          <div>
-            <div className="flex justify-between text-xs font-semibold text-slate-700 dark:text-slate-300 mb-1.5">
-              <span>Color Saturation</span>
-              <span className="font-mono text-slate-500 dark:text-slate-400">{saturation}%</span>
-            </div>
-            <input
-              type="range"
-              min="0"
-              max="200"
-              value={saturation}
-              onChange={(e) => setSaturation(parseInt(e.target.value))}
-              className="w-full h-1.5 bg-slate-200 dark:bg-slate-700 rounded-lg appearance-none cursor-pointer accent-[#0284c7]"
-            />
-          </div>
-        </div>
-      </div>
-
-      {/* =========================================================================
-          SECTION 3: SHEET LAYOUT PRESETS & COPIES (Matching Screenshot 1 & 2)
-          ========================================================================= */}
-      <div className="rounded-2xl liquid-glass p-5 shadow-xl space-y-4">
-        <div className="flex items-center justify-between border-b border-slate-200 dark:border-white/10 pb-3">
-          <div className="flex items-center gap-2">
-            <Layers className="w-4 h-4 text-[#0284c7]" />
-            <span className="text-sm font-bold text-slate-900 dark:text-white">Print Sheet Layout</span>
-          </div>
-          <span className="text-xs font-semibold text-[#0284c7]">
-            {activePaperLabel}
-          </span>
-        </div>
-
-        {/* 5 Sheet Presets Grid */}
-        <div className="grid grid-cols-2 sm:grid-cols-5 gap-2.5">
-          {SHEET_PRESETS.map((preset) => {
-            const isSelected = selectedPreset === preset.id;
+        <div className="grid grid-cols-2 sm:grid-cols-4 gap-2.5">
+          {TARGET_KB_OPTIONS.map((opt) => {
+            const isSelected = targetKb === opt.value;
             return (
               <button
-                key={preset.id}
-                onClick={() => handleSelectPreset(preset.id)}
-                className={`p-3 rounded-xl border text-left transition-all cursor-pointer relative ${
-                  isSelected
-                    ? 'border-[#0284c7] bg-[#0284c7]/20 text-[#0284c7] dark:text-white shadow-md'
-                    : 'liquid-glass-sub text-slate-700 dark:text-slate-300 hover:text-slate-900 dark:hover:text-white hover:border-slate-400'
+                key={String(opt.value)}
+                type="button"
+                onClick={() => setTargetKb(opt.value)}
+                className={`px-3.5 py-2.5 min-h-[50px] rounded-2xl text-left flex flex-col justify-center cursor-pointer ${
+                  isSelected ? 'aos-btn-soft-active' : 'aos-btn-soft'
                 }`}
               >
-                <div className="text-xs font-black">{preset.label}</div>
-                <div className="text-[10px] text-slate-500 dark:text-slate-400 mt-0.5">{preset.sub}</div>
-                {isSelected && (
-                  <div className="absolute top-2 right-2 w-2 h-2 rounded-full bg-[#0284c7]" />
-                )}
+                <div className="text-xs font-extrabold">{opt.label}</div>
+                <div
+                  className={`text-[10px] mt-0.5 ${
+                    isSelected ? 'text-sky-100' : 'text-slate-500 dark:text-slate-400'
+                  }`}
+                >
+                  {opt.sub}
+                </div>
               </button>
             );
           })}
         </div>
 
-        {/* Total Copies Selector */}
-        <div className="pt-2">
-          <label className="block text-xs font-bold text-slate-700 dark:text-slate-300 uppercase tracking-wider mb-2">
-            Total Copies on Sheet
+        <button
+          type="button"
+          onClick={handleDownloadSingleJpg}
+          className="aos-btn-emerald w-full py-3.5 px-5 min-h-[48px] font-extrabold text-xs sm:text-sm inline-flex items-center justify-center gap-2 cursor-pointer"
+        >
+          <Download className="w-4 h-4 stroke-[2.5]" />
+          <span>
+            Download Single JPG ({activeDim.label} •{' '}
+            {targetKb === 'best' ? '300 DPI HD' : `< ${targetKb} KB`})
+          </span>
+        </button>
+      </div>
+
+      {/* =========================================================================
+          STEP 4: 4×6 & A4 PRINT SHEET WITH DASHED SCISSOR-CUT BORDERS
+          ========================================================================= */}
+      <div className="p-4 sm:p-5 rounded-3xl liquid-glass border border-slate-200 dark:border-sky-400/20 shadow-xl space-y-4">
+        <div className="flex items-center justify-between gap-2 flex-wrap border-b border-slate-200 dark:border-sky-400/15 pb-3">
+          <div className="flex items-center gap-2">
+            <Layers className="w-4 h-4 text-[#0284c7] dark:text-[#38bdf8]" />
+            <h2 className="text-xs sm:text-sm font-extrabold uppercase tracking-wider text-slate-900 dark:text-white">
+              4. Print Sheet &amp; Scissor-Cut Guides
+            </h2>
+          </div>
+
+          <div className="flex items-center gap-2">
+            {cutGuideStyle !== 'none' && (
+              <span className="inline-flex items-center gap-1 px-2.5 py-1 rounded-full text-[10px] font-mono font-bold text-[#0284c7] dark:text-[#38bdf8] bg-sky-50 dark:bg-[#0B192C] border border-sky-400/30">
+                <Scissors className="w-3 h-3" />
+                <span>Cut Guides ON</span>
+              </span>
+            )}
+            <span className="text-[11px] font-mono font-bold text-slate-600 dark:text-slate-300">
+              {totalCopies} / {sheetCapacity.maxSlots} max
+            </span>
+          </div>
+        </div>
+
+        {/* Paper Format Segmented Pill Switcher */}
+        <div className="aos-segmented-track p-1.5 grid grid-cols-2 gap-1.5">
+          {(['4x6', 'a4'] as PaperType[]).map((paper) => {
+            const isSelected = paperType === paper;
+            const cap = computeSheetCapacity(paper, activeDim.widthPx, activeDim.heightPx, cellGap);
+            return (
+              <button
+                key={paper}
+                type="button"
+                onClick={() => handleSelectPaper(paper)}
+                className={`py-2.5 px-3 min-h-[44px] text-xs font-extrabold cursor-pointer flex items-center justify-center gap-1.5 ${
+                  isSelected ? 'aos-btn-soft-active' : 'aos-btn-soft-tab'
+                }`}
+              >
+                <span>{PAPER_DIMS[paper].label}</span>
+                <span
+                  className={`text-[10px] font-mono ${
+                    isSelected ? 'text-sky-100' : 'opacity-70'
+                  }`}
+                >
+                  (up to {cap.maxSlots})
+                </span>
+              </button>
+            );
+          })}
+        </div>
+
+        {/* Copies Selector Pills */}
+        <div>
+          <label className="block text-[11px] font-bold uppercase tracking-wider text-slate-600 dark:text-slate-300 mb-2">
+            Copies on {PAPER_DIMS[paperType].label}
           </label>
           <div className="flex flex-wrap gap-2">
-            {COPIES_OPTIONS.map((num) => {
+            {copyChoices.map((num) => {
               const isSelected = totalCopies === num;
               return (
                 <button
                   key={num}
+                  type="button"
                   onClick={() => setTotalCopies(num)}
-                  className={`w-10 h-9 rounded-lg font-bold text-xs transition-all cursor-pointer ${
-                    isSelected
-                      ? 'bg-[#0284c7] text-white shadow-lg shadow-[#0284c7]/40 ring-2 ring-[#0284c7]'
-                      : 'liquid-glass-sub text-slate-700 dark:text-slate-300 hover:text-slate-900 dark:hover:text-white'
+                  className={`min-w-[44px] min-h-[40px] px-3 text-xs font-extrabold cursor-pointer ${
+                    isSelected ? 'aos-btn-soft-active' : 'aos-btn-soft'
                   }`}
                 >
                   {num}
@@ -1152,221 +1759,179 @@ export const PassportPhotoStudioPage: React.FC<PassportPhotoStudioPageProps> = (
           </div>
         </div>
 
-        {/* =========================================================================
-            ADVANCED STUDIO ACCORDION: BORDER, CUTTING & SSC/UPSC NAME/DATE
-            ========================================================================= */}
-        <div className="pt-3 border-t border-slate-200 dark:border-white/10">
+        {/* Collapsible Border & Cut Guide Fine-Tuning */}
+        <div>
           <button
-            onClick={() => setIsAccordionOpen(!isAccordionOpen)}
-            className="w-full flex items-center justify-between p-3 rounded-xl liquid-glass-sub hover:border-[#0284c7]/40 transition-all cursor-pointer"
+            type="button"
+            onClick={() => setShowFineTuning((v) => !v)}
+            className="aos-btn-soft w-full px-4 py-2.5 min-h-[42px] flex items-center justify-between text-xs font-bold cursor-pointer"
           >
-            <div className="flex items-center gap-2">
-              <Scissors className="w-4 h-4 text-[#0284c7]" />
-              <span className="text-xs font-bold text-slate-900 dark:text-white">
-                Advanced Border, Cut Guides &amp; Candidate Stamp
-              </span>
-            </div>
-            {isAccordionOpen ? (
-              <ChevronUp className="w-4 h-4 text-slate-400" />
+            <span className="flex items-center gap-2">
+              <Scissors className="w-3.5 h-3.5 text-[#0284c7] dark:text-[#38bdf8]" />
+              <span>Cut Guide &amp; Photo Border Options</span>
+            </span>
+            {showFineTuning ? (
+              <ChevronUp className="w-4 h-4 opacity-70" />
             ) : (
-              <ChevronDown className="w-4 h-4 text-slate-400" />
+              <ChevronDown className="w-4 h-4 opacity-70" />
             )}
           </button>
 
-          {isAccordionOpen && (
-            <div className="mt-3 p-4 rounded-xl liquid-glass-sub border border-slate-200 dark:border-white/10 space-y-4 animate-in fade-in duration-150">
-              
-              {/* Border Thickness */}
-              <div>
-                <label className="block text-[11px] font-bold text-slate-700 dark:text-slate-300 uppercase tracking-wider mb-2">
-                  Photo Border Thickness
-                </label>
+          {showFineTuning && (
+            <div className="mt-3 p-4 rounded-2xl liquid-glass-sub border border-slate-200 dark:border-sky-400/15 space-y-4 animate-in fade-in duration-150">
+              {/* Cut Guide Style */}
+              <div className="space-y-2">
+                <div className="flex items-center justify-between flex-wrap gap-2">
+                  <span className="text-[11px] font-bold uppercase tracking-wider text-slate-600 dark:text-slate-300">
+                    Scissor Cut Lines
+                  </span>
+                  <label className="inline-flex items-center gap-1.5 text-xs font-semibold text-slate-700 dark:text-slate-200 cursor-pointer">
+                    <input
+                      type="checkbox"
+                      checked={showScissorIcons}
+                      onChange={(e) => setShowScissorIcons(e.target.checked)}
+                      className="w-4 h-4 accent-[#0284c7] rounded"
+                    />
+                    <span>Show ✂ Icons</span>
+                  </label>
+                </div>
+                <div className="grid grid-cols-2 sm:grid-cols-4 gap-2">
+                  {[
+                    { id: 'dotted', label: 'Dashed Cut' },
+                    { id: 'crop-marks', label: 'Corner Marks' },
+                    { id: 'solid', label: 'Solid Line' },
+                    { id: 'none', label: 'No Guides' },
+                  ].map((g) => (
+                    <button
+                      key={g.id}
+                      type="button"
+                      onClick={() => setCutGuideStyle(g.id as CutGuideStyle)}
+                      className={`py-2 px-3 min-h-[38px] text-xs font-bold cursor-pointer ${
+                        cutGuideStyle === g.id ? 'aos-btn-soft-active' : 'aos-btn-soft'
+                      }`}
+                    >
+                      {g.label}
+                    </button>
+                  ))}
+                </div>
+              </div>
+
+              {/* Photo Border Thickness */}
+              <div className="space-y-2 pt-2 border-t border-slate-200/80 dark:border-sky-400/15">
+                <div className="flex items-center justify-between">
+                  <span className="text-[11px] font-bold uppercase tracking-wider text-slate-600 dark:text-slate-300">
+                    Photo Frame Border
+                  </span>
+                  <div className="flex items-center gap-2">
+                    <span className="text-[11px] text-slate-500 dark:text-slate-400">
+                      Gap: {cellGap.toFixed(1)}mm
+                    </span>
+                    <input
+                      type="range"
+                      min="1"
+                      max="4"
+                      step="0.5"
+                      value={cellGap}
+                      onChange={(e) => setCellGap(parseFloat(e.target.value))}
+                      className="w-20 h-1.5 bg-slate-200 dark:bg-slate-700 rounded-lg appearance-none cursor-pointer accent-[#0284c7]"
+                      aria-label="Spacing gap in millimeters"
+                    />
+                  </div>
+                </div>
                 <div className="grid grid-cols-4 gap-2">
                   {(['none', 'thin', 'standard', 'bold'] as BorderThickness[]).map((t) => (
                     <button
                       key={t}
+                      type="button"
                       onClick={() => setBorderThickness(t)}
-                      className={`p-2 rounded-lg border text-xs font-semibold capitalize transition-all cursor-pointer ${
-                        borderThickness === t
-                          ? 'border-[#0284c7] bg-[#0284c7]/20 text-[#0284c7] dark:text-white shadow-sm'
-                          : 'liquid-glass text-slate-700 dark:text-slate-300'
+                      className={`py-2 px-2.5 min-h-[38px] text-xs font-bold capitalize cursor-pointer ${
+                        borderThickness === t ? 'aos-btn-soft-active' : 'aos-btn-soft'
                       }`}
                     >
                       {t}
                     </button>
                   ))}
                 </div>
-              </div>
-
-              {/* Cutting Guide Style */}
-              <div className="space-y-2 pt-1 border-t border-slate-200 dark:border-white/5">
-                <div className="flex items-center justify-between">
-                  <label className="block text-[11px] font-bold text-slate-700 dark:text-slate-300 uppercase tracking-wider">
-                    Cutting Guide Marks &amp; Lines
-                  </label>
-                  <label className="flex items-center gap-1.5 text-xs text-slate-700 dark:text-slate-300 cursor-pointer">
-                    <input
-                      type="checkbox"
-                      checked={showScissorIcons}
-                      onChange={(e) => setShowScissorIcons(e.target.checked)}
-                      className="w-3.5 h-3.5 accent-[#0284c7] rounded"
-                    />
-                    <span>Show ✂ Scissors on Margins</span>
-                  </label>
-                </div>
-
-                <div className="grid grid-cols-2 sm:grid-cols-4 gap-2">
-                  {[
-                    { id: 'dotted', label: 'Dotted Grid', sub: 'Scissors Guide' },
-                    { id: 'crop-marks', label: 'Corner Marks', sub: 'L-Crop Marks' },
-                    { id: 'solid', label: 'Continuous Line', sub: 'Paper Trimmer' },
-                    { id: 'none', label: 'Clean Blank', sub: 'No Guide Lines' },
-                  ].map((g) => (
+                <div className="flex items-center gap-2 pt-1">
+                  <span className="text-[11px] font-semibold text-slate-600 dark:text-slate-300">
+                    Border &amp; Cut Tone:
+                  </span>
+                  {['#0F172A', '#475569', '#0284C7'].map((clr) => (
                     <button
-                      key={g.id}
-                      onClick={() => setCutGuideStyle(g.id as CutGuideStyle)}
-                      className={`p-2.5 rounded-lg border text-left transition-all cursor-pointer ${
-                        cutGuideStyle === g.id
-                          ? 'border-[#0284c7] bg-[#0284c7]/20 text-[#0284c7] dark:text-white shadow-sm'
-                          : 'liquid-glass text-slate-700 dark:text-slate-300 hover:text-slate-900 dark:hover:text-white'
+                      key={clr}
+                      type="button"
+                      onClick={() => {
+                        setBorderColor(clr);
+                        setCutGuideColor(clr === '#0F172A' ? '#64748B' : clr);
+                      }}
+                      className={`w-6 h-6 rounded-full border-2 cursor-pointer ${
+                        borderColor === clr
+                          ? 'border-sky-400 scale-110'
+                          : 'border-slate-300 dark:border-slate-600'
                       }`}
-                    >
-                      <div className="text-xs font-bold">{g.label}</div>
-                      <div className="text-[10px] text-slate-500 dark:text-slate-400">{g.sub}</div>
-                    </button>
+                      style={{ backgroundColor: clr }}
+                      aria-label={`Select border color ${clr}`}
+                    />
                   ))}
                 </div>
               </div>
-
-              {/* Candidate Stamp for SSC / UPSC */}
-              <div className="space-y-3 pt-2 border-t border-slate-200 dark:border-white/5">
-                <div className="flex items-center justify-between">
-                  <div>
-                    <label className="text-xs font-bold text-slate-900 dark:text-white flex items-center gap-1.5">
-                      <span>Candidate Name &amp; Date Stamp</span>
-                      <span className="text-[9px] font-mono px-1.5 py-0.5 rounded bg-sky-100 dark:bg-sky-950 text-[#0284c7] dark:text-sky-400 border border-sky-400/30">
-                        SSC / UPSC Standard
-                      </span>
-                    </label>
-                    <p className="text-[11px] text-slate-600 dark:text-slate-400">
-                      Print candidate name and date of photo (DOP) at the bottom
-                    </p>
-                  </div>
-                  <input
-                    type="checkbox"
-                    checked={withNameDate}
-                    onChange={(e) => setWithNameDate(e.target.checked)}
-                    className="w-4 h-4 accent-[#0284c7] rounded cursor-pointer"
-                  />
-                </div>
-
-                {withNameDate && (
-                  <div className="grid grid-cols-1 sm:grid-cols-2 gap-3 pt-2">
-                    <div>
-                      <label className="block text-[10px] font-bold text-slate-700 dark:text-slate-300 uppercase mb-1">
-                        Candidate Full Name
-                      </label>
-                      <input
-                        type="text"
-                        value={candidateName}
-                        onChange={(e) => setCandidateName(e.target.value)}
-                        placeholder="e.g. ANIS SHAIKH"
-                        className="w-full liquid-glass-sub text-slate-900 dark:text-white text-xs px-3 py-2 rounded-lg focus:outline-none focus:border-[#0284c7] font-semibold"
-                      />
-                    </div>
-                    <div>
-                      <label className="block text-[10px] font-bold text-slate-700 dark:text-slate-300 uppercase mb-1">
-                        Date of Photo (DOP / DOB)
-                      </label>
-                      <input
-                        type="text"
-                        value={dopText}
-                        onChange={(e) => setDopText(e.target.value)}
-                        placeholder="e.g. DOP: 03/11/2026"
-                        className="w-full liquid-glass-sub text-slate-900 dark:text-white text-xs px-3 py-2 rounded-lg focus:outline-none focus:border-[#0284c7] font-medium"
-                      />
-                    </div>
-                  </div>
-                )}
-              </div>
-
             </div>
           )}
         </div>
-      </div>
 
-      {/* =========================================================================
-          SECTION 4: LIVE PRINT SHEET (Matching Screenshot 1 & 2)
-          ========================================================================= */}
-      <div className="rounded-2xl liquid-glass p-5 shadow-xl space-y-4">
-        <div className="flex items-center justify-between border-b border-slate-200 dark:border-white/10 pb-3 flex-wrap gap-2">
-          <div className="flex items-center gap-2">
-            <Eye className="w-4 h-4 text-[#0284c7]" />
-            <span className="text-sm font-bold text-slate-900 dark:text-white">Live Print Sheet</span>
-          </div>
-
-          <div className="flex items-center gap-2">
-            {cutGuideStyle !== 'none' && (
-              <span className="text-[10px] font-mono text-[#0284c7] bg-sky-50 dark:bg-sky-950/70 border border-sky-500/30 px-2 py-0.5 rounded flex items-center gap-1">
-                <Scissors className="w-3 h-3 text-[#0284c7]" />
-                {cutGuideStyle === 'crop-marks' ? 'Crop Marks Active' : 'Cut Guides Active'}
-              </span>
-            )}
-            <span className="text-[10px] font-bold uppercase tracking-wider text-emerald-600 dark:text-emerald-300 bg-emerald-50 dark:bg-emerald-950/80 border border-emerald-500/40 px-2 py-0.5 rounded">
+        {/* LIVE PRINT SHEET PREVIEW CANVAS */}
+        <div className="space-y-2.5 pt-1">
+          <div className="flex items-center justify-between text-xs">
+            <span className="font-bold text-slate-800 dark:text-slate-200 flex items-center gap-1.5">
+              <Eye className="w-3.5 h-3.5 text-[#0284c7] dark:text-[#38bdf8]" />
+              <span>Live Print Preview ({PAPER_DIMS[paperType].label})</span>
+            </span>
+            <span className="text-[10px] font-bold uppercase tracking-wider px-2.5 py-0.5 rounded-full bg-emerald-50 dark:bg-emerald-950/70 text-emerald-700 dark:text-emerald-300 border border-emerald-500/30">
               READY TO PRINT
             </span>
           </div>
+
+          <div className="w-full p-2.5 sm:p-4 flex items-center justify-center liquid-glass-sub rounded-2xl border border-slate-200 dark:border-sky-400/15 overflow-hidden">
+            <canvas
+              ref={sheetCanvasRef}
+              className="w-full max-w-2xl rounded-lg shadow-2xl border border-slate-300 dark:border-slate-700 bg-white object-contain"
+            />
+          </div>
         </div>
 
-        {/* Live Print Canvas Sheet Display */}
-        <div className="w-full py-4 flex items-center justify-center liquid-glass-sub rounded-2xl border border-slate-200 dark:border-white/10 overflow-hidden p-2 sm:p-4">
-          <canvas
-            ref={sheetCanvasRef}
-            className="w-full max-w-2xl rounded-lg shadow-2xl border border-slate-300 dark:border-slate-700 bg-white object-contain"
-          />
-        </div>
-
-        {/* Actions: Print & Download Buttons */}
+        {/* PRINT & SHEET EXPORT SOFT-UI PILL CTAS */}
         <div className="space-y-2.5 pt-2">
-          {/* Blue Primary Button: Direct Print Sheet */}
           <button
+            type="button"
             onClick={handleDirectPrint}
-            className="w-full py-3.5 rounded-xl bg-[#0284c7] hover:bg-[#0369a1] text-white font-bold text-sm flex items-center justify-center gap-2 shadow-xl shadow-[#0284c7]/30 transition-all cursor-pointer active:scale-98"
+            className="aos-btn-primary w-full py-3.5 px-5 min-h-[48px] font-extrabold text-sm inline-flex items-center justify-center gap-2 cursor-pointer"
           >
             <Printer className="w-4 h-4 stroke-[2.5]" />
-            <span>Direct Print Sheet</span>
+            <span>Direct Print {PAPER_DIMS[paperType].label}</span>
           </button>
 
-          {/* Row of 2: Download PDF & Download JPG */}
           <div className="grid grid-cols-1 sm:grid-cols-2 gap-2.5">
             <button
+              type="button"
               onClick={handleDownloadPdf}
-              className="py-3 rounded-xl bg-[#072642] hover:bg-[#0d4775] text-white border border-[#38bdf8]/30 font-bold text-xs sm:text-sm flex items-center justify-center gap-2 shadow-lg transition-all cursor-pointer active:scale-98"
+              disabled={isExportingPdf}
+              className="aos-btn-soft py-3 px-4 min-h-[46px] font-bold text-xs sm:text-sm inline-flex items-center justify-center gap-2 cursor-pointer disabled:opacity-60"
             >
-              <FileDown className="w-4 h-4 text-sky-400" />
-              <span>Download PDF</span>
+              <FileDown className="w-4 h-4 text-[#0284c7] dark:text-[#38bdf8]" />
+              <span>{isExportingPdf ? 'Generating PDF…' : 'Download 300 DPI PDF Sheet'}</span>
             </button>
 
             <button
+              type="button"
               onClick={handleDownloadSheetJpg}
-              className="py-3 rounded-xl liquid-glass-sub hover:border-[#0284c7]/50 text-slate-700 dark:text-slate-200 hover:text-slate-900 dark:hover:text-white font-bold text-xs sm:text-sm flex items-center justify-center gap-2 shadow-md transition-all cursor-pointer active:scale-98"
+              className="aos-btn-soft py-3 px-4 min-h-[46px] font-bold text-xs sm:text-sm inline-flex items-center justify-center gap-2 cursor-pointer"
             >
-              <Download className="w-4 h-4" />
-              <span>Download High-Res JPG Sheet</span>
+              <Download className="w-4 h-4 text-[#0284c7] dark:text-[#38bdf8]" />
+              <span>Download Sheet JPG</span>
             </button>
           </div>
-
-          {/* Full-width button: Download Single Photo JPG for Online Forms */}
-          <button
-            onClick={handleDownloadSingleJpg}
-            className="w-full py-2.5 rounded-xl liquid-glass-sub hover:border-[#0284c7]/50 text-slate-700 dark:text-slate-300 hover:text-slate-900 dark:hover:text-white text-xs font-semibold flex items-center justify-center gap-2 transition-all cursor-pointer active:scale-98"
-          >
-            <Download className="w-3.5 h-3.5 text-[#0284c7]" />
-            <span>Download Single Photo JPG (35×45 mm &lt;50 KB for Online Portals)</span>
-          </button>
         </div>
       </div>
-
     </div>
   );
 };

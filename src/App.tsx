@@ -425,9 +425,8 @@ export default function App() {
           <Suspense fallback={<ViewLoadingFallback />}>
             {selectedTool.id === 'passport-photo-studio' ||
             selectedTool.id === 'passport-photo-sheet' ? (
-              <div className="space-y-8 pb-12">
+              <div className="pb-12">
                 <PassportPhotoStudioPage onBack={handleCloseTool} />
-                <ToolGuideSection tool={selectedTool} />
               </div>
             ) : selectedTool.id === 'smart-id-card-studio' ||
               selectedTool.id === 'id-card-maker' ? (
