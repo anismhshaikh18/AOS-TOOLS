@@ -106,6 +106,13 @@ export const Footer: React.FC<FooterProps> = ({
             </button>
             <button
               type="button"
+              onClick={() => setActiveTab('checklists')}
+              className="hover:text-slate-900 dark:hover:text-white transition-colors cursor-pointer whitespace-nowrap"
+            >
+              Document Checklists
+            </button>
+            <button
+              type="button"
               onClick={() => setActiveTab('card')}
               className="hover:text-slate-900 dark:hover:text-white transition-colors cursor-pointer font-semibold text-[#0284c7] dark:text-sky-300 whitespace-nowrap"
             >

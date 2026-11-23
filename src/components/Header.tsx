@@ -15,6 +15,7 @@ import {
   Home,
   LayoutGrid,
   Landmark,
+  ClipboardCheck,
   Info,
   ShieldCheck,
   ChevronRight,
@@ -69,7 +70,7 @@ export const Header: React.FC<HeaderProps> = ({
   const [headerKindFilter, setHeaderKindFilter] = useState<'all' | UniversalResultKind>('all');
   const [headerActiveIndex, setHeaderActiveIndex] = useState(0);
 
-  const debouncedHeaderQuery = useDebouncedValue(headerQuery, 140);
+  const debouncedHeaderQuery = useDebouncedValue(headerQuery, 60);
   const headerSearchRef = useRef<HTMLDivElement>(null);
   const {
     user,
@@ -204,9 +205,15 @@ export const Header: React.FC<HeaderProps> = ({
     { id: 'tools', label: t.allTools || 'Tools', mobileLabel: t.allTools || 'All Tools', icon: LayoutGrid },
     {
       id: 'portals',
-      label: 'Portals Hub',
+      label: 'Portals',
       mobileLabel: 'Government Portals Hub',
       icon: Landmark,
+    },
+    {
+      id: 'checklists',
+      label: 'Checklists',
+      mobileLabel: 'Document Checklists Hub',
+      icon: ClipboardCheck,
     },
     { id: 'about', label: t.about || 'About', mobileLabel: t.about || 'About', icon: Info },
     { id: 'privacy', label: t.privacy || 'Privacy', mobileLabel: t.privacy || 'Privacy', icon: ShieldCheck },
@@ -293,80 +300,84 @@ export const Header: React.FC<HeaderProps> = ({
                   <Search className="w-4 h-4 text-[#0284c7] dark:text-sky-300 shrink-0" />
                 </button>
 
-                {/* Desktop Live Type-Ahead Universal Search Bar */}
-                <div className="hidden xl:flex items-center relative w-52 2xl:w-60">
-                  <Search className="w-3.5 h-3.5 text-[#0284c7] dark:text-sky-400 absolute left-3 pointer-events-none" />
-                  <input
-                    type="text"
-                    value={headerQuery}
-                    onFocus={() => setIsHeaderDropdownOpen(true)}
-                    onChange={(e) => {
-                      setHeaderQuery(e.target.value);
-                      setIsHeaderDropdownOpen(true);
-                    }}
-                    onKeyDown={(e) => {
-                      if (e.key === 'Escape') {
-                        setIsHeaderDropdownOpen(false);
-                        (e.currentTarget as HTMLInputElement).blur();
-                      } else if (e.key === 'ArrowDown' && headerResults.length > 0) {
-                        e.preventDefault();
-                        setIsHeaderDropdownOpen(true);
-                        setHeaderActiveIndex((prev) => (prev + 1) % headerResults.length);
-                      } else if (e.key === 'ArrowUp' && headerResults.length > 0) {
-                        e.preventDefault();
-                        setIsHeaderDropdownOpen(true);
-                        setHeaderActiveIndex(
-                          (prev) => (prev - 1 + headerResults.length) % headerResults.length
-                        );
-                      } else if (e.key === 'Enter' && headerResults.length > 0) {
-                        e.preventDefault();
-                        triggerHeaderActiveItem();
-                      }
-                    }}
-                    placeholder="Search tools, portals, diary..."
-                    aria-label="Universal site search"
-                    className="w-full h-9 pl-8 pr-14 rounded-full text-xs bg-slate-100 dark:bg-[#03182b]/90 text-slate-900 dark:text-white placeholder-slate-400 dark:placeholder-sky-200/60 border border-slate-200 dark:border-sky-500/30 focus:outline-none focus:border-[#0284c7] focus:ring-2 focus:ring-[#0284c7]/30 transition-all"
-                  />
-                  <div className="absolute right-1.5 flex items-center gap-1">
-                    {headerQuery ? (
-                      <button
-                        type="button"
-                        onClick={() => {
-                          setHeaderQuery('');
-                          setIsHeaderDropdownOpen(false);
+                {/* Desktop Animated-Border Pill Universal Search Bar */}
+                <div className="hidden xl:block w-56 2xl:w-64">
+                  <div className="aos-search-pill-wrap">
+                    <div className="aos-search-pill-inner h-9">
+                      <Search className="w-3.5 h-3.5 text-[#0284c7] dark:text-sky-400 ml-3 shrink-0 pointer-events-none" />
+                      <input
+                        type="text"
+                        value={headerQuery}
+                        onFocus={() => setIsHeaderDropdownOpen(true)}
+                        onChange={(e) => {
+                          setHeaderQuery(e.target.value);
+                          setIsHeaderDropdownOpen(true);
                         }}
-                        aria-label="Clear header search"
-                        className="p-1 text-slate-400 hover:text-slate-800 dark:hover:text-white cursor-pointer"
-                      >
-                        <X className="w-3.5 h-3.5" />
-                      </button>
-                    ) : voiceSupported ? (
-                      <button
-                        type="button"
-                        onClick={startListening}
-                        aria-label={isListening ? 'Stop voice search' : 'Voice search'}
-                        title="Voice Search"
-                        className={`p-1 rounded-full cursor-pointer transition-colors ${
-                          isListening
-                            ? 'bg-red-500 text-white animate-pulse'
-                            : 'text-[#0284c7] dark:text-sky-300 hover:bg-[#0284c7]/15'
-                        }`}
-                      >
-                        {isListening ? (
-                          <MicOff className="w-3.5 h-3.5" />
-                        ) : (
-                          <Mic className="w-3.5 h-3.5" />
-                        )}
-                      </button>
-                    ) : null}
-                    <button
-                      type="button"
-                      onClick={onOpenSearch}
-                      title="Open Full Search Palette (/)"
-                      className="text-[10px] font-mono px-1.5 py-0.5 bg-white dark:bg-[#072642] rounded border border-slate-200 dark:border-sky-500/30 text-slate-500 dark:text-sky-200 leading-none cursor-pointer hover:border-[#0284c7]"
-                    >
-                      /
-                    </button>
+                        onKeyDown={(e) => {
+                          if (e.key === 'Escape') {
+                            setIsHeaderDropdownOpen(false);
+                            (e.currentTarget as HTMLInputElement).blur();
+                          } else if (e.key === 'ArrowDown' && headerResults.length > 0) {
+                            e.preventDefault();
+                            setIsHeaderDropdownOpen(true);
+                            setHeaderActiveIndex((prev) => (prev + 1) % headerResults.length);
+                          } else if (e.key === 'ArrowUp' && headerResults.length > 0) {
+                            e.preventDefault();
+                            setIsHeaderDropdownOpen(true);
+                            setHeaderActiveIndex(
+                              (prev) => (prev - 1 + headerResults.length) % headerResults.length
+                            );
+                          } else if (e.key === 'Enter' && headerResults.length > 0) {
+                            e.preventDefault();
+                            triggerHeaderActiveItem();
+                          }
+                        }}
+                        placeholder="Search utility tools..."
+                        aria-label="Search utility tools"
+                        className="aos-search-pill-input w-full h-full pl-2 pr-14 text-xs text-slate-900 dark:text-white placeholder-slate-400 dark:placeholder-sky-200/60"
+                      />
+                      <div className="absolute right-1.5 flex items-center gap-1">
+                        {headerQuery ? (
+                          <button
+                            type="button"
+                            onClick={() => {
+                              setHeaderQuery('');
+                              setIsHeaderDropdownOpen(false);
+                            }}
+                            aria-label="Clear header search"
+                            className="p-1 text-slate-400 hover:text-slate-800 dark:hover:text-white cursor-pointer"
+                          >
+                            <X className="w-3.5 h-3.5" />
+                          </button>
+                        ) : voiceSupported ? (
+                          <button
+                            type="button"
+                            onClick={startListening}
+                            aria-label={isListening ? 'Stop voice search' : 'Voice search'}
+                            title="Voice Search"
+                            className={`p-1 rounded-full cursor-pointer transition-colors ${
+                              isListening
+                                ? 'bg-red-500 text-white animate-pulse'
+                                : 'text-[#0284c7] dark:text-sky-300 hover:bg-[#0284c7]/15'
+                            }`}
+                          >
+                            {isListening ? (
+                              <MicOff className="w-3.5 h-3.5" />
+                            ) : (
+                              <Mic className="w-3.5 h-3.5" />
+                            )}
+                          </button>
+                        ) : null}
+                        <button
+                          type="button"
+                          onClick={onOpenSearch}
+                          title="Open Full Search Palette (/)"
+                          className="text-[10px] font-mono px-1.5 py-0.5 bg-slate-100 dark:bg-[#072642] rounded-full border border-slate-200 dark:border-sky-500/30 text-slate-500 dark:text-sky-200 leading-none cursor-pointer hover:border-[#0284c7]"
+                        >
+                          /
+                        </button>
+                      </div>
+                    </div>
                   </div>
                 </div>
 

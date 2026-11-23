@@ -31,10 +31,20 @@ import { PDFDocument } from 'pdf-lib';
 import { getStockDemoPortraitDataUrl } from '../utils/stockPassportPhoto';
 import { StarRatingWidget } from '../components/StarRatingWidget';
 import { SmartIdCardGraphicCard } from '../components/ToolIllustrativeCards';
+import {
+  readSessionDraft,
+  writeSessionDraft,
+  saveSessionImageSafely,
+  readSessionImageSafely,
+  subscribeCanvasVisibilityRestore,
+} from '../utils/sessionDraftStorage';
 
 interface SmartIdCardStudioPageProps {
   onBack: () => void;
 }
+
+const SMART_ID_DRAFT_KEY = 'aos_smart_id_draft_v1';
+const SMART_ID_PHOTO_KEY = 'aos_smart_id_photo_v1';
 
 type StudioTab = 'front' | 'back' | 'colors' | 'photo' | 'qr' | 'print' | 'export';
 type SheetLayoutOption = '4x6-horizontal' | '4x6-vertical' | 'a4-8' | 'single-cr80';
@@ -57,108 +67,220 @@ function escapeXml(str: string): string {
     .replace(/'/g, '&apos;');
 }
 
+interface SmartIdDraft {
+  activeTab: StudioTab;
+  orgName: string;
+  subtitle: string;
+  cardHeadline: string;
+  candidateName: string;
+  idLabel: string;
+  idNumber: string;
+  roleLabel: string;
+  roleDept: string;
+  dobLabel: string;
+  dob: string;
+  bloodLabel: string;
+  bloodGroup: string;
+  phoneLabel: string;
+  phone: string;
+  validTillLabel: string;
+  validTill: string;
+  showExtraField: boolean;
+  extraFieldLabel: string;
+  extraFieldValue: string;
+  orgFontSize: number;
+  nameFontSize: number;
+  idHighlightColor: string;
+  backHeader: string;
+  addressTitle: string;
+  address: string;
+  termsTitle: string;
+  instruction1: string;
+  instruction2: string;
+  instruction3: string;
+  instruction4: string;
+  helpline: string;
+  signatoryTitle: string;
+  headerColor: string;
+  accentColor: string;
+  cardBgColor: string;
+  footerText: string;
+  photoZoom: number;
+  photoPanX: number;
+  photoPanY: number;
+  signatureMode: 'typed' | 'upload';
+  typedSignature: string;
+  removeSigBg: boolean;
+  sigBgThreshold: number;
+  sigColorMode: SigColorMode;
+  qrData: string;
+  qrSubtext: string;
+  sheetLayout: SheetLayoutOption;
+  cutGuideStyle: CutGuideStyle;
+  sheetFooterNote: string;
+}
+
+const DEFAULT_SMART_ID_DRAFT: SmartIdDraft = {
+  activeTab: 'front',
+  orgName: 'NATIONAL INSTITUTE OF TECHNOLOGY',
+  subtitle: 'An Autonomous Institution • Govt. of India',
+  cardHeadline: 'STUDENT IDENTITY CARD',
+  candidateName: 'ROHIT RAJPUT',
+  idLabel: 'ID:',
+  idNumber: 'NIT-2026-0849',
+  roleLabel: 'Role/Class:',
+  roleDept: 'B.Tech Computer Science (CSE)',
+  dobLabel: 'DOB:',
+  dob: '14/07/2003',
+  bloodLabel: 'Blood:',
+  bloodGroup: 'O+',
+  phoneLabel: 'Phone:',
+  phone: '+91 98765 43210',
+  validTillLabel: 'VALID UPTO:',
+  validTill: '30/06/2027',
+  showExtraField: false,
+  extraFieldLabel: "Father's Name:",
+  extraFieldValue: 'Ramesh Rajput',
+  orgFontSize: 30,
+  nameFontSize: 34,
+  idHighlightColor: '#0284c7',
+  backHeader: 'TERMS & RESIDENTIAL ADDRESS',
+  addressTitle: 'Residential Address:',
+  address: 'House 40, Civil Lines, Main University Road, Patna, Bihar - 800001',
+  termsTitle: 'Instructions & Guidelines:',
+  instruction1: '1. This card is non-transferable and remains property of the institute.',
+  instruction2: '2. If found, please return to the administrative office.',
+  instruction3: '3. Misuse of this identification card is strictly punishable.',
+  instruction4: '4. Cardholder must carry this card at all times on premises.',
+  helpline: 'Helpline: 1800-111-5232 | Police: 112',
+  signatoryTitle: 'Authorized Signatory',
+  headerColor: '#072642',
+  accentColor: '#38bdf8',
+  cardBgColor: '#FFFFFF',
+  footerText: 'VALID FOR ACADEMIC & OFFICIAL ENTRY',
+  photoZoom: 1.0,
+  photoPanX: 0,
+  photoPanY: 0,
+  signatureMode: 'typed',
+  typedSignature: 'Rohit Rajput',
+  removeSigBg: true,
+  sigBgThreshold: 215,
+  sigColorMode: 'navy',
+  qrData: 'https://verify.nit.ac.in/id/NIT-2026-0849',
+  qrSubtext: 'Scan to Verify',
+  sheetLayout: '4x6-horizontal',
+  cutGuideStyle: 'dotted',
+  sheetFooterNote: 'AOS Smart ID Card Studio • 4×6" Print Sheet (Front & Back Pair)',
+};
+
 export const SmartIdCardStudioPage: React.FC<SmartIdCardStudioPageProps> = ({ onBack }) => {
+  const initialDraftRef = useRef<SmartIdDraft | null>(null);
+  if (initialDraftRef.current === null) {
+    initialDraftRef.current = readSessionDraft<SmartIdDraft>(
+      SMART_ID_DRAFT_KEY,
+      DEFAULT_SMART_ID_DRAFT
+    );
+  }
+  const initialDraft = initialDraftRef.current;
+
   // Navigation Tab
-  const [activeTab, setActiveTab] = useState<StudioTab>('front');
+  const [activeTab, setActiveTab] = useState<StudioTab>(initialDraft.activeTab);
 
   // --- 1. FRONT FIELDS STATE (100% Fully Customizable) ---
-  const [orgName, setOrgName] = useState<string>('NATIONAL INSTITUTE OF TECHNOLOGY');
-  const [subtitle, setSubtitle] = useState<string>('An Autonomous Institution • Govt. of India');
-  const [cardHeadline, setCardHeadline] = useState<string>('STUDENT IDENTITY CARD');
-  const [candidateName, setCandidateName] = useState<string>('ROHIT RAJPUT');
-  
+  const [orgName, setOrgName] = useState<string>(initialDraft.orgName);
+  const [subtitle, setSubtitle] = useState<string>(initialDraft.subtitle);
+  const [cardHeadline, setCardHeadline] = useState<string>(initialDraft.cardHeadline);
+  const [candidateName, setCandidateName] = useState<string>(initialDraft.candidateName);
+
   // Custom Labels & Values
-  const [idLabel, setIdLabel] = useState<string>('ID:');
-  const [idNumber, setIdNumber] = useState<string>('NIT-2026-0849');
-  
-  const [roleLabel, setRoleLabel] = useState<string>('Role/Class:');
-  const [roleDept, setRoleDept] = useState<string>('B.Tech Computer Science (CSE)');
-  
-  const [dobLabel, setDobLabel] = useState<string>('DOB:');
-  const [dob, setDob] = useState<string>('14/07/2003');
-  
-  const [bloodLabel, setBloodLabel] = useState<string>('Blood:');
-  const [bloodGroup, setBloodGroup] = useState<string>('O+');
-  
-  const [phoneLabel, setPhoneLabel] = useState<string>('Phone:');
-  const [phone, setPhone] = useState<string>('+91 98765 43210');
-  
-  const [validTillLabel, setValidTillLabel] = useState<string>('VALID UPTO:');
-  const [validTill, setValidTill] = useState<string>('30/06/2027');
+  const [idLabel, setIdLabel] = useState<string>(initialDraft.idLabel);
+  const [idNumber, setIdNumber] = useState<string>(initialDraft.idNumber);
+
+  const [roleLabel, setRoleLabel] = useState<string>(initialDraft.roleLabel);
+  const [roleDept, setRoleDept] = useState<string>(initialDraft.roleDept);
+
+  const [dobLabel, setDobLabel] = useState<string>(initialDraft.dobLabel);
+  const [dob, setDob] = useState<string>(initialDraft.dob);
+
+  const [bloodLabel, setBloodLabel] = useState<string>(initialDraft.bloodLabel);
+  const [bloodGroup, setBloodGroup] = useState<string>(initialDraft.bloodGroup);
+
+  const [phoneLabel, setPhoneLabel] = useState<string>(initialDraft.phoneLabel);
+  const [phone, setPhone] = useState<string>(initialDraft.phone);
+
+  const [validTillLabel, setValidTillLabel] = useState<string>(initialDraft.validTillLabel);
+  const [validTill, setValidTill] = useState<string>(initialDraft.validTill);
 
   // Extra optional field (e.g. Father's Name or Roll No)
-  const [showExtraField, setShowExtraField] = useState<boolean>(false);
-  const [extraFieldLabel, setExtraFieldLabel] = useState<string>("Father's Name:");
-  const [extraFieldValue, setExtraFieldValue] = useState<string>('Ramesh Rajput');
+  const [showExtraField, setShowExtraField] = useState<boolean>(initialDraft.showExtraField);
+  const [extraFieldLabel, setExtraFieldLabel] = useState<string>(initialDraft.extraFieldLabel);
+  const [extraFieldValue, setExtraFieldValue] = useState<string>(initialDraft.extraFieldValue);
 
   // Front Typography & Highlight Settings
-  const [orgFontSize, setOrgFontSize] = useState<number>(30); // px on 1012px canvas
-  const [nameFontSize, setNameFontSize] = useState<number>(34);
-  const [idHighlightColor, setIdHighlightColor] = useState<string>('#0284c7');
+  const [orgFontSize, setOrgFontSize] = useState<number>(initialDraft.orgFontSize); // px on 1012px canvas
+  const [nameFontSize, setNameFontSize] = useState<number>(initialDraft.nameFontSize);
+  const [idHighlightColor, setIdHighlightColor] = useState<string>(initialDraft.idHighlightColor);
 
   // --- 2. BACK & TERMS STATE (100% Fully Customizable) ---
-  const [backHeader, setBackHeader] = useState<string>('TERMS & RESIDENTIAL ADDRESS');
-  
+  const [backHeader, setBackHeader] = useState<string>(initialDraft.backHeader);
+
   // Residence Address
-  const [addressTitle, setAddressTitle] = useState<string>('Residential Address:');
-  const [address, setAddress] = useState<string>(
-    'House 40, Civil Lines, Main University Road, Patna, Bihar - 800001'
-  );
+  const [addressTitle, setAddressTitle] = useState<string>(initialDraft.addressTitle);
+  const [address, setAddress] = useState<string>(initialDraft.address);
 
   // Terms & Guidelines
-  const [termsTitle, setTermsTitle] = useState<string>('Instructions & Guidelines:');
-  const [instruction1, setInstruction1] = useState<string>(
-    '1. This card is non-transferable and remains property of the institute.'
-  );
-  const [instruction2, setInstruction2] = useState<string>(
-    '2. If found, please return to the administrative office.'
-  );
-  const [instruction3, setInstruction3] = useState<string>(
-    '3. Misuse of this identification card is strictly punishable.'
-  );
-  const [instruction4, setInstruction4] = useState<string>(
-    '4. Cardholder must carry this card at all times on premises.'
-  );
+  const [termsTitle, setTermsTitle] = useState<string>(initialDraft.termsTitle);
+  const [instruction1, setInstruction1] = useState<string>(initialDraft.instruction1);
+  const [instruction2, setInstruction2] = useState<string>(initialDraft.instruction2);
+  const [instruction3, setInstruction3] = useState<string>(initialDraft.instruction3);
+  const [instruction4, setInstruction4] = useState<string>(initialDraft.instruction4);
 
   // Helpline & Signatory
-  const [helpline, setHelpline] = useState<string>('Helpline: 1800-111-5232 | Police: 112');
-  const [signatoryTitle, setSignatoryTitle] = useState<string>('Authorized Signatory');
+  const [helpline, setHelpline] = useState<string>(initialDraft.helpline);
+  const [signatoryTitle, setSignatoryTitle] = useState<string>(initialDraft.signatoryTitle);
 
   // --- 3. HEADER & COLOR THEMES (Clean Professional Blue) ---
-  const [headerColor, setHeaderColor] = useState<string>('#072642'); // Deep Navy Blue
-  const [accentColor, setAccentColor] = useState<string>('#38bdf8'); // Sky Blue Accent
-  const [cardBgColor, setCardBgColor] = useState<string>('#FFFFFF');
-  const [footerText, setFooterText] = useState<string>('VALID FOR ACADEMIC & OFFICIAL ENTRY');
+  const [headerColor, setHeaderColor] = useState<string>(initialDraft.headerColor); // Deep Navy Blue
+  const [accentColor, setAccentColor] = useState<string>(initialDraft.accentColor); // Sky Blue Accent
+  const [cardBgColor, setCardBgColor] = useState<string>(initialDraft.cardBgColor);
+  const [footerText, setFooterText] = useState<string>(initialDraft.footerText);
 
   // --- 4. PHOTO & SIGNATURE STATE ---
-  const [photoSrc, setPhotoSrc] = useState<string>('');
-  const [photoZoom, setPhotoZoom] = useState<number>(1.0);
-  const [photoPanX, setPhotoPanX] = useState<number>(0);
-  const [photoPanY, setPhotoPanY] = useState<number>(0);
+  const cachedPhoto = useRef<string | null>(readSessionImageSafely(SMART_ID_PHOTO_KEY)).current;
+  const isCustomPhotoRef = useRef<boolean>(Boolean(cachedPhoto));
+  const [photoSrc, setPhotoSrc] = useState<string>(
+    () => cachedPhoto || getStockDemoPortraitDataUrl()
+  );
+  const [photoZoom, setPhotoZoom] = useState<number>(initialDraft.photoZoom);
+  const [photoPanX, setPhotoPanX] = useState<number>(initialDraft.photoPanX);
+  const [photoPanY, setPhotoPanY] = useState<number>(initialDraft.photoPanY);
 
   // Signature state
-  const [signatureMode, setSignatureMode] = useState<'typed' | 'upload'>('typed');
-  const [typedSignature, setTypedSignature] = useState<string>('Rohit Rajput');
+  const [signatureMode, setSignatureMode] = useState<'typed' | 'upload'>(
+    initialDraft.signatureMode
+  );
+  const [typedSignature, setTypedSignature] = useState<string>(initialDraft.typedSignature);
   const [rawSignatureSrc, setRawSignatureSrc] = useState<string>('');
   const [signatureSrc, setSignatureSrc] = useState<string>('');
 
   // Signature Background Removal Controls
-  const [removeSigBg, setRemoveSigBg] = useState<boolean>(true);
-  const [sigBgThreshold, setSigBgThreshold] = useState<number>(215); // 150-250
-  const [sigColorMode, setSigColorMode] = useState<SigColorMode>('navy');
+  const [removeSigBg, setRemoveSigBg] = useState<boolean>(initialDraft.removeSigBg);
+  const [sigBgThreshold, setSigBgThreshold] = useState<number>(initialDraft.sigBgThreshold); // 150-250
+  const [sigColorMode, setSigColorMode] = useState<SigColorMode>(initialDraft.sigColorMode);
   const [isProcessingSig, setIsProcessingSig] = useState<boolean>(false);
 
   // --- 5. QR CODE STATE ---
-  const [qrData, setQrData] = useState<string>('https://verify.nit.ac.in/id/NIT-2026-0849');
-  const [qrSubtext, setQrSubtext] = useState<string>('Scan to Verify');
+  const [qrData, setQrData] = useState<string>(initialDraft.qrData);
+  const [qrSubtext, setQrSubtext] = useState<string>(initialDraft.qrSubtext);
   const [qrDataUrl, setQrDataUrl] = useState<string>('');
 
   // --- 6. PRINT SHEET SETTINGS ---
-  const [sheetLayout, setSheetLayout] = useState<SheetLayoutOption>('4x6-horizontal');
-  const [cutGuideStyle, setCutGuideStyle] = useState<CutGuideStyle>('dotted');
-  const [sheetFooterNote, setSheetFooterNote] = useState<string>(
-    'AOS Smart ID Card Studio • 4×6" Print Sheet (Front & Back Pair)'
-  );
+  const [sheetLayout, setSheetLayout] = useState<SheetLayoutOption>(initialDraft.sheetLayout);
+  const [cutGuideStyle, setCutGuideStyle] = useState<CutGuideStyle>(initialDraft.cutGuideStyle);
+  const [sheetFooterNote, setSheetFooterNote] = useState<string>(initialDraft.sheetFooterNote);
+
+  // Non-destructive canvas repaint counter for mobile screenshot / visibility / resize recovery
+  const [canvasRepaintTick, setCanvasRepaintTick] = useState<number>(0);
 
   // Canvases
   const frontCanvasRef = useRef<HTMLCanvasElement>(null);
@@ -172,7 +294,124 @@ export const SmartIdCardStudioPage: React.FC<SmartIdCardStudioPageProps> = ({ on
   const [loadedQrImg, setLoadedQrImg] = useState<HTMLImageElement | null>(null);
   const [loadedSigImg, setLoadedSigImg] = useState<HTMLImageElement | null>(null);
 
-  // Initialize sample portrait and QR Code
+  // Subscribe to visibility / pageshow / orientationchange / width-resize for safe non-destructive canvas repaint
+  useEffect(() => {
+    return subscribeCanvasVisibilityRestore(() => {
+      setCanvasRepaintTick((t) => t + 1);
+    });
+  }, []);
+
+  // Debounced lightweight sessionStorage persistence for Smart ID Card Studio settings
+  useEffect(() => {
+    const timer = window.setTimeout(() => {
+      writeSessionDraft<SmartIdDraft>(SMART_ID_DRAFT_KEY, {
+        activeTab,
+        orgName,
+        subtitle,
+        cardHeadline,
+        candidateName,
+        idLabel,
+        idNumber,
+        roleLabel,
+        roleDept,
+        dobLabel,
+        dob,
+        bloodLabel,
+        bloodGroup,
+        phoneLabel,
+        phone,
+        validTillLabel,
+        validTill,
+        showExtraField,
+        extraFieldLabel,
+        extraFieldValue,
+        orgFontSize,
+        nameFontSize,
+        idHighlightColor,
+        backHeader,
+        addressTitle,
+        address,
+        termsTitle,
+        instruction1,
+        instruction2,
+        instruction3,
+        instruction4,
+        helpline,
+        signatoryTitle,
+        headerColor,
+        accentColor,
+        cardBgColor,
+        footerText,
+        photoZoom,
+        photoPanX,
+        photoPanY,
+        signatureMode,
+        typedSignature,
+        removeSigBg,
+        sigBgThreshold,
+        sigColorMode,
+        qrData,
+        qrSubtext,
+        sheetLayout,
+        cutGuideStyle,
+        sheetFooterNote,
+      });
+    }, 220);
+    return () => window.clearTimeout(timer);
+  }, [
+    activeTab,
+    orgName,
+    subtitle,
+    cardHeadline,
+    candidateName,
+    idLabel,
+    idNumber,
+    roleLabel,
+    roleDept,
+    dobLabel,
+    dob,
+    bloodLabel,
+    bloodGroup,
+    phoneLabel,
+    phone,
+    validTillLabel,
+    validTill,
+    showExtraField,
+    extraFieldLabel,
+    extraFieldValue,
+    orgFontSize,
+    nameFontSize,
+    idHighlightColor,
+    backHeader,
+    addressTitle,
+    address,
+    termsTitle,
+    instruction1,
+    instruction2,
+    instruction3,
+    instruction4,
+    helpline,
+    signatoryTitle,
+    headerColor,
+    accentColor,
+    cardBgColor,
+    footerText,
+    photoZoom,
+    photoPanX,
+    photoPanY,
+    signatureMode,
+    typedSignature,
+    removeSigBg,
+    sigBgThreshold,
+    sigColorMode,
+    qrData,
+    qrSubtext,
+    sheetLayout,
+    cutGuideStyle,
+    sheetFooterNote,
+  ]);
+
+  // Initialize QR Code
   useEffect(() => {
     QRCodeLib.toDataURL(qrData, {
       margin: 1,
@@ -186,24 +425,28 @@ export const SmartIdCardStudioPage: React.FC<SmartIdCardStudioPageProps> = ({ on
       .catch((err) => console.error('QR gen error:', err));
   }, [qrData]);
 
-  // Load sample portrait
-  useEffect(() => {
-    const stockUrl = getStockDemoPortraitDataUrl();
-    setPhotoSrc(stockUrl);
-  }, []);
-
-  // Preload photo image safely
+  // Preload photo image safely & cache uploaded portrait under quota cap
   useEffect(() => {
     if (!photoSrc) {
       setLoadedPhotoImg(null);
       return;
     }
+    let cancelled = false;
     const img = new Image();
     if (photoSrc.startsWith('http://') || photoSrc.startsWith('https://')) {
       img.crossOrigin = 'anonymous';
     }
-    img.onload = () => setLoadedPhotoImg(img);
+    img.onload = () => {
+      if (cancelled) return;
+      setLoadedPhotoImg(img);
+      if (isCustomPhotoRef.current) {
+        saveSessionImageSafely(SMART_ID_PHOTO_KEY, img);
+      }
+    };
     img.src = photoSrc;
+    return () => {
+      cancelled = true;
+    };
   }, [photoSrc]);
 
   // Preload QR Code image
@@ -722,11 +965,11 @@ export const SmartIdCardStudioPage: React.FC<SmartIdCardStudioPageProps> = ({ on
     loadedSigImg,
   ]);
 
-  // Synchronous preview redraw
+  // Synchronous preview redraw (includes non-destructive visibility/resize repaint trigger)
   useEffect(() => {
     renderFrontCard();
     renderBackCard();
-  }, [renderFrontCard, renderBackCard]);
+  }, [renderFrontCard, renderBackCard, canvasRepaintTick]);
 
   // =========================================================================
   // LIVE PRINT SHEET RENDERER: ZERO TEXT OVERLAP BUG FIX
@@ -938,7 +1181,7 @@ export const SmartIdCardStudioPage: React.FC<SmartIdCardStudioPageProps> = ({ on
 
   useEffect(() => {
     renderPrintSheet();
-  }, [renderPrintSheet, renderFrontCard, renderBackCard]);
+  }, [renderPrintSheet, renderFrontCard, renderBackCard, canvasRepaintTick]);
 
   // =========================================================================
   // VECTOR SVG GENERATOR: 100% PURE VECTOR CRISP OUTPUT (Zero Pixelation)
@@ -1241,6 +1484,7 @@ export const SmartIdCardStudioPage: React.FC<SmartIdCardStudioPageProps> = ({ on
     const reader = new FileReader();
     reader.onload = () => {
       if (typeof reader.result === 'string') {
+        isCustomPhotoRef.current = true;
         setPhotoSrc(reader.result);
         setPhotoZoom(1.0);
         setPhotoPanX(0);

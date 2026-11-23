@@ -4,6 +4,7 @@ import { IMAGE_TOOLS } from '../data/imageTools';
 import { SPECIAL_TOOLS } from '../data/specialTools';
 import { GOVERNMENT_PORTALS } from '../data/governmentPortals';
 import { PAN_SERVICES } from '../data/panMasterData';
+import { DOCUMENT_CHECKLIST_GUIDES } from '../data/documentChecklists';
 import { LanguageCode, getTranslatedTool } from './translations';
 import { matchesMultilingualQuery } from './multilingualSearch';
 import { resolvePortalRoute } from './portalRedirectRegistry';
@@ -104,6 +105,29 @@ const QUICK_UTILITIES: Array<{
     keywords: ['portals', 'government', 'tnpds', 'central', 'state', 'banking', 'utility'],
   },
   {
+    id: 'util-doc-checklists',
+    title: 'Document Checklist & Eligibility Guide Hub',
+    subtitle: 'Interactive PoI/PoA checklists & eligibility rules for PAN, Aadhaar, Smart Ration Card, Certificates & Exams',
+    metaLeft: 'Guide Hub · 10 Citizen Workflows',
+    metaRight: 'PoI / PoA Ready',
+    iconName: 'CheckSquare',
+    targetTab: 'checklists',
+    keywords: [
+      'checklist',
+      'document checklist',
+      'eligibility',
+      'poi',
+      'poa',
+      'required documents',
+      'pan documents',
+      'aadhaar address',
+      'ration card documents',
+      'income certificate',
+      'community certificate',
+      'passport documents',
+    ],
+  },
+  {
     id: 'util-client-diary',
     title: 'Client Diary (Customer Ledger)',
     subtitle: 'Manage daily customer tokens, government fees, service charges & WhatsApp summaries',
@@ -194,6 +218,15 @@ export function buildUniversalIndex(params: {
   const seenToolIds = new Set<string>();
 
   // 1. All Tools & Pro Studios
+  const EXTRA_TOOL_KEYWORDS: Record<string, string[]> = {
+    'typing-test': ['typing', 'wpm', 'cpm', 'speed test', 'keyboard', 'accuracy', 'productivity'],
+    'todo-list': ['todo', 'tasks', 'checklist', 'planner', 'reminder', 'productivity'],
+    'notes-app': ['notes', 'notepad', 'scratchpad', 'memo', 'local storage', 'productivity'],
+    stopwatch: ['stopwatch', 'timer', 'lap', 'chronometer', 'clock', 'productivity'],
+    'password-generator': ['password', 'passphrase', 'strong', 'random', 'security', 'entropy'],
+    'url-encoder-decoder': ['url', 'encode', 'decode', 'uri', 'query', 'percent', 'security', 'dev'],
+  };
+
   for (const rawTool of rawTools) {
     if (seenToolIds.has(rawTool.id)) continue;
     seenToolIds.add(rawTool.id);
@@ -203,6 +236,10 @@ export function buildUniversalIndex(params: {
         ? 'PDF Utility'
         : t.category === 'image'
         ? 'Image Studio'
+        : rawTool.utilityGroup === 'productivity'
+        ? 'Productivity Utility'
+        : rawTool.utilityGroup === 'security'
+        ? 'Security & Web Utility'
         : 'AOS Pro Tool';
 
     items.push({
@@ -213,7 +250,17 @@ export function buildUniversalIndex(params: {
       metaLeft: `Tool · ${catLabel}`,
       metaRight: t.badge || (t.acceptedFormats ? t.acceptedFormats : 'In-Browser'),
       iconName: t.iconName,
-      searchFields: [t.name, rawTool.name, t.shortDesc, rawTool.shortDesc, t.category, t.id, t.badge || ''],
+      searchFields: [
+        t.name,
+        rawTool.name,
+        t.shortDesc,
+        rawTool.shortDesc,
+        t.category,
+        rawTool.utilityGroup || '',
+        t.id,
+        t.badge || '',
+        ...(EXTRA_TOOL_KEYWORDS[t.id] || []),
+      ],
       tool: t,
       isLocked: isToolLocked(t.id),
     });
@@ -297,6 +344,31 @@ export function buildUniversalIndex(params: {
     });
   }
 
+  for (const checklist of DOCUMENT_CHECKLIST_GUIDES) {
+    items.push({
+      key: `utility:checklist-${checklist.id}`,
+      kind: 'utility',
+      title: checklist.title,
+      subtitle: checklist.summary,
+      metaLeft: `Document Checklist · ${checklist.categoryLabel}`,
+      metaRight: `${checklist.checklist.length} Docs · PoI/PoA`,
+      iconName: 'CheckSquare',
+      searchFields: [
+        checklist.title,
+        checklist.shortTitle,
+        checklist.summary,
+        checklist.categoryLabel,
+        checklist.portalMode,
+        'checklist eligibility documents poi poa',
+        ...checklist.keywords,
+        ...checklist.eligibilityRules,
+        ...checklist.checklist.map((c) => `${c.label} ${c.tag}`),
+      ],
+      targetTab: `checklists:${checklist.id}`,
+      isLocked: false,
+    });
+  }
+
   // 4. Client Diary Records (strictly read ONLY when Client Diary is unlocked!)
   if (!isToolLocked('khata-diary')) {
     const records = readClientDiaryRecordsSafe(userId);
@@ -344,18 +416,20 @@ export function searchUniversalIndex(
     const featuredKeys = new Set([
       'tool:passport-photo-studio',
       'tool:smart-id-card-studio',
+      'tool:typing-test',
+      'tool:todo-list',
+      'tool:notes-app',
+      'tool:stopwatch',
+      'tool:password-generator',
+      'tool:url-encoder-decoder',
       'tool:photo-signature-resize',
-      'tool:receipt-hub',
-      'tool:quick-calculator-suite',
       'tool:compress-pdf',
       'tool:qr-code-generator',
       'portal:tnpds-tamil-nadu',
       'portal:utiitsl-pan',
-      'portal:uidai-aadhaar',
-      'portal:udyam-msme',
       'utility:util-pan-hub',
+      'utility:util-doc-checklists',
       'utility:util-client-diary',
-      'utility:util-digital-card',
     ]);
     const featured = pool.filter((it) => featuredKeys.has(it.key));
     const diaryTop = pool.filter((it) => it.kind === 'diary').slice(0, 3);

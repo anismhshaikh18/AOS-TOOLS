@@ -1,4 +1,4 @@
-import React, { useState, useEffect, useCallback, lazy, Suspense } from 'react';
+import React, { useState, useEffect, useCallback, useRef, lazy, Suspense } from 'react';
 import { Header } from './components/Header';
 import { Footer } from './components/Footer';
 import { HomeView } from './views/HomeView';
@@ -16,6 +16,7 @@ import {
   flushPendingCloudSync,
   uploadCloudBackup,
 } from './services/cloudBackupService';
+import { readSessionDraft, writeSessionDraft } from './utils/sessionDraftStorage';
 
 // Code-split secondary views, studios, protected hubs, and heavy modals
 const ToolsDirectoryView = lazy(() =>
@@ -54,6 +55,24 @@ const PanMasterHub = lazy(() =>
 const GovernmentPortals = lazy(() =>
   import('./components/GovernmentPortals').then((m) => ({ default: m.GovernmentPortals }))
 );
+const DocumentChecklistHubView = lazy(() =>
+  import('./views/DocumentChecklistHubView').then((m) => ({
+    default: m.DocumentChecklistHubView,
+  }))
+);
+const UtilityToolStudioView = lazy(() =>
+  import('./views/UtilityToolStudioView').then((m) => ({
+    default: m.UtilityToolStudioView,
+  }))
+);
+const UTILITY_STUDIO_IDS = new Set<string>([
+  'typing-test',
+  'todo-list',
+  'notes-app',
+  'stopwatch',
+  'password-generator',
+  'url-encoder-decoder',
+]);
 const ToolRunnerModal = lazy(() =>
   import('./components/ToolRunnerModal').then((m) => ({ default: m.ToolRunnerModal }))
 );
@@ -101,6 +120,136 @@ const CLIENT_DIARY_TOOL_ITEM: ToolItem = {
   iconName: 'BookMarked',
 };
 
+const NAV_SESSION_KEY = 'aos_nav_state_v1';
+
+const VALID_TABS = new Set<string>([
+  'home',
+  'tools',
+  'portals',
+  'checklists',
+  'khata',
+  'pan',
+  'about',
+  'privacy',
+  'pdf',
+  'image',
+  'special',
+  'card',
+]);
+
+interface NavSnapshot {
+  tab: string;
+  toolId: string | null;
+  checklistId: string | null;
+}
+
+interface NavHistoryState extends NavSnapshot {
+  aosNav: true;
+}
+
+const ALL_TOOLS_LIST: ToolItem[] = [...PDF_TOOLS, ...IMAGE_TOOLS, ...SPECIAL_TOOLS];
+
+function findToolById(toolId: string | null): ToolItem | null {
+  if (!toolId) return null;
+  return ALL_TOOLS_LIST.find((t) => t.id === toolId) || null;
+}
+
+function normalizeTab(raw: unknown): string {
+  return typeof raw === 'string' && VALID_TABS.has(raw) ? raw : 'home';
+}
+
+function buildNavUrl(tab: string, toolId: string | null, checklistId: string | null): string {
+  if (tab === 'card' && !toolId) {
+    return '/card';
+  }
+  const params = new URLSearchParams();
+  if (tab && tab !== 'home') {
+    params.set('view', tab);
+  }
+  if (toolId) {
+    params.set('tool', toolId);
+  }
+  if (tab === 'checklists' && checklistId) {
+    params.set('guide', checklistId);
+  }
+  const qs = params.toString();
+  return qs ? `/?${qs}` : '/';
+}
+
+function parseNavFromUrl(): { hasExplicitUrl: boolean } & NavSnapshot {
+  if (typeof window === 'undefined') {
+    return { hasExplicitUrl: false, tab: 'home', toolId: null, checklistId: null };
+  }
+  const cleanPath = window.location.pathname.replace(/\/+$/, '');
+  if (cleanPath === '/card') {
+    return { hasExplicitUrl: true, tab: 'card', toolId: null, checklistId: null };
+  }
+  const params = new URLSearchParams(window.location.search);
+  const rawView = params.get('view');
+  const rawTool = params.get('tool');
+  const rawGuide = params.get('guide');
+
+  const validView = rawView && VALID_TABS.has(rawView) ? rawView : null;
+  const validTool = rawTool && findToolById(rawTool) ? rawTool : null;
+  const validGuide = rawGuide && rawGuide.trim() ? rawGuide.trim() : null;
+
+  if (validView || validTool || validGuide) {
+    return {
+      hasExplicitUrl: true,
+      tab: validView || (validGuide ? 'checklists' : 'home'),
+      toolId: validTool,
+      checklistId: (validView || (validGuide ? 'checklists' : 'home')) === 'checklists' ? validGuide : null,
+    };
+  }
+  return { hasExplicitUrl: false, tab: 'home', toolId: null, checklistId: null };
+}
+
+function getInitialNavState(): NavSnapshot {
+  if (typeof window === 'undefined') {
+    return { tab: 'home', toolId: null, checklistId: null };
+  }
+
+  // 1. Explicit URL (?view=...&tool=... or /card) takes top priority
+  const parsedUrl = parseNavFromUrl();
+  if (parsedUrl.hasExplicitUrl) {
+    return {
+      tab: parsedUrl.tab,
+      toolId: parsedUrl.toolId,
+      checklistId: parsedUrl.checklistId,
+    };
+  }
+
+  // 2. Existing history state (e.g. mobile BFCache or reload)
+  const histState = window.history.state as Partial<NavHistoryState> | null;
+  if (histState?.aosNav && typeof histState.tab === 'string' && VALID_TABS.has(histState.tab)) {
+    const validTool = histState.toolId && findToolById(histState.toolId) ? histState.toolId : null;
+    return {
+      tab: histState.tab,
+      toolId: validTool,
+      checklistId:
+        histState.tab === 'checklists' && typeof histState.checklistId === 'string'
+          ? histState.checklistId
+          : null,
+    };
+  }
+
+  // 3. Session draft fallback (survives mobile memory-pressure reload after screenshot/camera)
+  const saved = readSessionDraft<NavSnapshot | null>(NAV_SESSION_KEY, null);
+  if (saved && typeof saved.tab === 'string' && VALID_TABS.has(saved.tab)) {
+    const validTool = saved.toolId && findToolById(saved.toolId) ? saved.toolId : null;
+    return {
+      tab: saved.tab,
+      toolId: validTool,
+      checklistId:
+        saved.tab === 'checklists' && typeof saved.checklistId === 'string'
+          ? saved.checklistId
+          : null,
+    };
+  }
+
+  return { tab: 'home', toolId: null, checklistId: null };
+}
+
 const ViewLoadingFallback: React.FC = () => (
   <div className="w-full max-w-4xl mx-auto py-16 px-4">
     <div className="rounded-2xl liquid-glass border border-slate-200 dark:border-sky-500/20 p-8 text-center space-y-3">
@@ -113,24 +262,34 @@ const ViewLoadingFallback: React.FC = () => (
 );
 
 export default function App() {
-  const [activeTab, setActiveTab] = useState<string>(() => {
-    if (typeof window !== 'undefined') {
-      if (window.location.pathname.replace(/\/+$/, '') === '/card') {
-        return 'card';
+  // Multi-Language state (initialized first so restored tools localize cleanly)
+  const [lang, setLang] = useState<LanguageCode>(() => {
+    try {
+      const saved = localStorage.getItem('aos_lang') as LanguageCode;
+      if (saved && ['en', 'hi', 'ta', 'te', 'mr', 'hinglish'].includes(saved)) {
+        return saved;
       }
-      const viewParam = new URLSearchParams(window.location.search).get('view');
-      if (
-        viewParam &&
-        ['tools', 'portals', 'khata', 'pan', 'about', 'privacy', 'pdf', 'image', 'special'].includes(
-          viewParam
-        )
-      ) {
-        return viewParam;
-      }
+      return 'en';
+    } catch {
+      return 'en';
     }
-    return 'home';
   });
-  const [selectedTool, setSelectedTool] = useState<ToolItem | null>(null);
+
+  // Resolve initial navigation snapshot once per mount
+  const initialNavRef = useRef<NavSnapshot | null>(null);
+  if (initialNavRef.current === null) {
+    initialNavRef.current = getInitialNavState();
+  }
+  const initialNav = initialNavRef.current;
+
+  const [activeTab, setActiveTab] = useState<string>(initialNav.tab);
+  const [selectedChecklistId, setSelectedChecklistId] = useState<string | null>(
+    initialNav.checklistId
+  );
+  const [selectedTool, setSelectedTool] = useState<ToolItem | null>(() => {
+    const found = findToolById(initialNav.toolId);
+    return found ? getTranslatedTool(found, lang) : null;
+  });
   const [isSearchOpen, setIsSearchOpen] = useState<boolean>(false);
   const [isPrivacyOpen, setIsPrivacyOpen] = useState<boolean>(false);
   const [isFreePolicyOpen, setIsFreePolicyOpen] = useState<boolean>(false);
@@ -167,18 +326,36 @@ export default function App() {
     }
   });
 
-  // Multi-Language state
-  const [lang, setLang] = useState<LanguageCode>(() => {
-    try {
-      const saved = localStorage.getItem('aos_lang') as LanguageCode;
-      if (saved && ['en', 'hi', 'ta', 'te', 'mr', 'hinglish'].includes(saved)) {
-        return saved;
-      }
-      return 'en';
-    } catch {
-      return 'en';
-    }
-  });
+  // Stable refs for single-mount popstate listener (never churns on lang/auth updates)
+  const langRef = useRef<LanguageCode>(lang);
+  langRef.current = lang;
+  const isToolLockedRef = useRef(isToolCurrentlyLocked);
+  isToolLockedRef.current = isToolCurrentlyLocked;
+  const activeTabRef = useRef<string>(activeTab);
+  activeTabRef.current = activeTab;
+  const selectedToolRef = useRef<ToolItem | null>(selectedTool);
+  selectedToolRef.current = selectedTool;
+  const selectedChecklistIdRef = useRef<string | null>(selectedChecklistId);
+  selectedChecklistIdRef.current = selectedChecklistId;
+  const pushedDepthRef = useRef<number>(0);
+
+  // Persist current route snapshot to sessionStorage so mobile screenshot/camera/resize reloads never reset user location
+  useEffect(() => {
+    writeSessionDraft<NavSnapshot>(NAV_SESSION_KEY, {
+      tab: activeTab,
+      toolId: selectedTool?.id || null,
+      checklistId: activeTab === 'checklists' ? selectedChecklistId : null,
+    });
+  }, [activeTab, selectedTool?.id, selectedChecklistId]);
+
+  // Keep open tool label localized when language switches (without closing or resetting it)
+  useEffect(() => {
+    setSelectedTool((prev) => {
+      if (!prev) return null;
+      const base = findToolById(prev.id);
+      return base ? getTranslatedTool(base, lang) : prev;
+    });
+  }, [lang]);
 
   // Synchronize Dark / Light mode class on document
   useEffect(() => {
@@ -228,62 +405,127 @@ export default function App() {
     return () => window.clearTimeout(timer);
   }, [authReady, user?.uid, isDark, lang, templateId]);
 
-  // Mobile browser back-button & history navigation handler
+  // Single-mount mobile browser Back-button & history navigation handler
   useEffect(() => {
-    const initialTab =
-      window.location.pathname.replace(/\/+$/, '') === '/card' ? 'card' : 'home';
-    if (!window.history.state) {
-      window.history.replaceState({ tab: initialTab, toolId: null }, '');
-    }
+    const initState: NavHistoryState = {
+      aosNav: true,
+      tab: initialNav.tab,
+      toolId: initialNav.toolId,
+      checklistId: initialNav.checklistId,
+    };
+    window.history.replaceState(
+      initState,
+      '',
+      buildNavUrl(initState.tab, initState.toolId, initState.checklistId)
+    );
+
+    const applyNavTarget = (target: NavSnapshot) => {
+      const currentLang = langRef.current;
+      const checkLocked = isToolLockedRef.current;
+      const nextTab = normalizeTab(target.tab);
+
+      if (target.toolId) {
+        const found = findToolById(target.toolId);
+        if (found && checkLocked(found.id)) {
+          setSelectedTool(null);
+          setPendingGate({ kind: 'tool', tool: getTranslatedTool(found, currentLang) });
+        } else {
+          setSelectedTool(found ? getTranslatedTool(found, currentLang) : null);
+        }
+      } else {
+        setSelectedTool(null);
+      }
+
+      const tabGate = getGateToolForTab(nextTab);
+      if (tabGate && checkLocked(tabGate.id)) {
+        setActiveTab('home');
+        setSelectedChecklistId(null);
+        setPendingGate({
+          kind: 'tab',
+          tab: nextTab,
+          tool: getTranslatedTool(tabGate, currentLang),
+        });
+      } else {
+        setActiveTab(nextTab);
+        setSelectedChecklistId(nextTab === 'checklists' ? target.checklistId : null);
+      }
+    };
 
     const handlePopState = (event: PopStateEvent) => {
-      const state = event.state;
-      if (state) {
-        if (state.toolId) {
-          const allTools = [...PDF_TOOLS, ...IMAGE_TOOLS, ...SPECIAL_TOOLS];
-          const found = allTools.find((t) => t.id === state.toolId);
-          if (found && isToolCurrentlyLocked(found.id)) {
-            setSelectedTool(null);
-            setPendingGate({ kind: 'tool', tool: getTranslatedTool(found, lang) });
-          } else {
-            setSelectedTool(found ? getTranslatedTool(found, lang) : null);
-          }
-        } else {
-          setSelectedTool(null);
-        }
-        if (state.tab) {
-          const tabGate = getGateToolForTab(state.tab);
-          if (tabGate && isToolCurrentlyLocked(tabGate.id)) {
-            setActiveTab('home');
-            setPendingGate({
-              kind: 'tab',
-              tab: state.tab,
-              tool: getTranslatedTool(tabGate, lang),
-            });
-          } else {
-            setActiveTab(state.tab);
-          }
-        }
-        setIsSearchOpen(false);
-        setIsPrivacyOpen(false);
-        setIsFreePolicyOpen(false);
-      } else {
-        const isCardPath = window.location.pathname.replace(/\/+$/, '') === '/card';
-        setSelectedTool(null);
-        setIsSearchOpen(false);
-        setIsPrivacyOpen(false);
-        setIsFreePolicyOpen(false);
-        setActiveTab(isCardPath ? 'card' : 'home');
+      setIsSearchOpen(false);
+      setIsPrivacyOpen(false);
+      setIsFreePolicyOpen(false);
+      setIsRequestModalOpen(false);
+      pushedDepthRef.current = Math.max(0, pushedDepthRef.current - 1);
+
+      const state = event.state as Partial<NavHistoryState> | null;
+      if (state?.aosNav) {
+        applyNavTarget({
+          tab: normalizeTab(state.tab),
+          toolId: typeof state.toolId === 'string' ? state.toolId : null,
+          checklistId: typeof state.checklistId === 'string' ? state.checklistId : null,
+        });
+        return;
       }
+
+      // Non-AOS or null history state: inspect URL first so we never blindly dump users to Home
+      const parsed = parseNavFromUrl();
+      if (parsed.hasExplicitUrl) {
+        const normalized: NavHistoryState = {
+          aosNav: true,
+          tab: parsed.tab,
+          toolId: parsed.toolId,
+          checklistId: parsed.checklistId,
+        };
+        window.history.replaceState(
+          normalized,
+          '',
+          buildNavUrl(normalized.tab, normalized.toolId, normalized.checklistId)
+        );
+        applyNavTarget(normalized);
+        return;
+      }
+
+      // If a tool was open and history fell back to a stateless entry, close only the tool and stay on active tab
+      if (selectedToolRef.current) {
+        const stayTab = activeTabRef.current;
+        const stayChecklist = stayTab === 'checklists' ? selectedChecklistIdRef.current : null;
+        setSelectedTool(null);
+        window.history.replaceState(
+          {
+            aosNav: true,
+            tab: stayTab,
+            toolId: null,
+            checklistId: stayChecklist,
+          } satisfies NavHistoryState,
+          '',
+          buildNavUrl(stayTab, null, stayChecklist)
+        );
+        return;
+      }
+
+      setActiveTab('home');
+      setSelectedChecklistId(null);
+      setSelectedTool(null);
     };
 
     window.addEventListener('popstate', handlePopState);
     return () => window.removeEventListener('popstate', handlePopState);
-  }, [lang, isToolCurrentlyLocked]);
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, []);
 
-  // Guard active gated tabs if user signs out or session locks while viewing them
+  // Guard active gated tabs & restored gated tools if user signs out or session locks while viewing them
   useEffect(() => {
     if (!authReady) return;
+    if (selectedTool && isToolCurrentlyLocked(selectedTool.id)) {
+      const lockedTool = selectedTool;
+      setSelectedTool(null);
+      setPendingGate({
+        kind: 'tool',
+        tool: getTranslatedTool(lockedTool, lang),
+      });
+      return;
+    }
     const tabGate = getGateToolForTab(activeTab);
     if (tabGate && isToolCurrentlyLocked(tabGate.id)) {
       setActiveTab('home');
@@ -293,31 +535,60 @@ export default function App() {
         tool: getTranslatedTool(tabGate, lang),
       });
     }
-  }, [authReady, activeTab, lang, isToolCurrentlyLocked]);
+  }, [authReady, activeTab, selectedTool, lang, isToolCurrentlyLocked]);
 
-  const navigateTabDirectly = useCallback((tab: string) => {
+  const navigateTabDirectly = useCallback((rawTab: string) => {
+    const [parsedTab, subId] = rawTab.includes(':') ? rawTab.split(':', 2) : [rawTab, null];
+    const tab = normalizeTab(parsedTab);
+    const nextChecklistId = tab === 'checklists' ? subId : null;
+    const isSameLocation =
+      !selectedToolRef.current &&
+      activeTabRef.current === tab &&
+      selectedChecklistIdRef.current === nextChecklistId;
+
     setSelectedTool(null);
     setActiveTab(tab);
-    window.scrollTo({ top: 0, behavior: 'smooth' });
-    const nextUrl = tab === 'card' ? '/card' : '/';
-    window.history.pushState({ tab, toolId: null }, '', nextUrl);
+    setSelectedChecklistId(nextChecklistId);
+
+    const nextState: NavHistoryState = {
+      aosNav: true,
+      tab,
+      toolId: null,
+      checklistId: nextChecklistId,
+    };
+    const nextUrl = buildNavUrl(tab, null, nextChecklistId);
+    const cur = window.history.state as Partial<NavHistoryState> | null;
+    const matchesCurrentHistory =
+      cur?.aosNav === true &&
+      cur.tab === tab &&
+      !cur.toolId &&
+      (cur.checklistId || null) === nextChecklistId;
+
+    if (isSameLocation || matchesCurrentHistory) {
+      window.history.replaceState(nextState, '', nextUrl);
+    } else {
+      window.history.pushState(nextState, '', nextUrl);
+      pushedDepthRef.current += 1;
+      window.scrollTo({ top: 0, behavior: 'smooth' });
+    }
   }, []);
 
   const handleNavigateTab = useCallback(
-    (tab: string) => {
-      if (tab !== 'home') {
+    (rawTab: string) => {
+      const baseTab = rawTab.includes(':') ? rawTab.split(':', 2)[0] : rawTab;
+      if (baseTab !== 'home') {
         notifyPwaInteraction();
       }
-      const tabGate = getGateToolForTab(tab);
+      const tabGate = getGateToolForTab(baseTab);
       if (tabGate && isToolCurrentlyLocked(tabGate.id)) {
         setPendingGate({
           kind: 'tab',
-          tab,
+          tab: baseTab,
           tool: getTranslatedTool(tabGate, lang),
         });
         return;
       }
-      navigateTabDirectly(tab);
+      navigateTabDirectly(rawTab);
     },
     [isToolCurrentlyLocked, lang, navigateTabDirectly]
   );
@@ -331,9 +602,26 @@ export default function App() {
       }
       const localizedTool = getTranslatedTool(tool, lang);
       setSelectedTool(localizedTool);
-      window.history.pushState({ tab: activeTab, toolId: tool.id }, '');
+
+      const parentTab = activeTabRef.current;
+      const parentChecklist = parentTab === 'checklists' ? selectedChecklistIdRef.current : null;
+      const nextState: NavHistoryState = {
+        aosNav: true,
+        tab: parentTab,
+        toolId: tool.id,
+        checklistId: parentChecklist,
+      };
+      const nextUrl = buildNavUrl(parentTab, tool.id, parentChecklist);
+      const cur = window.history.state as Partial<NavHistoryState> | null;
+
+      if (cur?.aosNav === true && cur.toolId === tool.id && cur.tab === parentTab) {
+        window.history.replaceState(nextState, '', nextUrl);
+      } else {
+        window.history.pushState(nextState, '', nextUrl);
+        pushedDepthRef.current += 1;
+      }
     },
-    [activeTab, lang, navigateTabDirectly]
+    [lang, navigateTabDirectly]
   );
 
   const handleSelectTool = useCallback(
@@ -352,23 +640,39 @@ export default function App() {
   );
 
   const handleCloseTool = useCallback(() => {
-    setSelectedTool(null);
-    if (window.history.state?.toolId) {
+    const cur = window.history.state as Partial<NavHistoryState> | null;
+    if (cur?.aosNav === true && cur.toolId && pushedDepthRef.current > 0) {
+      // Return cleanly to the exact previous view in browser history
       window.history.back();
+      return;
     }
+
+    // Restored/deep-linked session with no prior in-app history entry:
+    // keep user in the active category/Tools view rather than jumping unexpectedly to Home
+    const fallbackTab = activeTabRef.current === 'home' ? 'tools' : activeTabRef.current;
+    const fallbackChecklist = fallbackTab === 'checklists' ? selectedChecklistIdRef.current : null;
+    setSelectedTool(null);
+    setActiveTab(fallbackTab);
+    const nextState: NavHistoryState = {
+      aosNav: true,
+      tab: fallbackTab,
+      toolId: null,
+      checklistId: fallbackChecklist,
+    };
+    window.history.replaceState(
+      nextState,
+      '',
+      buildNavUrl(fallbackTab, null, fallbackChecklist)
+    );
   }, []);
 
   const handleOpenSearchModal = useCallback(() => {
     notifyPwaInteraction();
     setIsSearchOpen(true);
-    window.history.pushState({ tab: activeTab, isSearchModal: true }, '');
-  }, [activeTab]);
+  }, []);
 
   const handleCloseSearchModal = useCallback(() => {
     setIsSearchOpen(false);
-    if (window.history.state?.isSearchModal) {
-      window.history.back();
-    }
   }, []);
 
   // Global keyboard shortcut for Universal Search (/ or Cmd/Ctrl+K)
@@ -434,14 +738,13 @@ export default function App() {
                 <SmartIdCardStudioPage onBack={handleCloseTool} />
                 <ToolGuideSection tool={selectedTool} />
               </div>
+            ) : UTILITY_STUDIO_IDS.has(selectedTool.id) ? (
+              <UtilityToolStudioView tool={selectedTool} onBack={handleCloseTool} />
             ) : (
               <ToolRunnerModal
                 tool={selectedTool}
                 onClose={handleCloseTool}
-                onOpenKhataTab={() => {
-                  handleCloseTool();
-                  handleNavigateTab('khata');
-                }}
+                onOpenKhataTab={() => handleNavigateTab('khata')}
               />
             )}
           </Suspense>
@@ -506,6 +809,15 @@ export default function App() {
             )}
 
             {activeTab === 'portals' && <GovernmentPortals />}
+
+            {activeTab === 'checklists' && (
+              <DocumentChecklistHubView
+                initialGuideId={selectedChecklistId}
+                onSelectTool={handleSelectTool}
+                onNavigateTab={handleNavigateTab}
+                lang={lang}
+              />
+            )}
 
             {activeTab === 'card' && (
               <DigitalBusinessCardView onBackHome={() => handleNavigateTab('home')} />

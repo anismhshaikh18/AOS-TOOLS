@@ -31,7 +31,7 @@ export const SearchModal: React.FC<SearchModalProps> = ({
   const [query, setQuery] = useState('');
   const [kindFilter, setKindFilter] = useState<'all' | UniversalResultKind>('all');
   const [activeIndex, setActiveIndex] = useState(0);
-  const debouncedQuery = useDebouncedValue(query, 130);
+  const debouncedQuery = useDebouncedValue(query, 60);
   const t = TRANSLATIONS[lang] || TRANSLATIONS.en;
 
   const { user, isToolCurrentlyLocked } = useAuthSecurity();
@@ -126,14 +126,9 @@ export const SearchModal: React.FC<SearchModalProps> = ({
         triggerActiveResult();
       }
     };
-    const handlePopState = () => {
-      onClose();
-    };
     window.addEventListener('keydown', handleKeyDown);
-    window.addEventListener('popstate', handlePopState);
     return () => {
       window.removeEventListener('keydown', handleKeyDown);
-      window.removeEventListener('popstate', handlePopState);
     };
   }, [isOpen, onClose, results.length, triggerActiveResult]);
 
@@ -150,53 +145,54 @@ export const SearchModal: React.FC<SearchModalProps> = ({
       aria-label="AOS Universal Search Palette"
     >
       <div className="relative w-full max-w-2xl rounded-2xl bg-white dark:bg-[#0B192C] border border-slate-200 dark:border-sky-400/30 shadow-2xl overflow-hidden">
-        {/* Futuristic Deep Blue Search Input Header */}
-        <div className="flex items-center gap-2 px-4 py-3.5 border-b border-slate-200 dark:border-sky-500/25 bg-slate-50 dark:bg-[#071322]">
-          <Search className="w-5 h-5 text-[#0284c7] dark:text-sky-400 shrink-0" />
-          <input
-            type="text"
-            autoFocus
-            value={query}
-            onChange={(e) => setQuery(e.target.value)}
-            placeholder={
-              t.searchBarPlaceholder ||
-              'Search tools, TNPDS, portals, calculators, or Client Diary...'
-            }
-            className="w-full text-sm bg-transparent text-slate-900 dark:text-white placeholder-slate-400 focus:outline-none min-w-0"
-          />
-          {voiceSupported && (
-            <button
-              type="button"
-              onClick={startListening}
-              aria-label={isListening ? 'Stop voice search' : 'Start voice search'}
-              title="Voice Search (Multi-language)"
-              className={`min-h-[36px] min-w-[36px] rounded-full flex items-center justify-center cursor-pointer transition-colors shrink-0 ${
-                isListening
-                  ? 'bg-red-500 text-white animate-pulse'
-                  : 'aos-btn-icon text-[#0284c7] dark:text-sky-300'
-              }`}
-            >
-              {isListening ? <MicOff className="w-4 h-4" /> : <Mic className="w-4 h-4" />}
-            </button>
-          )}
-          {query && (
-            <button
-              type="button"
-              onClick={() => setQuery('')}
-              aria-label="Clear search"
-              className="aos-btn-icon min-h-[36px] min-w-[36px] cursor-pointer shrink-0"
-            >
-              <X className="w-4 h-4" />
-            </button>
-          )}
-          <button
-            type="button"
-            onClick={onClose}
-            aria-label="Close search"
-            className="aos-btn-soft px-3 py-1.5 text-[10px] font-mono font-bold cursor-pointer shrink-0"
-          >
-            ESC
-          </button>
+        {/* Animated-Border Pill Search Header */}
+        <div className="p-3.5 border-b border-slate-200 dark:border-sky-500/25 bg-slate-50 dark:bg-[#071322]">
+          <div className="aos-search-pill-wrap">
+            <div className="aos-search-pill-inner px-3.5 py-1.5 gap-2">
+              <Search className="w-4 h-4 text-[#0284c7] dark:text-sky-400 shrink-0" />
+              <input
+                type="text"
+                autoFocus
+                value={query}
+                onChange={(e) => setQuery(e.target.value)}
+                placeholder="Search utility tools..."
+                className="aos-search-pill-input w-full py-1.5 text-sm text-slate-900 dark:text-white placeholder-slate-400 dark:placeholder-sky-200/60 min-w-0"
+              />
+              {voiceSupported && (
+                <button
+                  type="button"
+                  onClick={startListening}
+                  aria-label={isListening ? 'Stop voice search' : 'Start voice search'}
+                  title="Voice Search (Multi-language)"
+                  className={`min-h-[36px] min-w-[36px] rounded-full flex items-center justify-center cursor-pointer transition-colors shrink-0 ${
+                    isListening
+                      ? 'bg-red-500 text-white animate-pulse'
+                      : 'aos-btn-icon text-[#0284c7] dark:text-sky-300'
+                  }`}
+                >
+                  {isListening ? <MicOff className="w-4 h-4" /> : <Mic className="w-4 h-4" />}
+                </button>
+              )}
+              {query && (
+                <button
+                  type="button"
+                  onClick={() => setQuery('')}
+                  aria-label="Clear search"
+                  className="aos-btn-icon min-h-[36px] min-w-[36px] cursor-pointer shrink-0"
+                >
+                  <X className="w-4 h-4" />
+                </button>
+              )}
+              <button
+                type="button"
+                onClick={onClose}
+                aria-label="Close search"
+                className="aos-btn-soft px-3 py-1.5 text-[10px] font-mono font-bold cursor-pointer shrink-0"
+              >
+                ESC
+              </button>
+            </div>
+          </div>
         </div>
 
         {voiceError && (

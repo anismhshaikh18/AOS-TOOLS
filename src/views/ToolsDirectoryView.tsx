@@ -15,6 +15,9 @@ import {
   Lock,
   Mic,
   MicOff,
+  X,
+  Keyboard,
+  Key,
 } from 'lucide-react';
 import { ToolItem } from '../types';
 import { PDF_TOOLS } from '../data/pdfTools';
@@ -39,7 +42,7 @@ export const ToolsDirectoryView: React.FC<ToolsDirectoryViewProps> = ({
   lang = 'en',
 }) => {
   const [searchQuery, setSearchQuery] = useState('');
-  const debouncedQuery = useDebouncedValue(searchQuery, 160);
+  const debouncedQuery = useDebouncedValue(searchQuery, 60);
   const [selectedFilter, setSelectedFilter] = useState('All Tools');
   const { isToolCurrentlyLocked } = useAuthSecurity();
   const { isSupported: voiceSupported, isListening, startListening } = useVoiceSearch(
@@ -187,6 +190,18 @@ export const ToolsDirectoryView: React.FC<ToolsDirectoryViewProps> = ({
       if (!matchesSearch) return false;
 
       if (selectedFilter === 'All Tools') return true;
+      if (selectedFilter === 'Productivity') {
+        return (
+          t.utilityGroup === 'productivity' ||
+          ['typing-test', 'todo-list', 'notes-app', 'stopwatch', 'quick-calculator-suite', 'age-calculator', 'unit-currency-converter', 'text-case-converter', 'receipt-hub'].includes(t.id)
+        );
+      }
+      if (selectedFilter === 'Security & Dev') {
+        return (
+          t.utilityGroup === 'security' ||
+          ['password-generator', 'url-encoder-decoder', 'base64-url-codec', 'html-editor', 'protect-pdf', 'unlock-pdf'].includes(t.id)
+        );
+      }
       if (selectedFilter === 'Passport & ID') {
         return ['passport-photo-sheet', 'passport-photo-studio', 'photo-signature-resize', 'crop-image', 'smart-id-card-studio'].includes(t.id);
       }
@@ -199,9 +214,25 @@ export const ToolsDirectoryView: React.FC<ToolsDirectoryViewProps> = ({
 
   const categories = [
     {
+      id: 'productivity',
+      title: 'Productivity Utilities',
+      subtitle: 'Typing Test, Todo List, Local Notes App, Stopwatch & Calculators',
+      icon: Keyboard,
+      color: 'bg-gradient-to-r from-[#0ea5e9] to-[#0284c7]',
+      action: () => setSelectedFilter('Productivity'),
+    },
+    {
+      id: 'security-dev',
+      title: 'Security & Web Utilities',
+      subtitle: 'CSPRNG Password Generator, URL Encoder/Decoder & PDF Locks',
+      icon: Key,
+      color: 'bg-gradient-to-r from-[#0284c7] to-[#1e3a8a]',
+      action: () => setSelectedFilter('Security & Dev'),
+    },
+    {
       id: 'passport',
       title: t.passportCategoryTab || 'Passport & ID Tools',
-      subtitle: '2 real tools: 35×45mm / 2×2" sheets & CR80 ID cards',
+      subtitle: '35×45mm / PAN / SSC sheets & CR80 PVC ID Card Studio',
       icon: Camera,
       color: 'bg-gradient-to-r from-[#0284c7] to-[#0d4775]',
       action: () => {
@@ -220,7 +251,7 @@ export const ToolsDirectoryView: React.FC<ToolsDirectoryViewProps> = ({
     {
       id: 'image',
       title: t.imageCategoryTab || 'Image & Photo Resizers',
-      subtitle: '12 real tools: Exact KB compressor, Signature & Document cleaner',
+      subtitle: 'Exact KB compressor, Signature & Document cleaner',
       icon: ImageIcon,
       color: 'bg-gradient-to-r from-cyan-600 to-teal-700',
       action: () => setActiveTab('image'),
@@ -256,6 +287,8 @@ export const ToolsDirectoryView: React.FC<ToolsDirectoryViewProps> = ({
 
   const filterTabs = [
     { id: 'All Tools', label: t.allCategoryTab || 'All Tools' },
+    { id: 'Productivity', label: 'Productivity' },
+    { id: 'Security & Dev', label: 'Security & Dev' },
     { id: 'Passport & ID', label: t.passportCategoryTab || 'Passport & ID' },
     { id: 'PDF Suite', label: t.pdfCategoryTab || 'PDF Suite' },
     { id: 'Image Tools', label: t.imageCategoryTab || 'Image Tools' },
@@ -278,32 +311,47 @@ export const ToolsDirectoryView: React.FC<ToolsDirectoryViewProps> = ({
           {t.directoryDesc || 'Every tool below contains actual client-side processing code. No fake buttons, no subscriptions, and your files stay private in your browser.'}
         </p>
 
-        {/* Pill Multilingual + Voice Search Bar */}
+        {/* Animated-Border Pill Instant Search Bar */}
         <div className="max-w-xl mx-auto relative pt-2">
-          <div className="relative flex items-center">
-            <Search className="w-4 h-4 absolute left-4 text-slate-400" />
-            <input
-              type="text"
-              value={searchQuery}
-              onChange={(e) => setSearchQuery(e.target.value)}
-              placeholder={t.searchBarPlaceholder || 'Search tools in English / हिंदी / தமிழ் / తెలుగు / मराठी or tap mic...'}
-              className="w-full pl-11 pr-12 py-3 rounded-full liquid-glass-sub text-xs text-slate-900 dark:text-white placeholder-slate-400 focus:outline-none focus:ring-2 focus:ring-[#0284c7]/50 shadow-inner"
-            />
-            {voiceSupported && (
-              <button
-                type="button"
-                onClick={startListening}
-                aria-label={isListening ? 'Stop voice search' : 'Start voice search'}
-                title={isListening ? 'Listening...' : 'Voice Search'}
-                className={`absolute right-1.5 w-9 h-9 rounded-full flex items-center justify-center transition-colors cursor-pointer ${
-                  isListening
-                    ? 'bg-red-500 text-white animate-pulse'
-                    : 'aos-btn-icon text-[#0284c7] dark:text-sky-300'
-                }`}
-              >
-                {isListening ? <MicOff className="w-3.5 h-3.5" /> : <Mic className="w-3.5 h-3.5" />}
-              </button>
-            )}
+          <div className="aos-search-pill-wrap">
+            <div className="aos-search-pill-inner">
+              <Search className="w-4 h-4 ml-4 text-[#0284c7] dark:text-sky-400 shrink-0 pointer-events-none" />
+              <input
+                type="text"
+                value={searchQuery}
+                onChange={(e) => setSearchQuery(e.target.value)}
+                placeholder="Search utility tools..."
+                aria-label="Search utility tools"
+                className="aos-search-pill-input w-full pl-3 pr-20 py-3 text-xs sm:text-sm text-slate-900 dark:text-white placeholder-slate-400 dark:placeholder-sky-200/60"
+              />
+              <div className="absolute right-1.5 flex items-center gap-1">
+                {searchQuery && (
+                  <button
+                    type="button"
+                    onClick={() => setSearchQuery('')}
+                    aria-label="Clear search"
+                    className="aos-btn-icon w-8 h-8 cursor-pointer"
+                  >
+                    <X className="w-3.5 h-3.5" />
+                  </button>
+                )}
+                {voiceSupported && (
+                  <button
+                    type="button"
+                    onClick={startListening}
+                    aria-label={isListening ? 'Stop voice search' : 'Start voice search'}
+                    title={isListening ? 'Listening...' : 'Voice Search'}
+                    className={`w-9 h-9 rounded-full flex items-center justify-center transition-colors cursor-pointer ${
+                      isListening
+                        ? 'bg-red-500 text-white animate-pulse'
+                        : 'aos-btn-icon text-[#0284c7] dark:text-sky-300'
+                    }`}
+                  >
+                    {isListening ? <MicOff className="w-3.5 h-3.5" /> : <Mic className="w-3.5 h-3.5" />}
+                  </button>
+                )}
+              </div>
+            </div>
           </div>
         </div>
       </div>
@@ -315,7 +363,7 @@ export const ToolsDirectoryView: React.FC<ToolsDirectoryViewProps> = ({
             {t.toolCategories || 'Tool Categories'}
           </h2>
           <span className="text-xs text-slate-500 dark:text-slate-400 font-medium">
-            {t.realCategories || '6 Real Categories'}
+            {categories.length} Real Categories
           </span>
         </div>
 

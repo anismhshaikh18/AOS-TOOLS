@@ -11,12 +11,16 @@ import {
   Mic,
   MicOff,
   Calculator,
+  ClipboardCheck,
   X,
+  ArrowRight,
+  ShieldCheck,
 } from 'lucide-react';
 import { ToolItem } from '../types';
 import { PDF_TOOLS } from '../data/pdfTools';
 import { IMAGE_TOOLS } from '../data/imageTools';
 import { SPECIAL_TOOLS } from '../data/specialTools';
+import { DynamicIcon } from '../components/DynamicIcon';
 import { PanMasterHeroCard } from '../components/PanMasterHeroCard';
 import { AosPromoBanner } from '../components/AosPromoBanner';
 import { LanguageCode, TRANSLATIONS, getTranslatedTool } from '../utils/translations';
@@ -58,7 +62,6 @@ export const HomeView: React.FC<HomeViewProps> = ({
 
   const searchInputRef = useRef<HTMLInputElement>(null);
   const heroSearchContainerRef = useRef<HTMLDivElement>(null);
-  const isSearchStatePushedRef = useRef(false);
 
   const { user, isToolCurrentlyLocked } = useAuthSecurity();
   const isClientDiaryLocked = isToolCurrentlyLocked('khata-diary');
@@ -81,44 +84,18 @@ export const HomeView: React.FC<HomeViewProps> = ({
     if (searchInputRef.current) {
       searchInputRef.current.blur();
     }
-    if (isSearchStatePushedRef.current) {
-      isSearchStatePushedRef.current = false;
-      if (window.history.state?.heroSearchActive) {
-        window.history.back();
-      }
-    }
   }, []);
 
-  // Browser back handling on mobile so pressing back closes suggestions or keyboard instead of exiting website
   const handleSearchFocus = () => {
     setIsHeroDropdownOpen(true);
-    if (!isSearchStatePushedRef.current) {
-      window.history.pushState({ heroSearchActive: true }, '');
-      isSearchStatePushedRef.current = true;
-    }
   };
 
   const handleSearchChange = (val: string) => {
     setSearchQuery(val);
     setIsHeroDropdownOpen(true);
-    if (val.trim() && !isSearchStatePushedRef.current) {
-      window.history.pushState({ heroSearchActive: true }, '');
-      isSearchStatePushedRef.current = true;
-    }
   };
 
   useEffect(() => {
-    const handlePopState = () => {
-      if (isSearchStatePushedRef.current) {
-        isSearchStatePushedRef.current = false;
-        setIsHeroDropdownOpen(false);
-        setSearchQuery('');
-        if (searchInputRef.current) {
-          searchInputRef.current.blur();
-        }
-      }
-    };
-
     const handleClickOutside = (event: MouseEvent) => {
       if (
         heroSearchContainerRef.current &&
@@ -128,15 +105,13 @@ export const HomeView: React.FC<HomeViewProps> = ({
       }
     };
 
-    window.addEventListener('popstate', handlePopState);
     document.addEventListener('mousedown', handleClickOutside);
     return () => {
-      window.removeEventListener('popstate', handlePopState);
       document.removeEventListener('mousedown', handleClickOutside);
     };
   }, []);
 
-  const debouncedSearchQuery = useDebouncedValue(searchQuery, 130);
+  const debouncedSearchQuery = useDebouncedValue(searchQuery, 60);
 
   const universalIndex = useMemo(
     () =>
@@ -165,7 +140,6 @@ export const HomeView: React.FC<HomeViewProps> = ({
   }, [debouncedSearchQuery, heroKindFilter]);
 
   const finishHeroSelection = useCallback(() => {
-    isSearchStatePushedRef.current = false;
     setIsHeroDropdownOpen(false);
     setSearchQuery('');
   }, []);
@@ -272,83 +246,86 @@ export const HomeView: React.FC<HomeViewProps> = ({
               </p>
             </div>
 
-            {/* Universal Search Input Bar with Deep Blue Glassmorphism Live Index Dropdown */}
+            {/* Animated-Border Pill Search Bar with Instant Multi-Index Filtering */}
             <div className="relative" ref={heroSearchContainerRef}>
-              <div className="relative flex items-center">
-                <input
-                  ref={searchInputRef}
-                  type="text"
-                  placeholder="Search tools, portals (TNPDS, UTIITSL), calculators, or Client Diary..."
-                  value={searchQuery}
-                  onFocus={handleSearchFocus}
-                  onChange={(e) => handleSearchChange(e.target.value)}
-                  onKeyDown={(e) => {
-                    if (e.key === 'Escape') {
-                      closeSearchSuggestions(true);
-                    } else if (e.key === 'ArrowDown' && heroResults.length > 0) {
-                      e.preventDefault();
-                      setIsHeroDropdownOpen(true);
-                      setHeroActiveIndex((prev) => (prev + 1) % heroResults.length);
-                    } else if (e.key === 'ArrowUp' && heroResults.length > 0) {
-                      e.preventDefault();
-                      setIsHeroDropdownOpen(true);
-                      setHeroActiveIndex(
-                        (prev) => (prev - 1 + heroResults.length) % heroResults.length
-                      );
-                    } else if (e.key === 'Enter') {
-                      if (isHeroDropdownOpen && heroResults.length > 0) {
+              <div className="aos-search-pill-wrap">
+                <div className="aos-search-pill-inner">
+                  <Search className="w-4 h-4 text-[#0284c7] dark:text-sky-400 ml-4 shrink-0 pointer-events-none" />
+                  <input
+                    ref={searchInputRef}
+                    type="text"
+                    placeholder="Search utility tools..."
+                    value={searchQuery}
+                    onFocus={handleSearchFocus}
+                    onChange={(e) => handleSearchChange(e.target.value)}
+                    onKeyDown={(e) => {
+                      if (e.key === 'Escape') {
+                        closeSearchSuggestions(true);
+                      } else if (e.key === 'ArrowDown' && heroResults.length > 0) {
                         e.preventDefault();
-                        triggerHeroActiveItem();
-                      } else if (onOpenSearch) {
-                        onOpenSearch();
+                        setIsHeroDropdownOpen(true);
+                        setHeroActiveIndex((prev) => (prev + 1) % heroResults.length);
+                      } else if (e.key === 'ArrowUp' && heroResults.length > 0) {
+                        e.preventDefault();
+                        setIsHeroDropdownOpen(true);
+                        setHeroActiveIndex(
+                          (prev) => (prev - 1 + heroResults.length) % heroResults.length
+                        );
+                      } else if (e.key === 'Enter') {
+                        if (isHeroDropdownOpen && heroResults.length > 0) {
+                          e.preventDefault();
+                          triggerHeroActiveItem();
+                        } else if (onOpenSearch) {
+                          onOpenSearch();
+                        }
                       }
-                    }
-                  }}
-                  aria-label="Universal Search"
-                  className="w-full liquid-glass-sub hover:border-slate-300 dark:hover:border-sky-500/50 focus:border-[#0284c7] text-slate-900 dark:text-white placeholder-slate-400 rounded-2xl py-3.5 pl-5 pr-32 text-xs sm:text-sm focus:outline-none transition-all shadow-inner"
-                />
-                <div className="absolute right-2 flex items-center gap-1.5">
-                  {searchQuery && (
+                    }}
+                    aria-label="Search utility tools"
+                    className="aos-search-pill-input w-full py-3.5 pl-3 pr-28 text-xs sm:text-sm text-slate-900 dark:text-white placeholder-slate-400 dark:placeholder-sky-200/60"
+                  />
+                  <div className="absolute right-1.5 flex items-center gap-1.5">
+                    {searchQuery && (
+                      <button
+                        type="button"
+                        onClick={() => {
+                          setSearchQuery('');
+                          setIsHeroDropdownOpen(true);
+                          searchInputRef.current?.focus();
+                        }}
+                        aria-label="Clear search query"
+                        className="aos-btn-icon w-8 h-8 cursor-pointer"
+                      >
+                        <X className="w-3.5 h-3.5" />
+                      </button>
+                    )}
+                    {voiceSupported && (
+                      <button
+                        type="button"
+                        onClick={startListening}
+                        aria-label={isListening ? 'Stop voice search' : 'Voice search'}
+                        title={isListening ? 'Listening... tap to stop' : 'Voice Search (Multi-language)'}
+                        className={`w-9 h-9 rounded-full flex items-center justify-center transition-all cursor-pointer ${
+                          isListening
+                            ? 'bg-red-500 text-white animate-pulse shadow-md'
+                            : 'aos-btn-icon text-[#0284c7] dark:text-sky-300'
+                        }`}
+                      >
+                        {isListening ? <MicOff className="w-4 h-4" /> : <Mic className="w-4 h-4" />}
+                      </button>
+                    )}
                     <button
                       type="button"
                       onClick={() => {
-                        setSearchQuery('');
-                        setIsHeroDropdownOpen(true);
-                        searchInputRef.current?.focus();
+                        if (onOpenSearch) onOpenSearch();
+                        else setIsHeroDropdownOpen(true);
                       }}
-                      aria-label="Clear search query"
-                      className="aos-btn-icon w-7 h-7 cursor-pointer"
+                      aria-label="Open Universal Search Palette"
+                      title="Open Universal Search Palette (/ or Ctrl+K)"
+                      className="aos-btn-primary w-10 h-10 flex items-center justify-center cursor-pointer shrink-0"
                     >
-                      <X className="w-3.5 h-3.5" />
+                      <Search className="w-4 h-4 stroke-[2.5]" />
                     </button>
-                  )}
-                  {voiceSupported && (
-                    <button
-                      type="button"
-                      onClick={startListening}
-                      aria-label={isListening ? 'Stop voice search' : 'Voice search'}
-                      title={isListening ? 'Listening... tap to stop' : 'Voice Search (Multi-language)'}
-                      className={`w-9 h-9 rounded-full flex items-center justify-center transition-all cursor-pointer ${
-                        isListening
-                          ? 'bg-red-500 text-white animate-pulse shadow-md'
-                          : 'aos-btn-icon text-[#0284c7] dark:text-sky-300'
-                      }`}
-                    >
-                      {isListening ? <MicOff className="w-4 h-4" /> : <Mic className="w-4 h-4" />}
-                    </button>
-                  )}
-                  <button
-                    type="button"
-                    onClick={() => {
-                      if (onOpenSearch) onOpenSearch();
-                      else setIsHeroDropdownOpen(true);
-                    }}
-                    aria-label="Open Universal Search Palette"
-                    title="Open Universal Search Palette (/ or Ctrl+K)"
-                    className="aos-btn-primary w-10 h-10 flex items-center justify-center cursor-pointer shrink-0"
-                  >
-                    <Search className="w-4 h-4 stroke-[2.5]" />
-                  </button>
+                  </div>
                 </div>
               </div>
 
@@ -422,6 +399,14 @@ export const HomeView: React.FC<HomeViewProps> = ({
                 <Calculator className="w-4 h-4 text-[#0284c7] dark:text-sky-300 shrink-0" />
                 <span>Quick Calculators</span>
               </button>
+
+              <button
+                onClick={() => setActiveTab('checklists')}
+                className="aos-btn-soft min-h-[44px] flex items-center gap-2 px-4 py-2.5 font-bold text-xs cursor-pointer whitespace-nowrap"
+              >
+                <ClipboardCheck className="w-4 h-4 text-[#0284c7] dark:text-sky-300 shrink-0" />
+                <span>Document Checklists</span>
+              </button>
             </div>
 
             {/* 3 Core Trust Badges */}
@@ -466,6 +451,117 @@ export const HomeView: React.FC<HomeViewProps> = ({
             </div>
           </div>
 
+        </div>
+      </section>
+
+      {/* =========================================================================
+          PRODUCTIVITY & SECURITY UTILITIES (Zero External APIs · Category Showcase)
+          ========================================================================= */}
+      <section className="rounded-3xl liquid-glass p-5 sm:p-7 border border-slate-200 dark:border-sky-500/20 shadow-xl space-y-6">
+        <div className="flex flex-col sm:flex-row sm:items-end justify-between gap-3 pb-4 border-b border-slate-200/80 dark:border-sky-500/20">
+          <div>
+            <p className="text-xs font-semibold text-[#0284c7] dark:text-sky-300">
+              Instant Browser Utilities · Zero External APIs
+            </p>
+            <h2 className="text-xl sm:text-2xl font-black text-slate-900 dark:text-white tracking-tight mt-0.5">
+              Productivity &amp; Security Toolkit
+            </h2>
+          </div>
+          <button
+            type="button"
+            onClick={() => setActiveTab('tools')}
+            className="aos-btn-soft px-4 py-2 min-h-[40px] text-xs font-bold inline-flex items-center gap-1.5 cursor-pointer self-start sm:self-auto whitespace-nowrap"
+          >
+            <span>Explore All Tools</span>
+            <ArrowRight className="w-3.5 h-3.5" />
+          </button>
+        </div>
+
+        <div className="grid grid-cols-1 lg:grid-cols-12 gap-6">
+          {/* Category 1: Productivity Utilities */}
+          <div className="lg:col-span-7 space-y-3">
+            <div className="flex items-center justify-between">
+              <h3 className="text-xs font-bold text-slate-600 dark:text-sky-200 tracking-wide">
+                Productivity Utilities
+              </h3>
+              <span className="text-[11px] text-slate-500 dark:text-slate-400">
+                Local Storage &amp; 60fps
+              </span>
+            </div>
+            <div className="grid grid-cols-1 sm:grid-cols-2 gap-3">
+              {['typing-test', 'todo-list', 'notes-app', 'stopwatch'].map((id) => {
+                const raw = SPECIAL_TOOLS.find((tool) => tool.id === id);
+                if (!raw) return null;
+                const localized = getTranslatedTool(raw, lang);
+                return (
+                  <button
+                    key={id}
+                    type="button"
+                    onClick={() => onSelectTool(localized)}
+                    className="p-4 rounded-2xl liquid-glass-sub hover:border-[#0284c7]/60 text-left transition-all cursor-pointer group flex items-start gap-3 min-h-[82px]"
+                  >
+                    <div className="w-10 h-10 rounded-xl bg-[#0284c7]/15 dark:bg-[#0d4775]/50 text-[#0284c7] dark:text-sky-300 flex items-center justify-center shrink-0">
+                      <DynamicIcon name={localized.iconName} className="w-5 h-5" />
+                    </div>
+                    <div className="min-w-0 flex-1">
+                      <div className="flex items-center justify-between gap-2">
+                        <span className="text-sm font-bold text-slate-900 dark:text-white group-hover:text-[#0284c7] dark:group-hover:text-sky-300 truncate">
+                          {localized.name}
+                        </span>
+                        <ArrowRight className="w-3.5 h-3.5 text-slate-400 group-hover:text-[#0284c7] group-hover:translate-x-0.5 transition-all shrink-0" />
+                      </div>
+                      <p className="text-[11px] text-slate-600 dark:text-slate-300 line-clamp-2 mt-1 leading-relaxed">
+                        {localized.shortDesc}
+                      </p>
+                    </div>
+                  </button>
+                );
+              })}
+            </div>
+          </div>
+
+          {/* Category 2: Security & Web Utilities */}
+          <div className="lg:col-span-5 space-y-3">
+            <div className="flex items-center justify-between">
+              <h3 className="text-xs font-bold text-slate-600 dark:text-sky-200 tracking-wide">
+                Security &amp; Web Utilities
+              </h3>
+              <span className="inline-flex items-center gap-1 text-[11px] text-emerald-600 dark:text-emerald-400 font-semibold">
+                <ShieldCheck className="w-3.5 h-3.5" />
+                <span>On-Device Crypto</span>
+              </span>
+            </div>
+            <div className="grid grid-cols-1 gap-3">
+              {['password-generator', 'url-encoder-decoder'].map((id) => {
+                const raw = SPECIAL_TOOLS.find((tool) => tool.id === id);
+                if (!raw) return null;
+                const localized = getTranslatedTool(raw, lang);
+                return (
+                  <button
+                    key={id}
+                    type="button"
+                    onClick={() => onSelectTool(localized)}
+                    className="p-4 rounded-2xl liquid-glass-sub hover:border-[#0284c7]/60 text-left transition-all cursor-pointer group flex items-start gap-3 min-h-[82px]"
+                  >
+                    <div className="w-10 h-10 rounded-xl bg-gradient-to-br from-[#0284c7] to-[#0B192C] text-white flex items-center justify-center shrink-0 shadow-sm">
+                      <DynamicIcon name={localized.iconName} className="w-5 h-5" />
+                    </div>
+                    <div className="min-w-0 flex-1">
+                      <div className="flex items-center justify-between gap-2">
+                        <span className="text-sm font-bold text-slate-900 dark:text-white group-hover:text-[#0284c7] dark:group-hover:text-sky-300 truncate">
+                          {localized.name}
+                        </span>
+                        <ArrowRight className="w-3.5 h-3.5 text-slate-400 group-hover:text-[#0284c7] group-hover:translate-x-0.5 transition-all shrink-0" />
+                      </div>
+                      <p className="text-[11px] text-slate-600 dark:text-slate-300 line-clamp-2 mt-1 leading-relaxed">
+                        {localized.shortDesc}
+                      </p>
+                    </div>
+                  </button>
+                );
+              })}
+            </div>
+          </div>
         </div>
       </section>
 

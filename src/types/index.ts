@@ -3,6 +3,7 @@ export interface ToolItem {
   name: string;
   shortDesc: string;
   category: 'pdf' | 'image' | 'special';
+  utilityGroup?: 'productivity' | 'security';
   iconName: string;
   status?: 'fully-supported' | 'client-mock' | 'in-development' | string;
   acceptedFormats?: string;

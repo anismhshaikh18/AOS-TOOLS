@@ -34,10 +34,21 @@ import {
   SamplePortrait,
 } from '../utils/stockPassportPhoto';
 import { StarRatingWidget } from '../components/StarRatingWidget';
+import {
+  readSessionDraft,
+  writeSessionDraft,
+  removeSessionDraft,
+  saveSessionImageSafely,
+  readSessionImageSafely,
+  subscribeCanvasVisibilityRestore,
+} from '../utils/sessionDraftStorage';
 
 interface PassportPhotoStudioPageProps {
   onBack: () => void;
 }
+
+const PASSPORT_DRAFT_KEY = 'aos_passport_studio_draft_v1';
+const PASSPORT_PHOTO_KEY = 'aos_passport_studio_photo_v1';
 
 type DimensionPresetId =
   | 'indian-passport'
@@ -288,44 +299,144 @@ function computeSheetCapacity(
   return { cols, rows, maxSlots: cols * rows, gapPx };
 }
 
+interface PassportStudioDraft {
+  dimensionId: DimensionPresetId;
+  showFaceGuide: boolean;
+  zoom: number;
+  panX: number;
+  panY: number;
+  fineRotation: number;
+  baseRotate90: number;
+  brightness: number;
+  contrast: number;
+  saturation: number;
+  withNameDate: boolean;
+  candidateName: string;
+  dopText: string;
+  targetKb: TargetKbOption;
+  paperType: PaperType;
+  totalCopies: number;
+  borderThickness: BorderThickness;
+  borderColor: string;
+  cutGuideStyle: CutGuideStyle;
+  cutGuideColor: string;
+  showScissorIcons: boolean;
+  cellGap: number;
+  showFineTuning: boolean;
+  selectedSampleId: string;
+  isStockModel: boolean;
+}
+
+function getDefaultPassportDraft(): PassportStudioDraft {
+  return {
+    dimensionId: 'indian-passport',
+    showFaceGuide: true,
+    zoom: 1.0,
+    panX: 0,
+    panY: 0,
+    fineRotation: 0,
+    baseRotate90: 0,
+    brightness: 100,
+    contrast: 100,
+    saturation: 100,
+    withNameDate: false,
+    candidateName: 'ANIS SHAIKH',
+    dopText: `DOP: ${getTodayFormatted()}`,
+    targetKb: 50,
+    paperType: '4x6',
+    totalCopies: 8,
+    borderThickness: 'standard',
+    borderColor: '#0F172A',
+    cutGuideStyle: 'dotted',
+    cutGuideColor: '#64748B',
+    showScissorIcons: true,
+    cellGap: 2.5,
+    showFineTuning: false,
+    selectedSampleId: 'studio-male',
+    isStockModel: true,
+  };
+}
+
+function loadInitialPassportDraft(): PassportStudioDraft & { initialPhotoSrc: string } {
+  const defaults = getDefaultPassportDraft();
+  const saved = readSessionDraft<PassportStudioDraft>(PASSPORT_DRAFT_KEY, defaults);
+  const validDim = DIMENSION_PRESETS.some((d) => d.id === saved.dimensionId)
+    ? saved.dimensionId
+    : defaults.dimensionId;
+  const validPaper: PaperType = saved.paperType === 'a4' ? 'a4' : '4x6';
+
+  let initialPhotoSrc =
+    SAMPLE_PORTRAITS.find((s) => s.id === saved.selectedSampleId)?.url ||
+    getStockDemoPortraitDataUrl();
+  let resolvedIsStock = saved.isStockModel;
+  let resolvedSampleId = saved.selectedSampleId;
+
+  if (!saved.isStockModel) {
+    const cachedUserPhoto = readSessionImageSafely(PASSPORT_PHOTO_KEY);
+    if (cachedUserPhoto) {
+      initialPhotoSrc = cachedUserPhoto;
+    } else {
+      resolvedIsStock = true;
+      resolvedSampleId = 'studio-male';
+      initialPhotoSrc = getStockDemoPortraitDataUrl();
+    }
+  }
+
+  return {
+    ...saved,
+    dimensionId: validDim,
+    paperType: validPaper,
+    isStockModel: resolvedIsStock,
+    selectedSampleId: resolvedSampleId,
+    initialPhotoSrc,
+  };
+}
+
 export const PassportPhotoStudioPage: React.FC<PassportPhotoStudioPageProps> = ({ onBack }) => {
+  // Restore persisted session draft once per mount (survives screenshot / resize / visibility reload)
+  const initialDraftRef = useRef<(PassportStudioDraft & { initialPhotoSrc: string }) | null>(null);
+  if (initialDraftRef.current === null) {
+    initialDraftRef.current = loadInitialPassportDraft();
+  }
+  const initialDraft = initialDraftRef.current;
+
   // Source photo state
-  const [photoSrc, setPhotoSrc] = useState<string>(() => getStockDemoPortraitDataUrl());
-  const [selectedSampleId, setSelectedSampleId] = useState<string>('studio-male');
-  const [isStockModel, setIsStockModel] = useState<boolean>(true);
+  const [photoSrc, setPhotoSrc] = useState<string>(initialDraft.initialPhotoSrc);
+  const [selectedSampleId, setSelectedSampleId] = useState<string>(initialDraft.selectedSampleId);
+  const [isStockModel, setIsStockModel] = useState<boolean>(initialDraft.isStockModel);
   const [loadedPhotoImg, setLoadedPhotoImg] = useState<HTMLImageElement | null>(null);
   const [isImageLoading, setIsImageLoading] = useState<boolean>(false);
   const [isDragOver, setIsDragOver] = useState<boolean>(false);
   const [uploadError, setUploadError] = useState<string | null>(null);
 
   // Dimension Preset (Official Indian Portal Standards @ 300 DPI)
-  const [dimensionId, setDimensionId] = useState<DimensionPresetId>('indian-passport');
+  const [dimensionId, setDimensionId] = useState<DimensionPresetId>(initialDraft.dimensionId);
   const activeDim = useMemo(
     () => DIMENSION_PRESETS.find((d) => d.id === dimensionId) || DIMENSION_PRESETS[0],
     [dimensionId]
   );
 
   // Interactive Framing & Face Guide
-  const [showFaceGuide, setShowFaceGuide] = useState<boolean>(true);
-  const [zoom, setZoom] = useState<number>(1.0);
-  const [panX, setPanX] = useState<number>(0); // normalized -100..+100 (% of frame width)
-  const [panY, setPanY] = useState<number>(0); // normalized -100..+100 (% of frame height)
-  const [fineRotation, setFineRotation] = useState<number>(0); // -15..+15 deg
-  const [baseRotate90, setBaseRotate90] = useState<number>(0); // 0, 90, 180, 270
+  const [showFaceGuide, setShowFaceGuide] = useState<boolean>(initialDraft.showFaceGuide);
+  const [zoom, setZoom] = useState<number>(initialDraft.zoom);
+  const [panX, setPanX] = useState<number>(initialDraft.panX); // normalized -100..+100 (% of frame width)
+  const [panY, setPanY] = useState<number>(initialDraft.panY); // normalized -100..+100 (% of frame height)
+  const [fineRotation, setFineRotation] = useState<number>(initialDraft.fineRotation); // -15..+15 deg
+  const [baseRotate90, setBaseRotate90] = useState<number>(initialDraft.baseRotate90); // 0, 90, 180, 270
   const [isPanning, setIsPanning] = useState<boolean>(false);
 
   // Studio Image Adjustments
-  const [brightness, setBrightness] = useState<number>(100);
-  const [contrast, setContrast] = useState<number>(100);
-  const [saturation, setSaturation] = useState<number>(100);
+  const [brightness, setBrightness] = useState<number>(initialDraft.brightness);
+  const [contrast, setContrast] = useState<number>(initialDraft.contrast);
+  const [saturation, setSaturation] = useState<number>(initialDraft.saturation);
 
   // Name & Date of Photo (DOP) Strip
-  const [withNameDate, setWithNameDate] = useState<boolean>(false);
-  const [candidateName, setCandidateName] = useState<string>('ANIS SHAIKH');
-  const [dopText, setDopText] = useState<string>(() => `DOP: ${getTodayFormatted()}`);
+  const [withNameDate, setWithNameDate] = useState<boolean>(initialDraft.withNameDate);
+  const [candidateName, setCandidateName] = useState<string>(initialDraft.candidateName);
+  const [dopText, setDopText] = useState<string>(initialDraft.dopText);
 
   // Target KB Compression for Single Photo Download
-  const [targetKb, setTargetKb] = useState<TargetKbOption>(50);
+  const [targetKb, setTargetKb] = useState<TargetKbOption>(initialDraft.targetKb);
   const [estimatedSingleInfo, setEstimatedSingleInfo] = useState<{
     sizeKb: number;
     width: number;
@@ -333,16 +444,21 @@ export const PassportPhotoStudioPage: React.FC<PassportPhotoStudioPageProps> = (
   } | null>(null);
 
   // Print Sheet Layout & Cutting Guides
-  const [paperType, setPaperType] = useState<PaperType>('4x6');
-  const [totalCopies, setTotalCopies] = useState<number>(8);
-  const [borderThickness, setBorderThickness] = useState<BorderThickness>('standard');
-  const [borderColor, setBorderColor] = useState<string>('#0F172A');
-  const [cutGuideStyle, setCutGuideStyle] = useState<CutGuideStyle>('dotted');
-  const [cutGuideColor, setCutGuideColor] = useState<string>('#64748B');
-  const [showScissorIcons, setShowScissorIcons] = useState<boolean>(true);
-  const [cellGap, setCellGap] = useState<number>(2.5); // mm gap
-  const [showFineTuning, setShowFineTuning] = useState<boolean>(false);
+  const [paperType, setPaperType] = useState<PaperType>(initialDraft.paperType);
+  const [totalCopies, setTotalCopies] = useState<number>(initialDraft.totalCopies);
+  const [borderThickness, setBorderThickness] = useState<BorderThickness>(
+    initialDraft.borderThickness
+  );
+  const [borderColor, setBorderColor] = useState<string>(initialDraft.borderColor);
+  const [cutGuideStyle, setCutGuideStyle] = useState<CutGuideStyle>(initialDraft.cutGuideStyle);
+  const [cutGuideColor, setCutGuideColor] = useState<string>(initialDraft.cutGuideColor);
+  const [showScissorIcons, setShowScissorIcons] = useState<boolean>(initialDraft.showScissorIcons);
+  const [cellGap, setCellGap] = useState<number>(initialDraft.cellGap); // mm gap
+  const [showFineTuning, setShowFineTuning] = useState<boolean>(initialDraft.showFineTuning);
   const [isExportingPdf, setIsExportingPdf] = useState<boolean>(false);
+
+  // Non-destructive canvas repaint counter (repaints GPU-evicted canvases after mobile screenshots/resize without resetting state)
+  const [canvasRepaintTick, setCanvasRepaintTick] = useState<number>(0);
 
   // Refs
   const previewCanvasRef = useRef<HTMLCanvasElement>(null);
@@ -406,27 +522,104 @@ export const PassportPhotoStudioPage: React.FC<PassportPhotoStudioPageProps> = (
     });
   }, [sheetCapacity.maxSlots]);
 
-  // Preload image safely whenever photoSrc changes
+  // Subscribe to visibility / pageshow / orientationchange / width-resize for safe non-destructive canvas repaint
+  useEffect(() => {
+    return subscribeCanvasVisibilityRestore(() => {
+      setCanvasRepaintTick((t) => t + 1);
+    });
+  }, []);
+
+  // Debounced lightweight sessionStorage persistence for all Passport Studio settings
+  useEffect(() => {
+    const timer = window.setTimeout(() => {
+      writeSessionDraft<PassportStudioDraft>(PASSPORT_DRAFT_KEY, {
+        dimensionId,
+        showFaceGuide,
+        zoom,
+        panX,
+        panY,
+        fineRotation,
+        baseRotate90,
+        brightness,
+        contrast,
+        saturation,
+        withNameDate,
+        candidateName,
+        dopText,
+        targetKb,
+        paperType,
+        totalCopies,
+        borderThickness,
+        borderColor,
+        cutGuideStyle,
+        cutGuideColor,
+        showScissorIcons,
+        cellGap,
+        showFineTuning,
+        selectedSampleId,
+        isStockModel,
+      });
+    }, 180);
+    return () => window.clearTimeout(timer);
+  }, [
+    dimensionId,
+    showFaceGuide,
+    zoom,
+    panX,
+    panY,
+    fineRotation,
+    baseRotate90,
+    brightness,
+    contrast,
+    saturation,
+    withNameDate,
+    candidateName,
+    dopText,
+    targetKb,
+    paperType,
+    totalCopies,
+    borderThickness,
+    borderColor,
+    cutGuideStyle,
+    cutGuideColor,
+    showScissorIcons,
+    cellGap,
+    showFineTuning,
+    selectedSampleId,
+    isStockModel,
+  ]);
+
+  // Preload image safely whenever photoSrc changes (and cache size-capped user portrait in sessionStorage)
   useEffect(() => {
     if (!photoSrc) return;
+    let cancelled = false;
     setIsImageLoading(true);
     const img = new Image();
     const isHttp = photoSrc.startsWith('http://') || photoSrc.startsWith('https://');
     if (isHttp) img.crossOrigin = 'anonymous';
 
     img.onload = () => {
+      if (cancelled) return;
       setLoadedPhotoImg(img);
       setIsImageLoading(false);
+      if (!isStockModel) {
+        saveSessionImageSafely(PASSPORT_PHOTO_KEY, img);
+      }
     };
     img.onerror = () => {
+      if (cancelled) return;
       if (photoSrc !== DEFAULT_STUDIO_MALE_SVG) {
         setPhotoSrc(DEFAULT_STUDIO_MALE_SVG);
         setSelectedSampleId('studio-vector-male');
+        setIsStockModel(true);
       }
       setIsImageLoading(false);
     };
     img.src = photoSrc;
-  }, [photoSrc]);
+    return () => {
+      cancelled = true;
+    };
+  }, [photoSrc, isStockModel]);
 
   const handleSelectDimension = (preset: DimensionPresetConfig) => {
     setDimensionId(preset.id);
@@ -518,6 +711,7 @@ export const PassportPhotoStudioPage: React.FC<PassportPhotoStudioPageProps> = (
 
   const handleSelectSample = (sample: SamplePortrait) => {
     setUploadError(null);
+    removeSessionDraft(PASSPORT_PHOTO_KEY);
     setPhotoSrc(sample.url);
     setSelectedSampleId(sample.id);
     setIsStockModel(true);
@@ -769,7 +963,7 @@ export const PassportPhotoStudioPage: React.FC<PassportPhotoStudioPageProps> = (
     canvas.height = activeDim.heightPx;
     ctx.clearRect(0, 0, canvas.width, canvas.height);
     renderSinglePhoto(ctx, activeDim.widthPx, activeDim.heightPx, loadedPhotoImg);
-  }, [loadedPhotoImg, activeDim.widthPx, activeDim.heightPx, renderSinglePhoto]);
+  }, [loadedPhotoImg, activeDim.widthPx, activeDim.heightPx, renderSinglePhoto, canvasRepaintTick]);
 
   // Debounced live KB estimate for Single Photo Download (keeps drag/sliders 60fps on mobile)
   useEffect(() => {
@@ -921,6 +1115,7 @@ export const PassportPhotoStudioPage: React.FC<PassportPhotoStudioPageProps> = (
     cutGuideColor,
     showScissorIcons,
     renderSinglePhoto,
+    canvasRepaintTick,
   ]);
 
   // =========================================================================
