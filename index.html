@@ -9,11 +9,25 @@
     <meta property="og:title" content="AOS Tools - Free, Secure & Mobile-Friendly Online Tools" />
     <meta property="og:description" content="Browser-side PDF tools, image processing utilities, Client Diary ledger, PAN Master Hub, and 50 verified Indian government portal directory." />
     <meta property="og:type" content="website" />
-    <meta name="theme-color" content="#0B192C" />
+    <meta name="theme-color" content="#f4f8fc" />
     <meta name="mobile-web-app-capable" content="yes" />
     <meta name="apple-mobile-web-app-capable" content="yes" />
-    <meta name="apple-mobile-web-app-status-bar-style" content="black-translucent" />
+    <meta name="apple-mobile-web-app-status-bar-style" content="default" />
     <meta name="apple-mobile-web-app-title" content="AOS Tools" />
+    <script>
+      (function () {
+        try {
+          var savedTheme = localStorage.getItem('aos_theme_v2');
+          if (savedTheme === 'dark') {
+            document.documentElement.classList.add('dark');
+            var meta = document.querySelector('meta[name="theme-color"]');
+            if (meta) meta.setAttribute('content', '#0B192C');
+          } else {
+            document.documentElement.classList.remove('dark');
+          }
+        } catch (e) {}
+      })();
+    </script>
     <link rel="manifest" href="/manifest.json" />
     <link rel="icon" type="image/png" sizes="192x192" href="/icon-192.png" />
     <link rel="icon" type="image/png" sizes="32x32" href="/favicon.png" />

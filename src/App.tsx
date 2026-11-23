@@ -315,14 +315,15 @@ export default function App() {
     }
   });
 
-  // Dark / Light theme toggle state
+  // Light (default) / Dark theme toggle state
   const [isDark, setIsDark] = useState<boolean>(() => {
     try {
-      const saved = localStorage.getItem('aos_theme');
-      if (saved) return saved === 'dark';
-      return true; // Default to Anis Online Services deep navy blue
+      const saved = localStorage.getItem('aos_theme_v2');
+      if (saved === 'dark') return true;
+      if (saved === 'light') return false;
+      return false; // Default to clean Light Theme
     } catch {
-      return true;
+      return false;
     }
   });
 
@@ -357,16 +358,19 @@ export default function App() {
     });
   }, [lang]);
 
-  // Synchronize Dark / Light mode class on document
+  // Synchronize Light / Dark mode class and browser theme-color on document
   useEffect(() => {
+    const metaTheme = document.querySelector('meta[name="theme-color"]');
     if (isDark) {
       document.documentElement.classList.add('dark');
       document.body.classList.add('dark');
       localStorage.setItem('aos_theme', 'dark');
+      if (metaTheme) metaTheme.setAttribute('content', '#0B192C');
     } else {
       document.documentElement.classList.remove('dark');
       document.body.classList.remove('dark');
       localStorage.setItem('aos_theme', 'light');
+      if (metaTheme) metaTheme.setAttribute('content', '#f4f8fc');
     }
   }, [isDark]);
 
@@ -384,7 +388,13 @@ export default function App() {
     const handleApplyCloudPrefs = (event: Event) => {
       const prefs = (event as CustomEvent<CloudBackupPayload['preferences']>).detail;
       if (!prefs) return;
-      setIsDark(prefs.theme !== 'light');
+      const nextDark = prefs.theme === 'dark';
+      setIsDark(nextDark);
+      try {
+        localStorage.setItem('aos_theme_v2', nextDark ? 'dark' : 'light');
+      } catch {
+        // ignore storage errors
+      }
       setLang(prefs.lang);
       setTemplateId(prefs.templateId);
     };
@@ -702,7 +712,17 @@ export default function App() {
     }
   }, [handleSelectTool]);
 
-  const handleToggleTheme = useCallback(() => setIsDark((prev) => !prev), []);
+  const handleToggleTheme = useCallback(() => {
+    setIsDark((prev) => {
+      const next = !prev;
+      try {
+        localStorage.setItem('aos_theme_v2', next ? 'dark' : 'light');
+      } catch {
+        // ignore storage errors
+      }
+      return next;
+    });
+  }, []);
 
   return (
     <div className="min-h-screen flex flex-col bg-transparent text-slate-900 dark:text-slate-100 transition-colors duration-200 w-full max-w-full overflow-x-hidden relative">

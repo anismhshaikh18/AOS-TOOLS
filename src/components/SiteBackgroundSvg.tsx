@@ -12,7 +12,7 @@ interface SiteBackgroundSvgProps {
  */
 export const SiteBackgroundSvg: React.FC<SiteBackgroundSvgProps> = React.memo(({
   className = 'fixed inset-0 w-full h-full pointer-events-none -z-10',
-  isDark = true,
+  isDark = false,
 }) => {
   return (
     <div

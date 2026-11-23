@@ -28,17 +28,17 @@
     --color-brand-hover: #38bdf8;
   }
 
-  /* Base Body Styles */
+  /* Base Body Styles (Light Theme Default) */
   body {
-    background-color: #03182b;
-    color: #f8fafc;
+    background-color: #f0f5fa;
+    color: #0f172a;
     font-family: 'Plus Jakarta Sans', system-ui, -apple-system, sans-serif;
     transition: background-color 0.25s ease, color 0.25s ease;
   }
 
-  html:not(.dark) body {
-    background-color: #f0f5fa;
-    color: #0f172a;
+  html.dark body {
+    background-color: #03182b;
+    color: #f8fafc;
   }
 
   code, kbd, samp, pre {

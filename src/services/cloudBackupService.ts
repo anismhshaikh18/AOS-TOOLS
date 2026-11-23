@@ -184,7 +184,7 @@ export function buildLocalCloudBackupPayload(
     lockedToolIds?: string[];
   }
 ): CloudBackupPayload {
-  let theme: 'dark' | 'light' = 'dark';
+  let theme: 'dark' | 'light' = 'light';
   let lang: LanguageCode = 'en';
   let templateId: TemplateId = 'template-1';
   let ledgerList: unknown[] = [];
@@ -192,7 +192,7 @@ export function buildLocalCloudBackupPayload(
   let secRaw: Record<string, unknown> = {};
 
   try {
-    theme = localStorage.getItem('aos_theme') === 'light' ? 'light' : 'dark';
+    theme = localStorage.getItem('aos_theme') === 'dark' ? 'dark' : 'light';
     const rawLang = localStorage.getItem('aos_lang') as LanguageCode;
     if (rawLang && VALID_LANGS.includes(rawLang)) lang = rawLang;
     const rawTpl = localStorage.getItem('aos_template') as TemplateId;
@@ -329,7 +329,7 @@ export async function fetchCloudBackup(uid: string): Promise<CloudBackupRecord |
       backupVersion: typeof d.backupVersion === 'number' ? d.backupVersion : 1,
       deviceLabel: typeof d.deviceLabel === 'string' ? d.deviceLabel : 'Synced Device',
       preferences: {
-        theme: prefs.theme === 'light' ? 'light' : 'dark',
+        theme: prefs.theme === 'dark' ? 'dark' : 'light',
         lang: VALID_LANGS.includes(prefs.lang as LanguageCode)
           ? (prefs.lang as LanguageCode)
           : 'en',
@@ -377,6 +377,7 @@ export async function restoreCloudBackup(
   try {
     // 1. Restore UI preferences
     localStorage.setItem('aos_theme', remote.preferences.theme);
+    localStorage.setItem('aos_theme_v2', remote.preferences.theme);
     localStorage.setItem('aos_lang', remote.preferences.lang);
     localStorage.setItem('aos_template', remote.preferences.templateId);
     callbacks?.onApplyPreferences?.(remote.preferences);
