@@ -182,24 +182,24 @@ export const PanMasterHeroCard: React.FC<PanMasterHeroCardProps> = ({
             <p className="text-[11px] text-slate-600 dark:text-slate-300 leading-snug">
               For Indian citizens never allotted a Permanent Account Number. Paperless e-KYC via Aadhaar OTP.
             </p>
-            <div className="flex items-center gap-2 pt-1">
+            <div className="flex items-center gap-3 pt-1.5">
               <a
                 href="https://www.protean-tinpan.com"
                 target="_blank"
                 rel="noopener noreferrer"
-                className="aos-btn-soft flex-1 min-h-[38px] py-2 px-3 text-center font-bold flex items-center justify-center gap-1.5 whitespace-nowrap"
+                className="aos-btn-primary flex-1 min-h-[42px] py-2 px-3 text-center font-bold flex items-center justify-center gap-1.5 whitespace-nowrap"
               >
                 <span>Protean (NSDL)</span>
-                <ExternalLink className="w-3 h-3 text-[#0284c7] dark:text-sky-300 shrink-0" />
+                <ExternalLink className="w-3 h-3 text-white shrink-0" />
               </a>
               <a
                 href="https://www.utiitsl.com"
                 target="_blank"
                 rel="noopener noreferrer"
-                className="aos-btn-soft flex-1 min-h-[38px] py-2 px-3 text-center font-bold flex items-center justify-center gap-1.5 whitespace-nowrap"
+                className="aos-btn-soft flex-1 min-h-[42px] py-2 px-3 text-center font-bold flex items-center justify-center gap-1.5 whitespace-nowrap"
               >
                 <span>UTIITSL</span>
-                <ExternalLink className="w-3 h-3 text-[#0284c7] dark:text-sky-300 shrink-0" />
+                <ExternalLink className="w-3 h-3 text-[#2563eb] dark:text-sky-300 shrink-0" />
               </a>
             </div>
           </div>
@@ -216,24 +216,24 @@ export const PanMasterHeroCard: React.FC<PanMasterHeroCardProps> = ({
             <p className="text-[11px] text-slate-600 dark:text-slate-300 leading-snug">
               Update spelling errors, father's name, DOB, signature, or address on existing PAN card.
             </p>
-            <div className="flex items-center gap-2 pt-1">
+            <div className="flex items-center gap-3 pt-1.5">
               <a
                 href="https://www.protean-tinpan.com"
                 target="_blank"
                 rel="noopener noreferrer"
-                className="aos-btn-soft flex-1 min-h-[38px] py-2 px-3 text-center font-bold flex items-center justify-center gap-1.5 whitespace-nowrap"
+                className="aos-btn-primary flex-1 min-h-[42px] py-2 px-3 text-center font-bold flex items-center justify-center gap-1.5 whitespace-nowrap"
               >
                 <span>Apply Correction</span>
-                <ExternalLink className="w-3 h-3 text-[#0284c7] dark:text-sky-300 shrink-0" />
+                <ExternalLink className="w-3 h-3 text-white shrink-0" />
               </a>
               <a
                 href="https://www.incometax.gov.in"
                 target="_blank"
                 rel="noopener noreferrer"
-                className="aos-btn-soft flex-1 min-h-[38px] py-2 px-3 text-center font-bold flex items-center justify-center gap-1.5 whitespace-nowrap"
+                className="aos-btn-soft flex-1 min-h-[42px] py-2 px-3 text-center font-bold flex items-center justify-center gap-1.5 whitespace-nowrap"
               >
                 <span>Link Aadhaar</span>
-                <ExternalLink className="w-3 h-3 text-[#0284c7] dark:text-sky-300 shrink-0" />
+                <ExternalLink className="w-3 h-3 text-[#2563eb] dark:text-sky-300 shrink-0" />
               </a>
             </div>
           </div>

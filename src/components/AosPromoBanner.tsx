@@ -144,7 +144,7 @@ export const AosPromoBanner: React.FC<AosPromoBannerProps> = ({
   return (
     <section
       aria-label="AOS Tools Digital Documentation Ecosystem"
-      className="guide-banner-dark relative overflow-hidden rounded-3xl border border-indigo-400/25 bg-[linear-gradient(135deg,#0B192C_0%,#0f2342_46%,#181f4d_78%,#0B192C_100%)] shadow-[0_24px_48px_-18px_rgba(7,16,32,0.78),0_0_42px_-12px_rgba(79,70,229,0.3)]"
+      className="aos-reveal guide-banner-dark relative overflow-hidden rounded-[20px] border border-indigo-400/30 bg-[linear-gradient(135deg,#071326_0%,#0f2347_42%,#1e1b52_76%,#091830_100%)] shadow-[0_26px_54px_-18px_rgba(7,16,32,0.82),0_0_48px_-12px_rgba(99,102,241,0.38)]"
     >
       {/* Clean SVG Tech Grid Overlay */}
       <svg
@@ -203,7 +203,7 @@ export const AosPromoBanner: React.FC<AosPromoBannerProps> = ({
           <button
             type="button"
             onClick={onOpenPortals}
-            className="group text-left rounded-2xl p-5 transition-all duration-200 cursor-pointer flex items-start lg:flex-col xl:flex-row gap-4 border border-sky-300/20 hover:border-sky-300/55 hover:-translate-y-0.5 active:scale-[0.99] focus-visible:outline-2 focus-visible:outline-sky-400 bg-[linear-gradient(145deg,rgba(18,43,76,0.94)_0%,rgba(11,25,44,0.98)_65%,rgba(28,32,74,0.95)_100%)] shadow-[0_12px_26px_-10px_rgba(2,6,23,0.85),inset_0_1px_0_rgba(255,255,255,0.14),inset_0_-2px_6px_rgba(0,0,0,0.35)]"
+            className="group text-left rounded-[20px] p-5 transition-all duration-250 cursor-pointer flex items-start lg:flex-col xl:flex-row gap-4 border border-sky-400/25 hover:border-sky-400/70 hover:-translate-y-1 active:scale-[0.99] focus-visible:outline-2 focus-visible:outline-sky-400 bg-[linear-gradient(145deg,rgba(18,43,76,0.94)_0%,rgba(11,25,44,0.98)_65%,rgba(28,32,74,0.95)_100%)] shadow-[0_12px_26px_-10px_rgba(2,6,23,0.85),inset_0_1px_0_rgba(255,255,255,0.16)] hover:shadow-[0_18px_36px_-10px_rgba(56,189,248,0.34),0_0_0_1px_rgba(56,189,248,0.32)]"
           >
             <div className="w-14 h-14 rounded-2xl flex items-center justify-center shrink-0 border border-sky-400/25 group-hover:scale-105 transition-transform bg-[linear-gradient(145deg,rgba(14,165,233,0.22)_0%,rgba(79,70,229,0.24)_100%)] shadow-[inset_0_1px_1px_rgba(255,255,255,0.18),0_6px_14px_-4px_rgba(14,165,233,0.3)]">
               <GovtPortalsEmblem />
@@ -234,7 +234,7 @@ export const AosPromoBanner: React.FC<AosPromoBannerProps> = ({
           <button
             type="button"
             onClick={onOpenDiary}
-            className="group text-left rounded-2xl p-5 transition-all duration-200 cursor-pointer flex items-start lg:flex-col xl:flex-row gap-4 border border-sky-300/20 hover:border-indigo-300/55 hover:-translate-y-0.5 active:scale-[0.99] focus-visible:outline-2 focus-visible:outline-sky-400 bg-[linear-gradient(145deg,rgba(18,43,76,0.94)_0%,rgba(11,25,44,0.98)_65%,rgba(28,32,74,0.95)_100%)] shadow-[0_12px_26px_-10px_rgba(2,6,23,0.85),inset_0_1px_0_rgba(255,255,255,0.14),inset_0_-2px_6px_rgba(0,0,0,0.35)]"
+            className="group text-left rounded-[20px] p-5 transition-all duration-250 cursor-pointer flex items-start lg:flex-col xl:flex-row gap-4 border border-indigo-400/25 hover:border-indigo-400/75 hover:-translate-y-1 active:scale-[0.99] focus-visible:outline-2 focus-visible:outline-sky-400 bg-[linear-gradient(145deg,rgba(18,43,76,0.94)_0%,rgba(11,25,44,0.98)_65%,rgba(28,32,74,0.95)_100%)] shadow-[0_12px_26px_-10px_rgba(2,6,23,0.85),inset_0_1px_0_rgba(255,255,255,0.16)] hover:shadow-[0_18px_36px_-10px_rgba(129,140,248,0.36),0_0_0_1px_rgba(129,140,248,0.34)]"
           >
             <div className="w-14 h-14 rounded-2xl flex items-center justify-center shrink-0 border border-indigo-400/25 group-hover:scale-105 transition-transform bg-[linear-gradient(145deg,rgba(56,189,248,0.2)_0%,rgba(99,102,241,0.26)_100%)] shadow-[inset_0_1px_1px_rgba(255,255,255,0.18),0_6px_14px_-4px_rgba(99,102,241,0.32)]">
               <LedgerRupeeEmblem />
@@ -264,7 +264,7 @@ export const AosPromoBanner: React.FC<AosPromoBannerProps> = ({
           <button
             type="button"
             onClick={onOpenUtilities}
-            className="group text-left rounded-2xl p-5 transition-all duration-200 cursor-pointer flex items-start lg:flex-col xl:flex-row gap-4 border border-sky-300/20 hover:border-cyan-300/55 hover:-translate-y-0.5 active:scale-[0.99] focus-visible:outline-2 focus-visible:outline-sky-400 bg-[linear-gradient(145deg,rgba(18,43,76,0.94)_0%,rgba(11,25,44,0.98)_65%,rgba(28,32,74,0.95)_100%)] shadow-[0_12px_26px_-10px_rgba(2,6,23,0.85),inset_0_1px_0_rgba(255,255,255,0.14),inset_0_-2px_6px_rgba(0,0,0,0.35)]"
+            className="group text-left rounded-[20px] p-5 transition-all duration-250 cursor-pointer flex items-start lg:flex-col xl:flex-row gap-4 border border-cyan-400/25 hover:border-cyan-400/75 hover:-translate-y-1 active:scale-[0.99] focus-visible:outline-2 focus-visible:outline-sky-400 bg-[linear-gradient(145deg,rgba(18,43,76,0.94)_0%,rgba(11,25,44,0.98)_65%,rgba(28,32,74,0.95)_100%)] shadow-[0_12px_26px_-10px_rgba(2,6,23,0.85),inset_0_1px_0_rgba(255,255,255,0.16)] hover:shadow-[0_18px_36px_-10px_rgba(34,211,238,0.34),0_0_0_1px_rgba(34,211,238,0.32)]"
           >
             <div className="w-14 h-14 rounded-2xl flex items-center justify-center shrink-0 border border-cyan-400/25 group-hover:scale-105 transition-transform bg-[linear-gradient(145deg,rgba(6,182,212,0.22)_0%,rgba(79,70,229,0.24)_100%)] shadow-[inset_0_1px_1px_rgba(255,255,255,0.18),0_6px_14px_-4px_rgba(6,182,212,0.3)]">
               <SmartUtilitiesEmblem />

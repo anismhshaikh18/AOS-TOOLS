@@ -4,17 +4,46 @@
 
 @layer base {
   /* =========================================================================
-     ANIS ONLINE SERVICES CORPORATE IDENTITY PALETTE (Deep Navy & Sapphire Blue)
-     https://anis-online-services.pages.dev/
+     AOS TOOLS UNIFIED DESIGN SYSTEM TOKENS (Light Default + Dark Mode)
+     Primary Blue, Secondary Purple, Accent Orange/Teal, Success & Danger
      ========================================================================= */
   :root,
   :root[data-template="template-1"],
   :root[data-template="template-2"],
   :root[data-template="template-3"],
   :root[data-template="template-4"] {
-    --accent-50: #f0f8ff;
-    --accent-100: #e0f2fe;
-    --accent-200: #bae6fd;
+    /* Core Brand & Semantic Tokens */
+    --aos-primary: #2563eb;
+    --aos-primary-hover: #1d4ed8;
+    --aos-primary-soft: rgba(37, 99, 235, 0.12);
+    --aos-secondary: #7c3aed;
+    --aos-secondary-soft: rgba(124, 58, 237, 0.12);
+    --aos-accent-orange: #ea580c;
+    --aos-accent-orange-soft: rgba(234, 88, 12, 0.12);
+    --aos-accent-teal: #0d9488;
+    --aos-accent-teal-soft: rgba(13, 148, 136, 0.12);
+    --aos-success: #10b981;
+    --aos-success-soft: rgba(16, 185, 129, 0.12);
+    --aos-danger: #ef4444;
+    --aos-danger-soft: rgba(239, 68, 68, 0.12);
+
+    /* Surface & Elevation Tokens (Light Theme Default) */
+    --aos-bg-canvas: #f4f7fc;
+    --aos-bg-section-alt: #edf3fb;
+    --aos-card-bg: rgba(255, 255, 255, 0.96);
+    --aos-card-sub-bg: linear-gradient(180deg, #ffffff 0%, #f8fbff 100%);
+    --aos-card-shadow: 0 2px 6px rgba(37, 99, 235, 0.04), 0 12px 32px -12px rgba(30, 58, 138, 0.11);
+    --aos-card-shadow-hover: 0 8px 20px -6px rgba(37, 99, 235, 0.14), 0 20px 40px -14px rgba(124, 58, 237, 0.16);
+    --aos-border-subtle: rgba(148, 163, 184, 0.18);
+    --aos-text-primary: #0f172a;
+    --aos-text-secondary: #334155;
+    --aos-text-muted: #64748b;
+    --aos-radius-card: 20px;
+
+    /* Legacy Accent Compatibility */
+    --accent-50: #eff6ff;
+    --accent-100: #dbeafe;
+    --accent-200: #bfdbfe;
     --accent-300: #7dd3fc;
     --accent-400: #38bdf8;
     --accent-500: #0284c7;
@@ -22,20 +51,61 @@
     --accent-700: #0d4775;
     --accent-800: #072642;
     --accent-900: #03182b;
-    --accent-rgb: 2, 132, 199;
-    --accent-glow: rgba(2, 132, 199, 0.35);
+    --accent-rgb: 37, 99, 235;
+    --accent-glow: rgba(37, 99, 235, 0.3);
     --color-brand: #0284c7;
     --color-brand-hover: #38bdf8;
   }
 
-  /* Base Body Styles (Light Theme Default) */
+  html.dark {
+    --aos-primary: #38bdf8;
+    --aos-primary-hover: #7dd3fc;
+    --aos-primary-soft: rgba(56, 189, 248, 0.16);
+    --aos-secondary: #a78bfa;
+    --aos-secondary-soft: rgba(167, 139, 250, 0.16);
+    --aos-accent-orange: #fb923c;
+    --aos-accent-orange-soft: rgba(251, 146, 60, 0.16);
+    --aos-accent-teal: #2dd4bf;
+    --aos-accent-teal-soft: rgba(45, 212, 191, 0.16);
+    --aos-success: #34d399;
+    --aos-success-soft: rgba(52, 211, 153, 0.16);
+    --aos-danger: #f87171;
+    --aos-danger-soft: rgba(248, 113, 113, 0.16);
+
+    --aos-bg-canvas: #03182b;
+    --aos-bg-section-alt: #071e36;
+    --aos-card-bg: rgba(11, 25, 44, 0.92);
+    --aos-card-sub-bg: rgba(7, 38, 66, 0.72);
+    --aos-card-shadow: 0 12px 32px -10px rgba(0, 0, 0, 0.58), 0 0 0 1px rgba(56, 189, 248, 0.12);
+    --aos-card-shadow-hover: 0 20px 42px -10px rgba(2, 132, 199, 0.34), 0 0 0 1px rgba(124, 58, 237, 0.28);
+    --aos-border-subtle: rgba(56, 189, 248, 0.18);
+    --aos-text-primary: #f8fafc;
+    --aos-text-secondary: #cbd5e1;
+    --aos-text-muted: #94a3b8;
+  }
+
+  html {
+    overflow-x: clip;
+    scroll-behavior: smooth;
+  }
+
+  /* Base Body Styles — Inter body, >=14px mobile legibility */
   body {
-    background-color: #f4f7fb;
-    color: #0f172a;
-    font-family: 'Plus Jakarta Sans', system-ui, -apple-system, sans-serif;
+    background-color: var(--aos-bg-canvas);
+    color: var(--aos-text-primary);
+    font-family: 'Inter', system-ui, -apple-system, BlinkMacSystemFont, sans-serif;
+    font-size: 14px;
+    line-height: 1.6;
+    overflow-x: clip;
     -webkit-font-smoothing: antialiased;
     -moz-osx-font-smoothing: grayscale;
     transition: background-color 0.22s ease, color 0.22s ease;
+  }
+
+  @media (min-width: 768px) {
+    body {
+      font-size: 15px;
+    }
   }
 
   html.dark body {
@@ -43,8 +113,9 @@
     color: #f8fafc;
   }
 
-  h1, h2, .font-display {
-    font-family: 'Outfit', 'Plus Jakarta Sans', system-ui, -apple-system, sans-serif;
+  /* Headings — Plus Jakarta Sans geometric precision */
+  h1, h2, h3, h4, .font-display {
+    font-family: 'Plus Jakarta Sans', 'Inter', system-ui, -apple-system, sans-serif;
     text-wrap: balance;
   }
 
@@ -54,39 +125,71 @@
 }
 
 /* =========================================================================
-   DARK MODE LIQUID GLASS & THEME CARDS (Anis Online Services Deep Navy)
-   GPU-composited for smooth 60fps mobile scrolling with desktop glass polish
+   SCROLL REVEAL ANIMATION (IntersectionObserver — CSS Class Only)
+   ========================================================================= */
+html.aos-reveal-ready .aos-reveal {
+  opacity: 0;
+  transform: translateY(16px);
+  transition: opacity 0.45s cubic-bezier(0.16, 1, 0.3, 1), transform 0.45s cubic-bezier(0.16, 1, 0.3, 1);
+  will-change: opacity, transform;
+}
+
+html.aos-reveal-ready .aos-reveal.aos-reveal-visible {
+  opacity: 1;
+  transform: translateY(0);
+  will-change: auto;
+}
+
+@media (prefers-reduced-motion: reduce) {
+  html.aos-reveal-ready .aos-reveal,
+  html.aos-reveal-ready .aos-reveal.aos-reveal-visible {
+    opacity: 1 !important;
+    transform: none !important;
+    transition: none !important;
+  }
+}
+
+/* =========================================================================
+   UNIFIED CARD & SURFACE SYSTEM (20px Radius, Soft Colored Shadows, -4px Lift)
+   Covers Home, Passport Studio, Smart ID Studio, 19 PDF Tools, Client Diary,
+   Calculators, Checklists, Portals Hub, Productivity & Security Utilities
    ========================================================================= */
 
+.theme-card,
+.liquid-glass {
+  border-radius: var(--aos-radius-card);
+  transition: transform 0.22s cubic-bezier(0.16, 1, 0.3, 1), box-shadow 0.22s ease, border-color 0.2s ease;
+}
+
+/* DARK MODE CARDS */
 .dark .theme-card,
 .dark .liquid-glass {
-  transition: border-color 0.2s ease, box-shadow 0.2s ease;
-  background: rgba(11, 25, 44, 0.92) !important;
-  border: 1px solid rgba(56, 189, 248, 0.22) !important;
-  box-shadow: 0 10px 28px -8px rgba(0, 0, 0, 0.55), inset 0 1px 0 0 rgba(255, 255, 255, 0.08) !important;
+  background: var(--aos-card-bg) !important;
+  border: 1px solid rgba(56, 189, 248, 0.16) !important;
+  box-shadow: var(--aos-card-shadow) !important;
   color: #f8fafc !important;
 }
 
 .dark .liquid-glass-sub {
-  background: rgba(7, 38, 66, 0.72) !important;
-  border: 1px solid rgba(56, 189, 248, 0.16) !important;
-  box-shadow: 0 4px 16px -4px rgba(0, 0, 0, 0.3) !important;
+  background: var(--aos-card-sub-bg) !important;
+  border: 1px solid rgba(56, 189, 248, 0.14) !important;
+  box-shadow: 0 4px 16px -4px rgba(0, 0, 0, 0.32) !important;
   color: #e2e8f0;
+  transition: transform 0.2s cubic-bezier(0.16, 1, 0.3, 1), box-shadow 0.2s ease, border-color 0.2s ease;
 }
 
-/* Lightweight frosted blur only on capable desktop viewports */
 @media (min-width: 769px) and (prefers-reduced-motion: no-preference) {
   .dark .theme-card,
   .dark .liquid-glass {
-    backdrop-filter: blur(10px) saturate(140%);
-    -webkit-backdrop-filter: blur(10px) saturate(140%);
-    background: rgba(11, 25, 44, 0.82) !important;
+    backdrop-filter: blur(12px) saturate(140%);
+    -webkit-backdrop-filter: blur(12px) saturate(140%);
+    background: rgba(11, 25, 44, 0.84) !important;
   }
 
   .dark .liquid-glass-sub {
     backdrop-filter: blur(8px);
     -webkit-backdrop-filter: blur(8px);
-    background: rgba(13, 71, 117, 0.38) !important;
+    background: rgba(13, 71, 117, 0.36) !important;
   }
 }
 
@@ -101,24 +204,22 @@
   }
 }
 
-/* Hover lift only on true hover-capable pointer devices (prevents sticky touch repaints) */
 @media (hover: hover) and (pointer: fine) {
   .dark .theme-card:hover,
-  .dark .liquid-glass:hover,
   .dark .liquid-glass-hover:hover {
-    border-color: #0284c7 !important;
-    box-shadow: 0 18px 36px -6px rgba(2, 132, 199, 0.32), inset 0 1px 1px 0 rgba(255, 255, 255, 0.15) !important;
-    transform: translateY(-2px);
+    border-color: rgba(56, 189, 248, 0.45) !important;
+    box-shadow: var(--aos-card-shadow-hover) !important;
+    transform: translateY(-4px);
   }
 }
 
-/* Fallbacks for nested dark containers (no stacked backdrop-filter overdraw) */
+/* Nested dark containers */
 .dark [class*="bg-[#072642]"],
 .dark [class*="dark:bg-[#072642]"],
 .dark .bg-slate-900,
 .dark .bg-slate-950 {
   background: rgba(7, 38, 66, 0.9) !important;
-  border-color: rgba(56, 189, 248, 0.22) !important;
+  border-color: rgba(56, 189, 248, 0.18) !important;
 }
 
 .dark [class*="bg-[#03182b]"],
@@ -131,7 +232,7 @@
 .dark .bg-slate-950\/50,
 .dark .bg-slate-950\/60 {
   background: rgba(13, 71, 117, 0.42) !important;
-  border-color: rgba(56, 189, 248, 0.16) !important;
+  border-color: rgba(56, 189, 248, 0.14) !important;
 }
 
 /* Offscreen grid card paint optimization */
@@ -140,49 +241,46 @@
   contain-intrinsic-size: auto 230px;
 }
 
-/* =========================================================================
-   LIGHT THEME MODERN ARCHITECTURAL SURFACE SYSTEM
-   Crisp elevated white surfaces, soft studio shadows & hairline borders
-   ========================================================================= */
-
+/* LIGHT MODE MODERN ELEVATED CARDS (Borderless / Soft Colored Shadows) */
 html:not(.dark) .theme-card,
 html:not(.dark) .liquid-glass {
-  background: rgba(255, 255, 255, 0.96) !important;
+  background: var(--aos-card-bg) !important;
   backdrop-filter: none !important;
   -webkit-backdrop-filter: none !important;
-  border: 1px solid rgba(148, 163, 184, 0.28) !important;
-  box-shadow:
-    0 1px 2px rgba(15, 23, 42, 0.04),
-    0 10px 28px -12px rgba(15, 23, 42, 0.09),
-    inset 0 1px 0 rgba(255, 255, 255, 0.95) !important;
+  border: 1px solid rgba(37, 99, 235, 0.08) !important;
+  box-shadow: var(--aos-card-shadow) !important;
   color: #0f172a !important;
-  transition: transform 0.2s cubic-bezier(0.16, 1, 0.3, 1), border-color 0.2s ease, box-shadow 0.2s ease;
 }
 
 @media (hover: hover) and (pointer: fine) {
   html:not(.dark) .theme-card:hover,
-  html:not(.dark) .liquid-glass:hover,
   html:not(.dark) .liquid-glass-hover:hover {
-    border-color: rgba(2, 132, 199, 0.42) !important;
-    box-shadow:
-      0 2px 6px rgba(2, 132, 199, 0.08),
-      0 18px 34px -12px rgba(2, 132, 199, 0.16),
-      inset 0 1px 0 rgba(255, 255, 255, 1) !important;
-    transform: translateY(-2px);
+    border-color: rgba(37, 99, 235, 0.24) !important;
+    box-shadow: var(--aos-card-shadow-hover) !important;
+    transform: translateY(-4px);
   }
 }
 
 html:not(.dark) .liquid-glass-sub {
-  background: linear-gradient(180deg, #ffffff 0%, #f8fbff 100%) !important;
+  background: var(--aos-card-sub-bg) !important;
   backdrop-filter: none !important;
   -webkit-backdrop-filter: none !important;
-  border: 1px solid rgba(203, 213, 225, 0.65) !important;
-  box-shadow: 0 1px 3px rgba(15, 23, 42, 0.04) !important;
+  border: 1px solid rgba(148, 163, 184, 0.18) !important;
+  box-shadow: 0 2px 10px -4px rgba(37, 99, 235, 0.07) !important;
   color: #1e293b !important;
-  transition: border-color 0.18s ease, box-shadow 0.18s ease, transform 0.18s cubic-bezier(0.16, 1, 0.3, 1);
+  transition: transform 0.2s cubic-bezier(0.16, 1, 0.3, 1), box-shadow 0.2s ease, border-color 0.2s ease;
 }
 
-/* High contrast text overrides for light mode */
+/* Alternate Soft Tinted Section Surface */
+.aos-section-alt {
+  background: linear-gradient(180deg, rgba(237, 243, 251, 0.72) 0%, rgba(255, 255, 255, 0.94) 100%) !important;
+}
+
+.dark .aos-section-alt {
+  background: linear-gradient(180deg, rgba(7, 30, 54, 0.94) 0%, rgba(11, 25, 44, 0.92) 100%) !important;
+}
+
+/* High contrast text safeguards for light mode */
 html:not(.dark) .theme-card h1:not(.guide-banner-dark *),
 html:not(.dark) .theme-card h2:not(.guide-banner-dark *),
 html:not(.dark) .theme-card h3:not(.guide-banner-dark *),
@@ -218,6 +316,21 @@ html:not(.dark) label {
   color: #1e293b !important;
 }
 
+/* Consistent Modern Inputs, Selects & Textareas across all inner tools */
+input:not([type="checkbox"]):not([type="radio"]):not([type="range"]):not([type="color"]):not(.aos-search-pill-input),
+select,
+textarea {
+  transition: border-color 0.18s ease, box-shadow 0.18s ease, background-color 0.18s ease;
+}
+
+input:not([type="checkbox"]):not([type="radio"]):not([type="range"]):not([type="color"]):not(.aos-search-pill-input):focus,
+select:focus,
+textarea:focus {
+  border-color: var(--aos-primary) !important;
+  box-shadow: 0 0 0 3px var(--aos-primary-soft) !important;
+  outline: none;
+}
+
 html:not(.dark) input,
 html:not(.dark) select,
 html:not(.dark) textarea {
@@ -231,6 +344,38 @@ html:not(.dark) textarea::placeholder {
   color: #94a3b8 !important;
 }
 
+/* Modern Range Sliders (Passport Photo Studio, Smart ID Studio, Password Generator, Image Resizer) */
+input[type="range"] {
+  accent-color: var(--aos-primary);
+  cursor: pointer;
+}
+
+/* Consistent Dashed File Upload Dropzones (PDF Tools, Passport Studio, Smart ID, PAN Compressor) */
+[class*="border-dashed"] {
+  border-radius: 20px;
+  transition: border-color 0.2s ease, background-color 0.2s ease, box-shadow 0.2s ease, transform 0.18s ease;
+}
+
+html:not(.dark) [class*="border-dashed"]:hover {
+  border-color: var(--aos-primary) !important;
+  background-color: rgba(37, 99, 235, 0.03) !important;
+  box-shadow: 0 8px 24px -10px rgba(37, 99, 235, 0.18);
+}
+
+.dark [class*="border-dashed"]:hover {
+  border-color: rgba(56, 189, 248, 0.65) !important;
+  box-shadow: 0 8px 24px -10px rgba(56, 189, 248, 0.28);
+}
+
+/* Consistent Modals & Dialog Panels across all tools */
+[role="dialog"] {
+  box-shadow: 0 24px 60px -16px rgba(15, 23, 42, 0.28), 0 0 0 1px rgba(37, 99, 235, 0.08);
+}
+
+.dark [role="dialog"] {
+  box-shadow: 0 28px 64px -16px rgba(0, 0, 0, 0.72), 0 0 0 1px rgba(56, 189, 248, 0.22);
+}
+
 /* In light mode, ensure text-white in cards that are NOT colored buttons is high-contrast dark text */
 html:not(.dark) .liquid-glass .text-white:not(button, a, button *, a *, [class*="bg-"], [class*="bg-"] *, .theme-btn-primary, .theme-btn-primary *, .aos-btn-primary, .aos-btn-primary *, .aos-btn-soft-active, .aos-btn-soft-active *, .aos-btn-emerald, .aos-btn-emerald *, .guide-banner-dark *),
 html:not(.dark) .liquid-glass-sub .text-white:not(button, a, button *, a *, [class*="bg-"], [class*="bg-"] *, .theme-btn-primary, .theme-btn-primary *, .aos-btn-primary, .aos-btn-primary *, .aos-btn-soft-active, .aos-btn-soft-active *, .aos-btn-emerald, .aos-btn-emerald *, .guide-banner-dark *),
@@ -240,68 +385,73 @@ html:not(.dark) .theme-card .text-white:not(button, a, button *, a *, [class*="b
 
 /* Tool Guide Header Banner (Always Crisp White Text in Light & Dark Mode) */
 .guide-banner-dark,
-.guide-banner-dark .guide-banner-title,
-.guide-banner-dark .guide-banner-badge,
-.guide-banner-dark .guide-banner-badge span,
-html:not(.dark) .guide-banner-dark,
-html:not(.dark) .guide-banner-dark h1,
-html:not(.dark) .guide-banner-dark h2,
-html:not(.dark) .guide-banner-dark h3,
-html:not(.dark) .guide-banner-dark h4,
-html:not(.dark) .guide-banner-dark .guide-banner-title,
-html:not(.dark) .guide-banner-dark .guide-banner-badge,
-html:not(.dark) .guide-banner-dark .guide-banner-badge span,
-html:not(.dark) .liquid-glass .guide-banner-dark h2,
-html:not(.dark) .liquid-glass .guide-banner-dark .guide-banner-title,
-html:not(.dark) .liquid-glass .guide-banner-dark .guide-banner-badge span {
-  color: #ffffff !important;
+.guide-banner-dark * {
+  color: #ffffff;
 }
 
-html:not(.dark) .guide-banner-dark .guide-tag-sky {
+.guide-banner-dark h2,
+.guide-banner-dark .guide-banner-title {
+  color: #ffffff !important;
+  -webkit-text-fill-color: #ffffff !important;
+}
+
+.guide-banner-dark .guide-tag-sky {
   color: #38bdf8 !important;
+  -webkit-text-fill-color: #38bdf8 !important;
+}
+
+.guide-banner-dark .guide-banner-badge,
+.guide-banner-dark .guide-banner-badge span {
+  color: #ffffff !important;
+  -webkit-text-fill-color: #ffffff !important;
 }
 
 /* In light mode, adapt white border utility lines to crisp light borders */
 html:not(.dark) [class*="border-white/10"]:not(.guide-banner-dark *),
 html:not(.dark) [class*="border-white/15"]:not(.guide-banner-dark *),
 html:not(.dark) [class*="border-white/20"]:not(.guide-banner-dark *) {
-  border-color: #e2e8f0 !important;
+  border-color: rgba(148, 163, 184, 0.22) !important;
 }
 
 /* =========================================================================
-   TABLES & BORDERS
+   TABLES & BORDERS (Client Diary, Query Inspectors, Data Grids)
    ========================================================================= */
 
+table {
+  font-variant-numeric: tabular-nums;
+}
+
 .dark table thead tr {
-  background: rgba(13, 71, 117, 0.4) !important;
+  background: rgba(13, 71, 117, 0.42) !important;
   border-bottom: 1px solid rgba(56, 189, 248, 0.2) !important;
 }
 
 .dark table tbody tr {
   border-bottom: 1px solid rgba(56, 189, 248, 0.1) !important;
+  transition: background-color 0.15s ease;
 }
 
 .dark table tbody tr:hover {
-  background: rgba(2, 132, 199, 0.12) !important;
+  background: rgba(56, 189, 248, 0.1) !important;
 }
 
 html:not(.dark) table thead tr {
-  background: #f1f5f9 !important;
-  border-bottom: 1px solid #cbd5e1 !important;
+  background: #f1f5fb !important;
+  border-bottom: 1px solid #dce5f2 !important;
 }
 
 html:not(.dark) table tbody tr {
-  border-bottom: 1px solid #e2e8f0 !important;
+  border-bottom: 1px solid #edf2f8 !important;
+  transition: background-color 0.15s ease;
 }
 
 html:not(.dark) table tbody tr:hover {
-  background: #f8fafc !important;
+  background: #f7faff !important;
 }
 
 /* =========================================================================
-   ULTRA-MODERN SOFT-UI (NEUMORPHIC + GLASSMORPHIC) INTERACTIVE SYSTEM
-   Deep Blue (#0B192C), Sapphire & Soft Indigo Glows — Zero Layout Shift,
-   GPU-Composited 60fps Mobile Performance
+   MODERN SOFT-UI INTERACTIVE BUTTON & TAB SYSTEM
+   Consistent tactile press feedback, smooth curves, 44px touch ergonomics
    ========================================================================= */
 
 @layer components {
@@ -316,6 +466,12 @@ html:not(.dark) table tbody tr:hover {
     border-radius: 9999px;
   }
 
+  /* Prevent multi-row wrapped segmented tracks from warping into bloated stadium ovals */
+  .aos-segmented-track.flex-wrap,
+  .aos-segmented-track.aos-track-multi {
+    border-radius: 18px;
+  }
+
   .aos-btn-icon {
     display: inline-flex;
     align-items: center;
@@ -326,42 +482,42 @@ html:not(.dark) table tbody tr:hover {
 .theme-btn-primary,
 .aos-btn-primary {
   color: #ffffff !important;
-  background: linear-gradient(135deg, #0ea5e9 0%, #0284c7 48%, #1d4ed8 92%) !important;
-  border: 1px solid rgba(186, 230, 253, 0.36) !important;
+  background: linear-gradient(135deg, #2563eb 0%, #0284c7 52%, #4f46e5 100%) !important;
+  border: 1px solid rgba(191, 219, 254, 0.35) !important;
   box-shadow:
-    0 6px 16px -4px rgba(2, 132, 199, 0.42),
-    0 2px 6px -2px rgba(29, 78, 216, 0.25),
+    0 6px 18px -4px rgba(37, 99, 235, 0.44),
+    0 2px 6px -2px rgba(79, 70, 229, 0.28),
     inset 0 1px 0 rgba(255, 255, 255, 0.28) !important;
   transition: transform 0.16s cubic-bezier(0.16, 1, 0.3, 1), box-shadow 0.18s ease, filter 0.18s ease;
 }
 
 .theme-btn-primary:active,
 .aos-btn-primary:active {
-  transform: translateY(0.5px) scale(0.98);
+  transform: translateY(1px) scale(0.97);
   box-shadow:
-    0 2px 8px -2px rgba(2, 132, 199, 0.38),
-    inset 0 1px 4px rgba(11, 25, 44, 0.32) !important;
+    0 2px 8px -2px rgba(37, 99, 235, 0.38),
+    inset 0 1px 4px rgba(15, 23, 42, 0.28) !important;
 }
 
 @media (hover: hover) and (pointer: fine) {
   .theme-btn-primary:hover,
   .aos-btn-primary:hover {
-    background: linear-gradient(135deg, #38bdf8 0%, #0284c7 48%, #2563eb 94%) !important;
+    background: linear-gradient(135deg, #3b82f6 0%, #0ea5e9 52%, #6366f1 100%) !important;
     box-shadow:
-      0 10px 22px -4px rgba(2, 132, 199, 0.5),
-      0 4px 10px -2px rgba(37, 99, 235, 0.3),
-      inset 0 1px 0 rgba(255, 255, 255, 0.38) !important;
-    transform: translateY(-1px);
+      0 12px 24px -5px rgba(37, 99, 235, 0.5),
+      0 4px 12px -2px rgba(99, 102, 241, 0.34),
+      inset 0 1px 0 rgba(255, 255, 255, 0.36) !important;
+    transform: translateY(-1.5px);
   }
 }
 
-/* Modern Recessed Segmented Track (Tabs & Toggle Groups) */
+/* Modern Recessed Segmented Track */
 .aos-segmented-track {
-  background: rgba(241, 245, 251, 0.92);
-  border: 1px solid rgba(203, 213, 225, 0.65);
+  background: rgba(238, 244, 252, 0.94);
+  border: 1px solid rgba(148, 163, 184, 0.22);
   box-shadow:
-    inset 0 1px 3px rgba(15, 23, 42, 0.06),
-    0 1px 0 rgba(255, 255, 255, 0.9);
+    inset 0 1px 3px rgba(15, 23, 42, 0.05),
+    0 1px 0 rgba(255, 255, 255, 0.95);
 }
 
 .dark .aos-segmented-track {
@@ -372,21 +528,21 @@ html:not(.dark) table tbody tr:hover {
     inset 0 -1px 0 rgba(129, 140, 248, 0.12);
 }
 
-/* Crisp Modern Secondary Pill Button */
+/* Crisp Secondary Pill Button */
 .aos-btn-soft {
   background: linear-gradient(180deg, #ffffff 0%, #f8fbff 100%);
-  border: 1px solid rgba(203, 213, 225, 0.78);
+  border: 1px solid rgba(148, 163, 184, 0.28);
   color: #0f172a;
   box-shadow:
-    0 1px 2px rgba(15, 23, 42, 0.05),
-    0 4px 10px -4px rgba(15, 23, 42, 0.07),
+    0 1px 2px rgba(15, 23, 42, 0.04),
+    0 4px 12px -4px rgba(37, 99, 235, 0.08),
     inset 0 1px 0 rgba(255, 255, 255, 0.98);
   transition: transform 0.16s cubic-bezier(0.16, 1, 0.3, 1), box-shadow 0.18s ease, border-color 0.18s ease, color 0.18s ease;
 }
 
 .dark .aos-btn-soft {
   background: linear-gradient(145deg, rgba(16, 40, 70, 0.92) 0%, rgba(11, 25, 44, 0.96) 100%);
-  border: 1px solid rgba(99, 179, 237, 0.24);
+  border: 1px solid rgba(99, 179, 237, 0.22);
   color: #e2e8f0;
   box-shadow:
     0 6px 16px -6px rgba(2, 6, 23, 0.68),
@@ -394,7 +550,7 @@ html:not(.dark) table tbody tr:hover {
 }
 
 .aos-btn-soft:active {
-  transform: scale(0.98) translateY(0.5px);
+  transform: scale(0.97) translateY(0.5px);
   box-shadow: inset 0 1px 4px rgba(15, 23, 42, 0.1);
 }
 
@@ -404,26 +560,26 @@ html:not(.dark) table tbody tr:hover {
 
 @media (hover: hover) and (pointer: fine) {
   .aos-btn-soft:hover {
-    border-color: rgba(2, 132, 199, 0.48);
-    color: #0369a1;
+    border-color: rgba(37, 99, 235, 0.42);
+    color: #1d4ed8;
     box-shadow:
-      0 6px 16px -4px rgba(2, 132, 199, 0.15),
-      0 2px 5px -1px rgba(15, 23, 42, 0.05),
+      0 8px 18px -5px rgba(37, 99, 235, 0.16),
+      0 2px 6px -1px rgba(15, 23, 42, 0.05),
       inset 0 1px 0 rgba(255, 255, 255, 1);
-    transform: translateY(-1px);
+    transform: translateY(-1.5px);
   }
 
   .dark .aos-btn-soft:hover {
     border-color: rgba(56, 189, 248, 0.52);
     color: #ffffff;
     box-shadow:
-      0 8px 20px -6px rgba(2, 132, 199, 0.34),
+      0 8px 20px -6px rgba(2, 132, 199, 0.36),
       inset 0 1px 0 rgba(255, 255, 255, 0.2);
-    transform: translateY(-1px);
+    transform: translateY(-1.5px);
   }
 }
 
-/* Soft-UI Unselected Tab Inside Recessed Track */
+/* Unselected Tab Inside Recessed Track */
 .aos-btn-soft-tab {
   border: 1px solid transparent;
   color: #475569;
@@ -441,48 +597,47 @@ html:not(.dark) table tbody tr:hover {
 @media (hover: hover) and (pointer: fine) {
   .aos-btn-soft-tab:hover {
     color: #0f172a;
-    background: rgba(255, 255, 255, 0.72);
-    border-color: rgba(203, 213, 225, 0.6);
+    background: rgba(255, 255, 255, 0.8);
+    border-color: rgba(148, 163, 184, 0.22);
   }
 
   .dark .aos-btn-soft-tab:hover {
     color: #ffffff;
-    background: rgba(56, 189, 248, 0.12);
-    border-color: rgba(56, 189, 248, 0.22);
+    background: rgba(56, 189, 248, 0.14);
+    border-color: rgba(56, 189, 248, 0.24);
   }
 }
 
-/* Soft-UI Selected Pill (Active Tab / Toggle / Filter Chip) */
+/* Selected Active Pill Tab */
 .aos-btn-soft-active {
   color: #ffffff !important;
-  background: linear-gradient(135deg, #0284c7 0%, #1d4ed8 58%, #0B192C 100%) !important;
-  border: 1px solid rgba(147, 197, 253, 0.48) !important;
+  background: linear-gradient(135deg, #2563eb 0%, #0284c7 55%, #4f46e5 100%) !important;
+  border: 1px solid rgba(191, 219, 254, 0.4) !important;
   box-shadow:
     0 6px 16px -4px rgba(37, 99, 235, 0.45),
-    0 2px 7px -1px rgba(2, 132, 199, 0.34),
-    inset 0 1px 0 rgba(255, 255, 255, 0.35),
-    inset 0 -1.5px 3px rgba(11, 25, 44, 0.36) !important;
+    0 2px 6px -1px rgba(79, 70, 229, 0.3),
+    inset 0 1px 0 rgba(255, 255, 255, 0.3) !important;
   transition: transform 0.16s cubic-bezier(0.16, 1, 0.3, 1), box-shadow 0.18s ease;
 }
 
 .aos-btn-soft-active:active {
-  transform: scale(0.98);
+  transform: scale(0.97);
 }
 
-/* Circular Soft-UI Icon Trigger */
+/* Circular Icon Trigger */
 .aos-btn-icon {
-  background: linear-gradient(145deg, #ffffff 0%, #eef4fb 100%);
-  border: 1px solid rgba(203, 213, 225, 0.92);
+  background: linear-gradient(180deg, #ffffff 0%, #f3f7fd 100%);
+  border: 1px solid rgba(148, 163, 184, 0.28);
   color: #334155;
   box-shadow:
-    0 4px 10px -3px rgba(15, 23, 42, 0.1),
-    inset 0 1px 0 rgba(255, 255, 255, 0.95);
+    0 2px 8px -2px rgba(37, 99, 235, 0.1),
+    inset 0 1px 0 rgba(255, 255, 255, 0.96);
   transition: transform 0.15s cubic-bezier(0.16, 1, 0.3, 1), box-shadow 0.16s ease, border-color 0.16s ease, color 0.16s ease;
 }
 
 .dark .aos-btn-icon {
   background: linear-gradient(145deg, rgba(17, 42, 74, 0.92) 0%, rgba(11, 25, 44, 0.96) 100%);
-  border: 1px solid rgba(56, 189, 248, 0.28);
+  border: 1px solid rgba(56, 189, 248, 0.26);
   color: #e2e8f0;
   box-shadow:
     0 5px 14px -4px rgba(2, 6, 23, 0.7),
@@ -495,10 +650,10 @@ html:not(.dark) table tbody tr:hover {
 
 @media (hover: hover) and (pointer: fine) {
   .aos-btn-icon:hover {
-    border-color: #0284c7;
-    color: #0284c7;
+    border-color: var(--aos-primary);
+    color: var(--aos-primary);
     box-shadow:
-      0 6px 14px -3px rgba(2, 132, 199, 0.24),
+      0 6px 14px -3px rgba(37, 99, 235, 0.24),
       inset 0 1px 0 rgba(255, 255, 255, 1);
     transform: translateY(-1px);
   }
@@ -513,20 +668,19 @@ html:not(.dark) table tbody tr:hover {
   }
 }
 
-/* Soft-UI Emerald Pill CTA (WhatsApp / Export Success) */
+/* Emerald Pill CTA (WhatsApp / Export Success) */
 .aos-btn-emerald {
   color: #ffffff !important;
   background: linear-gradient(135deg, #10b981 0%, #059669 65%, #047857 100%) !important;
   border: 1px solid rgba(110, 231, 183, 0.42) !important;
   box-shadow:
     0 8px 20px -5px rgba(16, 185, 129, 0.45),
-    inset 0 1px 0 rgba(255, 255, 255, 0.34),
-    inset 0 -2px 4px rgba(6, 78, 59, 0.32) !important;
+    inset 0 1px 0 rgba(255, 255, 255, 0.34) !important;
   transition: transform 0.16s cubic-bezier(0.16, 1, 0.3, 1), box-shadow 0.18s ease;
 }
 
 .aos-btn-emerald:active {
-  transform: scale(0.98) translateY(0.5px);
+  transform: scale(0.97) translateY(0.5px);
 }
 
 @media (hover: hover) and (pointer: fine) {
@@ -534,27 +688,38 @@ html:not(.dark) table tbody tr:hover {
     box-shadow:
       0 10px 24px -4px rgba(16, 185, 129, 0.56),
       inset 0 1px 0 rgba(255, 255, 255, 0.44) !important;
-    transform: translateY(-1px);
+    transform: translateY(-1.5px);
   }
 }
 
+/* Global Accessible Focus Rings */
+a:focus-visible,
+button:focus-visible,
+[role="button"]:focus-visible,
 .aos-btn-primary:focus-visible,
 .aos-btn-soft:focus-visible,
 .aos-btn-soft-tab:focus-visible,
 .aos-btn-soft-active:focus-visible,
 .aos-btn-icon:focus-visible,
 .aos-btn-emerald:focus-visible {
-  outline: 2px solid #38bdf8;
+  outline: 2px solid var(--aos-primary);
   outline-offset: 2px;
 }
 
 @media (prefers-reduced-motion: reduce) {
+  *,
+  *::before,
+  *::after {
+    scroll-behavior: auto !important;
+  }
   .aos-btn-primary,
   .aos-btn-soft,
   .aos-btn-soft-tab,
   .aos-btn-soft-active,
   .aos-btn-icon,
-  .aos-btn-emerald {
+  .aos-btn-emerald,
+  .theme-card,
+  .liquid-glass {
     transition: none !important;
     transform: none !important;
   }
@@ -569,15 +734,15 @@ html:not(.dark) table tbody tr:hover {
 }
 
 .dark .theme-badge {
-  background-color: rgba(2, 132, 199, 0.2);
+  background-color: rgba(56, 189, 248, 0.16);
   color: #38bdf8;
-  border: 1px solid rgba(56, 189, 248, 0.35);
+  border: 1px solid rgba(56, 189, 248, 0.32);
 }
 
 html:not(.dark) .theme-badge {
-  background-color: #e0f2fe;
-  color: #0369a1;
-  border: 1px solid #bae6fd;
+  background-color: #eff6ff;
+  color: #1d4ed8;
+  border: 1px solid #bfdbfe;
 }
 
 /* Custom Scrollbar */
@@ -591,12 +756,12 @@ html:not(.dark) .theme-badge {
 }
 
 .dark ::-webkit-scrollbar-thumb {
-  background: rgba(56, 189, 248, 0.2);
+  background: rgba(56, 189, 248, 0.22);
   border-radius: 4px;
 }
 
 .dark ::-webkit-scrollbar-thumb:hover {
-  background: rgba(56, 189, 248, 0.4);
+  background: rgba(56, 189, 248, 0.42);
 }
 
 html:not(.dark) ::-webkit-scrollbar-thumb {
@@ -610,7 +775,6 @@ html:not(.dark) ::-webkit-scrollbar-thumb:hover {
 
 /* =========================================================================
    USER MANUAL & GUIDE BANNER HIGH-CONTRAST TEXT (Crisp White #ffffff)
-   Guaranteed visibility across Samsung Browser, Chrome, Firefox in Light & Dark
    ========================================================================= */
 .guide-banner-dark,
 .guide-banner-dark * {
@@ -635,8 +799,7 @@ html:not(.dark) ::-webkit-scrollbar-thumb:hover {
 }
 
 /* =========================================================================
-   ANIMATED-BORDER PILL SEARCH BAR (Deep Blue #0B192C + Sapphire Sheen)
-   Smooth 60fps gradient border highlight with crisp Dark & Light contrast
+   ANIMATED-BORDER PILL SEARCH BAR (Primary Blue + Secondary Purple Glow)
    ========================================================================= */
 @keyframes aos-border-flow {
   0% {
@@ -653,43 +816,44 @@ html:not(.dark) ::-webkit-scrollbar-thumb:hover {
 .aos-search-pill-wrap {
   position: relative;
   border-radius: 9999px;
-  padding: 1.5px;
+  padding: 2px;
   background: linear-gradient(
     115deg,
-    rgba(2, 132, 199, 0.45) 0%,
-    rgba(56, 189, 248, 0.85) 28%,
-    rgba(99, 102, 241, 0.55) 54%,
-    rgba(14, 165, 233, 0.85) 78%,
-    rgba(2, 132, 199, 0.45) 100%
+    rgba(37, 99, 235, 0.55) 0%,
+    rgba(56, 189, 248, 0.9) 28%,
+    rgba(124, 58, 237, 0.65) 54%,
+    rgba(14, 165, 233, 0.88) 78%,
+    rgba(37, 99, 235, 0.55) 100%
   );
   background-size: 240% 240%;
   animation: aos-border-flow 6.5s ease-in-out infinite;
   box-shadow:
-    0 6px 20px -6px rgba(2, 132, 199, 0.28),
-    0 2px 8px -2px rgba(11, 25, 44, 0.16);
-  transition: box-shadow 0.2s cubic-bezier(0.16, 1, 0.3, 1), transform 0.18s cubic-bezier(0.16, 1, 0.3, 1);
+    0 8px 24px -8px rgba(37, 99, 235, 0.3),
+    0 2px 10px -3px rgba(124, 58, 237, 0.14);
+  transition: box-shadow 0.22s cubic-bezier(0.16, 1, 0.3, 1), transform 0.18s cubic-bezier(0.16, 1, 0.3, 1);
 }
 
 .dark .aos-search-pill-wrap {
   background: linear-gradient(
     115deg,
-    rgba(14, 165, 233, 0.38) 0%,
+    rgba(14, 165, 233, 0.42) 0%,
     rgba(56, 189, 248, 0.92) 26%,
-    rgba(129, 140, 248, 0.65) 52%,
+    rgba(167, 139, 250, 0.72) 52%,
     rgba(56, 189, 248, 0.92) 78%,
-    rgba(14, 165, 233, 0.38) 100%
+    rgba(14, 165, 233, 0.42) 100%
   );
   background-size: 240% 240%;
   box-shadow:
-    0 8px 24px -6px rgba(2, 132, 199, 0.38),
-    0 2px 10px -2px rgba(2, 6, 23, 0.65);
+    0 8px 26px -6px rgba(2, 132, 199, 0.4),
+    0 2px 12px -2px rgba(2, 6, 23, 0.65);
 }
 
 .aos-search-pill-wrap:focus-within {
-  animation-duration: 3.6s;
+  animation-duration: 3.4s;
   box-shadow:
-    0 0 0 3px rgba(56, 189, 248, 0.22),
-    0 10px 28px -6px rgba(2, 132, 199, 0.42);
+    0 0 0 4px rgba(37, 99, 235, 0.16),
+    0 12px 30px -6px rgba(37, 99, 235, 0.38),
+    0 4px 14px -4px rgba(124, 58, 237, 0.22);
 }
 
 .aos-search-pill-inner {
@@ -700,7 +864,7 @@ html:not(.dark) ::-webkit-scrollbar-thumb:hover {
   border-radius: 9999px;
   background: #ffffff;
   color: #0f172a;
-  box-shadow: inset 0 1px 2px rgba(15, 23, 42, 0.05);
+  box-shadow: inset 0 1px 2px rgba(15, 23, 42, 0.04);
 }
 
 .dark .aos-search-pill-inner {
@@ -724,4 +888,3 @@ html:not(.dark) .aos-search-pill-input {
     animation: none !important;
   }
 }
-

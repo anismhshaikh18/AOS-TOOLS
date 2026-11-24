@@ -235,19 +235,18 @@ export const HomeView: React.FC<HomeViewProps> = ({
             </div>
 
             <div className="space-y-3">
-              <h1 className="font-display text-4xl sm:text-5xl lg:text-[3.35rem] font-extrabold text-slate-900 dark:text-white tracking-[-0.03em] leading-[1.06]">
-                AOS{' '}
-                <span className="bg-gradient-to-r from-[#0284c7] via-[#0369a1] to-[#1d4ed8] dark:from-sky-400 dark:to-blue-400 bg-clip-text text-transparent">
-                  TOOLS
+              <h1 className="font-display text-4xl sm:text-5xl lg:text-[3.75rem] font-extrabold tracking-[-0.035em] leading-[1.04]">
+                <span className="bg-gradient-to-r from-[#0f172a] via-[#1d4ed8] to-[#7c3aed] dark:from-white dark:via-sky-300 dark:to-violet-400 bg-clip-text text-transparent">
+                  AOS TOOLS
                 </span>
               </h1>
               <div className="font-display text-xl sm:text-2xl font-bold text-slate-800 dark:text-sky-100 tracking-tight leading-snug">
                 {t.heroTitle || 'All-in-One Digital Workstation'}{' '}
-                <span className="text-[#0284c7] dark:text-sky-400">
+                <span className="text-[#2563eb] dark:text-sky-400">
                   {t.heroSubtitle || '& Citizen Utilities'}
                 </span>
               </div>
-              <p className="text-sm text-slate-600 dark:text-slate-300 max-w-xl leading-relaxed">
+              <p className="text-sm sm:text-[15px] text-slate-600 dark:text-slate-300 max-w-xl leading-relaxed">
                 {t.heroDesc || 'Complete client-side processing for official passport photo sheets, CR80 PVC ID cards, 19 PDF utilities, image optimization, and citizen client ledgers. 100% private in your browser.'}
               </p>
             </div>
@@ -287,7 +286,7 @@ export const HomeView: React.FC<HomeViewProps> = ({
                       }
                     }}
                     aria-label="Search utility tools"
-                    className="aos-search-pill-input w-full py-3.5 pl-3 pr-28 text-xs sm:text-sm text-slate-900 dark:text-white placeholder-slate-400 dark:placeholder-sky-200/60"
+                    className="aos-search-pill-input w-full py-4 pl-3 pr-28 text-sm sm:text-[15px] text-slate-900 dark:text-white placeholder-slate-400 dark:placeholder-sky-200/60"
                   />
                   <div className="absolute right-1.5 flex items-center gap-1.5">
                     {searchQuery && (
@@ -361,64 +360,87 @@ export const HomeView: React.FC<HomeViewProps> = ({
               )}
             </div>
 
-            {/* Quick Studio Launch CTA Buttons */}
+            {/* Quick Studio Launch CTA Buttons — Color-Coded Category Icons */}
             <div className="flex flex-wrap items-center gap-2.5 pt-1">
               <button
                 onClick={handleLaunchPassport}
-                className="aos-btn-primary min-h-[44px] flex items-center gap-2 px-5 py-2.5 font-bold text-xs cursor-pointer whitespace-nowrap"
+                className="aos-btn-primary min-h-[44px] flex items-center gap-2 px-5 py-2.5 font-bold text-xs sm:text-[13px] cursor-pointer whitespace-nowrap"
               >
-                <Camera className="w-4 h-4 shrink-0" />
+                <span className="w-6 h-6 rounded-full bg-white/20 flex items-center justify-center shrink-0">
+                  <Camera className="w-3.5 h-3.5 text-white shrink-0" />
+                </span>
                 <span>{t.passportStudioTitle || 'Passport Photo Studio'}</span>
               </button>
 
               <button
                 onClick={handleLaunchIdStudio}
-                className="aos-btn-soft min-h-[44px] flex items-center gap-2 px-4 py-2.5 font-bold text-xs cursor-pointer whitespace-nowrap"
+                className="aos-btn-soft min-h-[44px] flex items-center gap-2 pl-2.5 pr-4 py-2 font-bold text-xs sm:text-[13px] cursor-pointer whitespace-nowrap"
               >
-                <CreditCard className="w-4 h-4 text-[#0284c7] dark:text-sky-300 shrink-0" />
+                <span className="w-7 h-7 rounded-full bg-purple-500/15 dark:bg-purple-500/25 text-purple-600 dark:text-purple-300 flex items-center justify-center shrink-0">
+                  <CreditCard className="w-3.5 h-3.5 shrink-0" />
+                </span>
                 <span>{t.smartIdTitle || 'Smart ID Card Studio'}</span>
               </button>
 
               <button
                 onClick={() => setActiveTab('pdf')}
-                className="aos-btn-soft min-h-[44px] flex items-center gap-2 px-4 py-2.5 font-bold text-xs cursor-pointer whitespace-nowrap"
+                className="aos-btn-soft min-h-[44px] flex items-center gap-2 pl-2.5 pr-4 py-2 font-bold text-xs sm:text-[13px] cursor-pointer whitespace-nowrap"
               >
-                <FileText className="w-4 h-4 text-[#0284c7] dark:text-sky-300 shrink-0" />
+                <span className="w-7 h-7 rounded-full bg-red-500/15 dark:bg-red-500/25 text-red-600 dark:text-red-300 flex items-center justify-center shrink-0">
+                  <FileText className="w-3.5 h-3.5 shrink-0" />
+                </span>
                 <span>{t.pdf || '19 PDF Tools'}</span>
               </button>
 
               <button
                 onClick={() => setActiveTab('khata')}
-                className="aos-btn-soft min-h-[44px] flex items-center gap-2 px-4 py-2.5 font-bold text-xs cursor-pointer whitespace-nowrap"
+                className="aos-btn-soft min-h-[44px] flex items-center gap-2 pl-2.5 pr-4 py-2 font-bold text-xs sm:text-[13px] cursor-pointer whitespace-nowrap"
               >
-                <BookOpen className="w-4 h-4 text-[#0284c7] dark:text-sky-300 shrink-0" />
+                <span className="w-7 h-7 rounded-full bg-emerald-500/15 dark:bg-emerald-500/25 text-emerald-600 dark:text-emerald-300 flex items-center justify-center shrink-0">
+                  <BookOpen className="w-3.5 h-3.5 shrink-0" />
+                </span>
                 <span>{t.khataDiaryTitle || 'Client Diary'}</span>
                 {isClientDiaryLocked && (
-                  <Lock className="w-3 h-3 text-[#0284c7] dark:text-sky-300 shrink-0" />
+                  <Lock className="w-3 h-3 text-emerald-600 dark:text-emerald-300 shrink-0" />
                 )}
               </button>
 
               <button
                 onClick={handleLaunchQuickCalculators}
-                className="aos-btn-soft min-h-[44px] flex items-center gap-2 px-4 py-2.5 font-bold text-xs cursor-pointer whitespace-nowrap"
+                className="aos-btn-soft min-h-[44px] flex items-center gap-2 pl-2.5 pr-4 py-2 font-bold text-xs sm:text-[13px] cursor-pointer whitespace-nowrap"
               >
-                <Calculator className="w-4 h-4 text-[#0284c7] dark:text-sky-300 shrink-0" />
+                <span className="w-7 h-7 rounded-full bg-orange-500/15 dark:bg-orange-500/25 text-orange-600 dark:text-orange-300 flex items-center justify-center shrink-0">
+                  <Calculator className="w-3.5 h-3.5 shrink-0" />
+                </span>
                 <span>Quick Calculators</span>
               </button>
 
               <button
                 onClick={() => setActiveTab('checklists')}
-                className="aos-btn-soft min-h-[44px] flex items-center gap-2 px-4 py-2.5 font-bold text-xs cursor-pointer whitespace-nowrap"
+                className="aos-btn-soft min-h-[44px] flex items-center gap-2 pl-2.5 pr-4 py-2 font-bold text-xs sm:text-[13px] cursor-pointer whitespace-nowrap"
               >
-                <ClipboardCheck className="w-4 h-4 text-[#0284c7] dark:text-sky-300 shrink-0" />
+                <span className="w-7 h-7 rounded-full bg-teal-500/15 dark:bg-teal-500/25 text-teal-600 dark:text-teal-300 flex items-center justify-center shrink-0">
+                  <ClipboardCheck className="w-3.5 h-3.5 shrink-0" />
+                </span>
                 <span>Document Checklists</span>
               </button>
             </div>
 
-            {/* 3 Core Trust Pillars — Clean Hairline-Divided Strip (Zero Nested Card Clutter) */}
+            {/* Key Stats Strip */}
+            <div className="flex flex-wrap items-center gap-x-3 gap-y-1.5 text-xs sm:text-[13px] font-semibold text-slate-600 dark:text-sky-200/90 tabular-nums">
+              <span className="text-[#2563eb] dark:text-sky-300 font-bold">19+ PDF Tools</span>
+              <span aria-hidden="true" className="text-slate-300 dark:text-sky-500/40">•</span>
+              <span className="text-purple-600 dark:text-purple-300 font-bold">50+ Govt Portals</span>
+              <span aria-hidden="true" className="text-slate-300 dark:text-sky-500/40">•</span>
+              <span className="text-emerald-600 dark:text-emerald-400 font-bold">100% Private</span>
+              <span aria-hidden="true" className="text-slate-300 dark:text-sky-500/40">•</span>
+              <span className="text-orange-600 dark:text-orange-300 font-bold">100% Free</span>
+            </div>
+
+            {/* 3 Core Trust Pillars — Clean Hairline-Divided Strip */}
             <div className="grid grid-cols-3 divide-x divide-slate-200/80 dark:divide-sky-500/20 pt-4 border-t border-slate-200/80 dark:border-sky-500/20">
               <div className="pr-2 sm:pr-4 flex flex-col items-center sm:items-start text-center sm:text-left gap-1">
-                <div className="inline-flex items-center gap-1.5 text-[#0284c7] dark:text-sky-300">
+                <div className="inline-flex items-center gap-1.5 text-[#2563eb] dark:text-sky-300">
                   <Zap className="w-3.5 h-3.5 shrink-0" />
                   <span className="text-xs font-bold text-slate-900 dark:text-white">
                     {t.freeBadge || '100% Free'}
@@ -442,7 +464,7 @@ export const HomeView: React.FC<HomeViewProps> = ({
               </div>
 
               <div className="pl-2 sm:pl-4 flex flex-col items-center sm:items-start text-center sm:text-left gap-1">
-                <div className="inline-flex items-center gap-1.5 text-indigo-600 dark:text-indigo-400">
+                <div className="inline-flex items-center gap-1.5 text-purple-600 dark:text-purple-400">
                   <Smartphone className="w-3.5 h-3.5 shrink-0" />
                   <span className="text-xs font-bold text-slate-900 dark:text-white">
                     {t.mobileBadge || 'Mobile Ready'}
@@ -475,110 +497,120 @@ export const HomeView: React.FC<HomeViewProps> = ({
       {/* =========================================================================
           PRODUCTIVITY & SECURITY UTILITIES (Zero External APIs · Category Showcase)
           ========================================================================= */}
-      <section className="rounded-3xl liquid-glass p-6 sm:p-8 border border-slate-200/80 dark:border-sky-500/20 space-y-6">
+      <section className="aos-reveal aos-section-alt rounded-[20px] liquid-glass p-6 sm:p-8 space-y-7">
         <div className="flex flex-col sm:flex-row sm:items-end justify-between gap-3 pb-4 border-b border-slate-200/80 dark:border-sky-500/20">
           <div>
-            <p className="text-xs font-semibold text-[#0284c7] dark:text-sky-300">
+            <p className="text-xs font-semibold text-[#2563eb] dark:text-sky-300">
               Instant Browser Utilities · Zero External APIs
             </p>
-            <h2 className="font-display text-2xl sm:text-[1.75rem] font-extrabold text-slate-900 dark:text-white tracking-tight mt-0.5">
+            <h2 className="font-display text-2xl sm:text-[1.85rem] font-extrabold text-slate-900 dark:text-white tracking-tight mt-0.5">
               Productivity &amp; Security Toolkit
             </h2>
           </div>
           <button
             type="button"
             onClick={() => setActiveTab('tools')}
-            className="aos-btn-soft px-4 py-2 min-h-[40px] text-xs font-bold inline-flex items-center gap-1.5 cursor-pointer self-start sm:self-auto whitespace-nowrap"
+            className="aos-btn-soft px-4 py-2.5 min-h-[44px] text-xs sm:text-sm font-bold inline-flex items-center gap-1.5 cursor-pointer self-start sm:self-auto whitespace-nowrap"
           >
             <span>Explore All Tools</span>
             <ArrowRight className="w-3.5 h-3.5" />
           </button>
         </div>
 
-        <div className="grid grid-cols-1 lg:grid-cols-12 gap-6 lg:gap-8">
-          {/* Category 1: Productivity Utilities */}
-          <div className="lg:col-span-7 space-y-3.5">
-            <div className="flex items-center justify-between text-xs">
-              <h3 className="font-bold text-slate-700 dark:text-sky-200 tracking-tight">
-                Productivity Utilities
-              </h3>
-              <span className="text-[11px] text-slate-500 dark:text-slate-400">
-                Local Storage · 60fps
-              </span>
-            </div>
-            <div className="grid grid-cols-1 sm:grid-cols-2 gap-3.5">
-              {['typing-test', 'todo-list', 'notes-app', 'stopwatch'].map((id) => {
-                const raw = SPECIAL_TOOLS.find((tool) => tool.id === id);
-                if (!raw) return null;
-                const localized = getTranslatedTool(raw, lang);
-                return (
-                  <button
-                    key={id}
-                    type="button"
-                    onClick={() => onSelectTool(localized)}
-                    className="p-4 rounded-2xl liquid-glass-sub hover:border-[#0284c7]/50 hover:-translate-y-0.5 hover:shadow-md text-left transition-all cursor-pointer group flex items-start gap-3.5 min-h-[86px]"
-                  >
-                    <div className="w-10 h-10 rounded-xl bg-gradient-to-br from-sky-50 to-blue-100/80 dark:from-[#0d4775]/65 dark:to-[#072642] border border-sky-200/80 dark:border-sky-400/25 text-[#0284c7] dark:text-sky-300 flex items-center justify-center shrink-0 group-hover:scale-105 transition-transform">
-                      <DynamicIcon name={localized.iconName} className="w-5 h-5" />
-                    </div>
-                    <div className="min-w-0 flex-1">
-                      <div className="flex items-center justify-between gap-2">
-                        <span className="text-sm font-bold text-slate-900 dark:text-white group-hover:text-[#0284c7] dark:group-hover:text-sky-300 truncate transition-colors">
-                          {localized.name}
-                        </span>
-                        <ArrowRight className="w-3.5 h-3.5 text-slate-400 group-hover:text-[#0284c7] group-hover:translate-x-0.5 transition-all shrink-0" />
-                      </div>
-                      <p className="text-xs text-slate-600 dark:text-slate-300 line-clamp-2 mt-1 leading-relaxed">
-                        {localized.shortDesc}
-                      </p>
-                    </div>
-                  </button>
-                );
-              })}
-            </div>
+        {/* Category 1: Productivity Utilities (1 col phone / 2 col tablet / 3 col desktop) */}
+        <div className="space-y-3.5">
+          <div className="flex items-center justify-between text-xs">
+            <h3 className="font-bold text-slate-700 dark:text-sky-200 tracking-tight">
+              Productivity Utilities
+            </h3>
+            <span className="text-xs text-slate-500 dark:text-slate-400">
+              Local Storage · 60fps
+            </span>
           </div>
-
-          {/* Category 2: Security & Web Utilities */}
-          <div className="lg:col-span-5 space-y-3.5 lg:pl-6 lg:border-l lg:border-slate-200/75 dark:lg:border-sky-500/20">
-            <div className="flex items-center justify-between text-xs">
-              <h3 className="font-bold text-slate-700 dark:text-sky-200 tracking-tight">
-                Security &amp; Web Utilities
-              </h3>
-              <span className="inline-flex items-center gap-1 text-[11px] text-emerald-600 dark:text-emerald-400 font-semibold">
-                <ShieldCheck className="w-3.5 h-3.5" />
-                <span>On-Device Crypto</span>
-              </span>
-            </div>
-            <div className="grid grid-cols-1 gap-3.5">
-              {['password-generator', 'url-encoder-decoder'].map((id) => {
-                const raw = SPECIAL_TOOLS.find((tool) => tool.id === id);
-                if (!raw) return null;
-                const localized = getTranslatedTool(raw, lang);
-                return (
-                  <button
-                    key={id}
-                    type="button"
-                    onClick={() => onSelectTool(localized)}
-                    className="p-4 rounded-2xl liquid-glass-sub hover:border-[#0284c7]/50 hover:-translate-y-0.5 hover:shadow-md text-left transition-all cursor-pointer group flex items-start gap-3.5 min-h-[86px]"
+          <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4">
+            {[
+              { id: 'typing-test', gradient: 'from-blue-500 to-indigo-600 shadow-blue-500/30' },
+              { id: 'todo-list', gradient: 'from-emerald-500 to-teal-600 shadow-emerald-500/30' },
+              { id: 'notes-app', gradient: 'from-amber-500 to-orange-600 shadow-orange-500/30' },
+              { id: 'stopwatch', gradient: 'from-purple-500 to-violet-600 shadow-purple-500/30' },
+            ].map(({ id, gradient }) => {
+              const raw = SPECIAL_TOOLS.find((tool) => tool.id === id);
+              if (!raw) return null;
+              const localized = getTranslatedTool(raw, lang);
+              return (
+                <button
+                  key={id}
+                  type="button"
+                  onClick={() => onSelectTool(localized)}
+                  className="p-4 sm:p-5 rounded-[20px] liquid-glass-sub hover:-translate-y-1 hover:shadow-lg text-left transition-all cursor-pointer group flex items-start gap-3.5 min-h-[92px]"
+                >
+                  <div
+                    className={`w-11 h-11 rounded-full bg-gradient-to-br ${gradient} text-white flex items-center justify-center shrink-0 shadow-md group-hover:scale-105 transition-transform`}
                   >
-                    <div className="w-10 h-10 rounded-xl bg-gradient-to-br from-[#0284c7] to-[#1d4ed8] text-white flex items-center justify-center shrink-0 shadow-sm shadow-sky-500/25 group-hover:scale-105 transition-transform">
-                      <DynamicIcon name={localized.iconName} className="w-5 h-5" />
+                    <DynamicIcon name={localized.iconName} className="w-5 h-5" />
+                  </div>
+                  <div className="min-w-0 flex-1">
+                    <div className="flex items-center justify-between gap-2">
+                      <span className="text-sm sm:text-[15px] font-bold text-slate-900 dark:text-white group-hover:text-[#2563eb] dark:group-hover:text-sky-300 truncate transition-colors">
+                        {localized.name}
+                      </span>
+                      <ArrowRight className="w-4 h-4 text-slate-400 group-hover:text-[#2563eb] group-hover:translate-x-1 transition-all shrink-0" />
                     </div>
-                    <div className="min-w-0 flex-1">
-                      <div className="flex items-center justify-between gap-2">
-                        <span className="text-sm font-bold text-slate-900 dark:text-white group-hover:text-[#0284c7] dark:group-hover:text-sky-300 truncate transition-colors">
-                          {localized.name}
-                        </span>
-                        <ArrowRight className="w-3.5 h-3.5 text-slate-400 group-hover:text-[#0284c7] group-hover:translate-x-0.5 transition-all shrink-0" />
-                      </div>
-                      <p className="text-xs text-slate-600 dark:text-slate-300 line-clamp-2 mt-1 leading-relaxed">
-                        {localized.shortDesc}
-                      </p>
+                    <p className="text-xs sm:text-[13px] text-slate-600 dark:text-slate-300 line-clamp-2 mt-1 leading-relaxed">
+                      {localized.shortDesc}
+                    </p>
+                  </div>
+                </button>
+              );
+            })}
+          </div>
+        </div>
+
+        {/* Category 2: Security & Web Utilities */}
+        <div className="space-y-3.5 pt-4 border-t border-slate-200/80 dark:border-sky-500/20">
+          <div className="flex items-center justify-between text-xs">
+            <h3 className="font-bold text-slate-700 dark:text-sky-200 tracking-tight">
+              Security &amp; Web Utilities
+            </h3>
+            <span className="inline-flex items-center gap-1 text-xs text-emerald-600 dark:text-emerald-400 font-semibold">
+              <ShieldCheck className="w-3.5 h-3.5" />
+              <span>On-Device Crypto</span>
+            </span>
+          </div>
+          <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4">
+            {[
+              { id: 'password-generator', gradient: 'from-[#2563eb] to-[#7c3aed] shadow-indigo-500/30' },
+              { id: 'url-encoder-decoder', gradient: 'from-teal-500 to-cyan-600 shadow-teal-500/30' },
+            ].map(({ id, gradient }) => {
+              const raw = SPECIAL_TOOLS.find((tool) => tool.id === id);
+              if (!raw) return null;
+              const localized = getTranslatedTool(raw, lang);
+              return (
+                <button
+                  key={id}
+                  type="button"
+                  onClick={() => onSelectTool(localized)}
+                  className="p-4 sm:p-5 rounded-[20px] liquid-glass-sub hover:-translate-y-1 hover:shadow-lg text-left transition-all cursor-pointer group flex items-start gap-3.5 min-h-[92px]"
+                >
+                  <div
+                    className={`w-11 h-11 rounded-full bg-gradient-to-br ${gradient} text-white flex items-center justify-center shrink-0 shadow-md group-hover:scale-105 transition-transform`}
+                  >
+                    <DynamicIcon name={localized.iconName} className="w-5 h-5" />
+                  </div>
+                  <div className="min-w-0 flex-1">
+                    <div className="flex items-center justify-between gap-2">
+                      <span className="text-sm sm:text-[15px] font-bold text-slate-900 dark:text-white group-hover:text-[#2563eb] dark:group-hover:text-sky-300 truncate transition-colors">
+                        {localized.name}
+                      </span>
+                      <ArrowRight className="w-4 h-4 text-slate-400 group-hover:text-[#2563eb] group-hover:translate-x-1 transition-all shrink-0" />
                     </div>
-                  </button>
-                );
-              })}
-            </div>
+                    <p className="text-xs sm:text-[13px] text-slate-600 dark:text-slate-300 line-clamp-2 mt-1 leading-relaxed">
+                      {localized.shortDesc}
+                    </p>
+                  </div>
+                </button>
+              );
+            })}
           </div>
         </div>
       </section>
@@ -586,20 +618,24 @@ export const HomeView: React.FC<HomeViewProps> = ({
       {/* =========================================================================
           AOS LIVE STATUS & NOTICE BOARD WIDGET (Lazy-loaded below fold)
           ========================================================================= */}
-      <Suspense fallback={null}>
-        <LiveStatusNoticeWidget />
-      </Suspense>
+      <div className="aos-reveal">
+        <Suspense fallback={null}>
+          <LiveStatusNoticeWidget />
+        </Suspense>
+      </div>
 
       {/* =========================================================================
           AOS TOOLS PROMOTIONAL ECOSYSTEM BANNER
           ========================================================================= */}
-      <AosPromoBanner
-        onOpenPortals={() => setActiveTab('portals')}
-        onOpenDiary={() => setActiveTab('khata')}
-        onOpenUtilities={() => setActiveTab('tools')}
-        isPortalsLocked={isPortalsLocked}
-        isDiaryLocked={isClientDiaryLocked}
-      />
+      <div className="aos-reveal">
+        <AosPromoBanner
+          onOpenPortals={() => setActiveTab('portals')}
+          onOpenDiary={() => setActiveTab('khata')}
+          onOpenUtilities={() => setActiveTab('tools')}
+          isPortalsLocked={isPortalsLocked}
+          isDiaryLocked={isClientDiaryLocked}
+        />
+      </div>
 
     </div>
   );

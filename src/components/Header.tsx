@@ -226,7 +226,7 @@ export const Header: React.FC<HeaderProps> = ({
 
   return (
     <>
-      <header className="sticky top-0 z-40 w-full md:backdrop-blur-2xl bg-white/88 dark:bg-[#0B192C]/90 border-b border-slate-200/80 dark:border-sky-400/15 transition-colors shadow-[0_1px_0_rgba(15,23,42,0.04),0_8px_24px_-16px_rgba(15,23,42,0.14)] dark:shadow-lg dark:shadow-black/30">
+      <header className="sticky top-0 z-40 w-full backdrop-blur-xl bg-white/85 dark:bg-[#0B192C]/88 border-b border-slate-200/80 dark:border-sky-400/15 transition-colors shadow-[0_1px_0_rgba(15,23,42,0.04),0_8px_24px_-16px_rgba(15,23,42,0.14)] dark:shadow-lg dark:shadow-black/30">
         <div className="max-w-7xl mx-auto px-3 sm:px-5 lg:px-6">
           <div className="flex items-center justify-between gap-3 lg:gap-4 h-16 min-w-0">
             {/* Left: Official AOS TOOLS Brand Mark */}
@@ -295,7 +295,7 @@ export const Header: React.FC<HeaderProps> = ({
                   onClick={onOpenSearch}
                   aria-label="Search tools, portals, and records"
                   title="Universal Search (/ or Ctrl+K)"
-                  className="xl:hidden aos-btn-icon h-9 w-9 cursor-pointer shrink-0"
+                  className="xl:hidden aos-btn-icon h-11 w-11 sm:h-10 sm:w-10 cursor-pointer shrink-0"
                 >
                   <Search className="w-4 h-4 text-[#0284c7] dark:text-sky-300 shrink-0" />
                 </button>
@@ -371,6 +371,7 @@ export const Header: React.FC<HeaderProps> = ({
                         <button
                           type="button"
                           onClick={onOpenSearch}
+                          aria-label="Open full search palette"
                           title="Open Full Search Palette (/)"
                           className="text-[10px] font-mono px-1.5 py-0.5 bg-slate-100 dark:bg-[#072642] rounded-full border border-slate-200 dark:border-sky-500/30 text-slate-500 dark:text-sky-200 leading-none cursor-pointer hover:border-[#0284c7]"
                         >
@@ -468,10 +469,10 @@ export const Header: React.FC<HeaderProps> = ({
                 onClick={() => openAuthModal('account')}
                 aria-label={user ? `Account: ${user.displayName}` : 'Sign in with Google'}
                 title={user ? `${user.displayName} (${user.role})` : 'Google Sign-In & Session'}
-                className={`h-9 ${
+                className={`h-11 sm:h-10 ${
                   user
-                    ? 'w-9 xl:w-auto xl:px-3 aos-btn-soft'
-                    : 'w-9 xl:w-auto xl:px-3.5 aos-btn-primary'
+                    ? 'w-11 sm:w-10 xl:w-auto xl:px-3 aos-btn-soft'
+                    : 'w-11 sm:w-10 xl:w-auto xl:px-3.5 aos-btn-primary'
                 } cursor-pointer inline-flex items-center justify-center gap-1.5 shrink-0`}
               >
                 {user ? (
@@ -509,7 +510,7 @@ export const Header: React.FC<HeaderProps> = ({
                 aria-label="Open navigation menu"
                 aria-expanded={isMobileMenuOpen}
                 aria-controls="aos-mobile-drawer"
-                className="lg:hidden aos-btn-icon h-9 w-9 cursor-pointer shrink-0"
+                className="lg:hidden aos-btn-icon h-11 w-11 sm:h-10 sm:w-10 cursor-pointer shrink-0"
               >
                 <Menu className="w-4 h-4" />
               </button>
@@ -557,7 +558,7 @@ export const Header: React.FC<HeaderProps> = ({
                 type="button"
                 onClick={() => setIsMobileMenuOpen(false)}
                 aria-label="Close navigation menu"
-                className="aos-btn-icon h-9 w-9 cursor-pointer shrink-0"
+                className="aos-btn-icon h-11 w-11 cursor-pointer shrink-0"
               >
                 <X className="w-4 h-4" />
               </button>
@@ -702,7 +703,7 @@ export const Header: React.FC<HeaderProps> = ({
                     <span>{t.langTitle || 'Language'}</span>
                   </span>
                 </div>
-                <div className="aos-segmented-track rounded-2xl p-2 grid grid-cols-2 gap-2 overflow-hidden">
+                <div className="aos-segmented-track aos-track-multi rounded-2xl p-2 grid grid-cols-2 gap-2 overflow-hidden">
                   {SUPPORTED_LANGUAGES.map((langItem) => {
                     const isCurrent = lang === langItem.code;
                     return (

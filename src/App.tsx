@@ -17,6 +17,7 @@ import {
   uploadCloudBackup,
 } from './services/cloudBackupService';
 import { readSessionDraft, writeSessionDraft } from './utils/sessionDraftStorage';
+import { useScrollReveal } from './hooks/useScrollReveal';
 
 // Code-split secondary views, studios, protected hubs, and heavy modals
 const ToolsDirectoryView = lazy(() =>
@@ -326,6 +327,9 @@ export default function App() {
       return false;
     }
   });
+
+  // Lightweight CSS-only scroll reveal observer across views
+  useScrollReveal(`${activeTab}-${selectedTool?.id || ''}`);
 
   // Stable refs for single-mount popstate listener (never churns on lang/auth updates)
   const langRef = useRef<LanguageCode>(lang);

@@ -23,12 +23,12 @@ export const WhatsAppConsultationWidget: React.FC<WhatsAppConsultationWidgetProp
   const whatsappUrl = buildWhatsAppShareUrl(message, AOS_CONSULTATION_PHONE);
 
   return (
-    <div className="fixed bottom-4 right-4 z-40 flex flex-col items-end gap-2.5">
+    <div className="fixed bottom-4 right-4 sm:bottom-5 sm:right-5 z-40 flex flex-col items-end gap-2.5 pointer-events-none">
       {isOpen && (
         <div
           role="dialog"
           aria-label="AOS Direct WhatsApp Consultation"
-          className="w-80 sm:w-88 rounded-2xl bg-white dark:bg-[#0B192C] border border-slate-200 dark:border-sky-400/35 shadow-2xl overflow-hidden animate-in fade-in slide-in-from-bottom-3 duration-200"
+          className="pointer-events-auto w-[min(21rem,calc(100vw-2rem))] sm:w-88 rounded-[20px] bg-white dark:bg-[#0B192C] border border-slate-200/80 dark:border-sky-400/35 shadow-2xl overflow-hidden animate-in fade-in slide-in-from-bottom-3 duration-200"
         >
           {/* Deep Blue Header */}
           <div className="guide-banner-dark bg-gradient-to-r from-[#0B192C] to-[#072642] px-4 py-3.5 flex items-center justify-between border-b border-sky-400/20">
@@ -134,7 +134,7 @@ export const WhatsAppConsultationWidget: React.FC<WhatsAppConsultationWidgetProp
         onClick={() => setIsOpen((v) => !v)}
         aria-label={isOpen ? 'Close WhatsApp consultation' : 'Open Direct WhatsApp Consultation'}
         title="Direct WhatsApp Consultation (+91 9342337626)"
-        className="h-12 sm:h-13 px-4 rounded-full bg-gradient-to-r from-[#0B192C] via-[#0d4775] to-emerald-600 hover:brightness-110 text-white border border-emerald-300/45 shadow-2xl flex items-center gap-2 cursor-pointer transition-all active:scale-95"
+        className="pointer-events-auto min-w-[48px] min-h-[48px] h-12 sm:h-12 px-3.5 sm:px-4 rounded-full bg-gradient-to-r from-[#0B192C] via-[#0d4775] to-emerald-600 hover:brightness-110 text-white border border-emerald-300/50 shadow-[0_12px_28px_-6px_rgba(16,185,129,0.45),0_4px_12px_rgba(11,25,44,0.3)] flex items-center justify-center gap-2 cursor-pointer transition-all hover:-translate-y-0.5 active:scale-95"
       >
         {isOpen ? (
           <X className="w-5 h-5 shrink-0" />

@@ -45,7 +45,7 @@ export const Footer: React.FC<FooterProps> = ({
   }, [isLangOpen]);
 
   return (
-    <footer className="mt-20 border-t border-slate-200/80 dark:border-sky-500/20 bg-white/90 dark:bg-[#03182b]/92 md:backdrop-blur-xl py-10 text-slate-600 dark:text-slate-300 transition-colors">
+    <footer className="mt-20 border-t border-slate-200/80 dark:border-sky-500/20 bg-white/92 dark:bg-[#03182b]/94 backdrop-blur-xl pt-10 pb-24 sm:pb-12 text-slate-600 dark:text-slate-300 transition-colors">
       <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 space-y-6">
         <div className="flex flex-col sm:flex-row items-center justify-between gap-4">
           {/* Logo */}
@@ -83,67 +83,67 @@ export const Footer: React.FC<FooterProps> = ({
         </div>
 
         {/* Secondary Navigation Links + Compact Language Switcher */}
-        <div className="pt-4 border-t border-slate-200 dark:border-white/10 flex flex-wrap items-center justify-center sm:justify-between gap-4 text-xs text-slate-500 dark:text-slate-400">
-          <div className="flex flex-wrap items-center justify-center sm:justify-start gap-x-4 gap-y-2.5 sm:gap-x-6">
+        <div className="pt-5 border-t border-slate-200/80 dark:border-white/10 flex flex-col sm:flex-row sm:flex-wrap items-start sm:items-center justify-between gap-5 text-sm sm:text-xs text-slate-600 dark:text-slate-300">
+          <div className="grid grid-cols-2 sm:flex sm:flex-wrap items-center gap-x-6 gap-y-3 w-full sm:w-auto text-left">
             <button
               type="button"
               onClick={() => setActiveTab('home')}
-              className="hover:text-slate-900 dark:hover:text-white transition-colors cursor-pointer whitespace-nowrap"
+              className="text-left hover:text-slate-900 dark:hover:text-white transition-colors cursor-pointer py-1"
             >
               {t.home || 'Home'}
             </button>
             <button
               type="button"
               onClick={() => setActiveTab('tools')}
-              className="hover:text-slate-900 dark:hover:text-white transition-colors cursor-pointer whitespace-nowrap"
+              className="text-left hover:text-slate-900 dark:hover:text-white transition-colors cursor-pointer py-1"
             >
               {t.allTools || 'All Tools'}
             </button>
             <button
               type="button"
               onClick={() => setActiveTab('portals')}
-              className="hover:text-slate-900 dark:hover:text-white transition-colors cursor-pointer whitespace-nowrap"
+              className="text-left hover:text-slate-900 dark:hover:text-white transition-colors cursor-pointer py-1"
             >
               Government Portals Hub
             </button>
             <button
               type="button"
               onClick={() => setActiveTab('checklists')}
-              className="hover:text-slate-900 dark:hover:text-white transition-colors cursor-pointer whitespace-nowrap"
+              className="text-left hover:text-slate-900 dark:hover:text-white transition-colors cursor-pointer py-1"
             >
               Document Checklists
             </button>
             <button
               type="button"
               onClick={() => setActiveTab('card')}
-              className="hover:text-slate-900 dark:hover:text-white transition-colors cursor-pointer font-semibold text-[#0284c7] dark:text-sky-300 whitespace-nowrap"
+              className="text-left hover:text-slate-900 dark:hover:text-white transition-colors cursor-pointer font-semibold text-[#0284c7] dark:text-sky-300 py-1"
             >
               Digital Card (/card)
             </button>
             <button
               type="button"
               onClick={() => setActiveTab('about')}
-              className="hover:text-slate-900 dark:hover:text-white transition-colors cursor-pointer whitespace-nowrap"
+              className="text-left hover:text-slate-900 dark:hover:text-white transition-colors cursor-pointer py-1"
             >
               {t.about || 'About Us'}
             </button>
             <button
               type="button"
               onClick={() => setActiveTab('privacy')}
-              className="hover:text-slate-900 dark:hover:text-white transition-colors cursor-pointer whitespace-nowrap"
+              className="text-left hover:text-slate-900 dark:hover:text-white transition-colors cursor-pointer py-1"
             >
               {t.privacy || 'Privacy Policy'}
             </button>
             <button
               type="button"
               onClick={onOpenFreePolicy}
-              className="hover:text-slate-900 dark:hover:text-white transition-colors cursor-pointer whitespace-nowrap"
+              className="text-left hover:text-slate-900 dark:hover:text-white transition-colors cursor-pointer py-1"
             >
               Strict ₹0-Cost Policy
             </button>
           </div>
 
-          <div className="flex flex-wrap items-center justify-center gap-2.5 shrink-0">
+          <div className="flex flex-wrap items-center justify-start sm:justify-end gap-2.5 w-full sm:w-auto shrink-0">
             {setLang && (
               <div className="relative" ref={langMenuRef}>
                 <button
@@ -151,7 +151,7 @@ export const Footer: React.FC<FooterProps> = ({
                   onClick={() => setIsLangOpen((prev) => !prev)}
                   aria-label="Select Language"
                   aria-expanded={isLangOpen}
-                  className="aos-btn-soft inline-flex items-center justify-center gap-1.5 min-h-[36px] px-3.5 py-1.5 text-xs font-bold cursor-pointer whitespace-nowrap shrink-0"
+                  className="aos-btn-soft inline-flex items-center justify-center gap-1.5 min-h-[44px] sm:min-h-[40px] px-4 py-1.5 text-xs font-bold cursor-pointer whitespace-nowrap shrink-0"
                 >
                   <Globe className="w-3.5 h-3.5 text-[#0284c7] dark:text-sky-300 shrink-0" />
                   <span>{currentLang.nativeName}</span>
@@ -163,7 +163,7 @@ export const Footer: React.FC<FooterProps> = ({
                 </button>
 
                 {isLangOpen && (
-                  <div className="absolute right-0 bottom-full mb-2 w-48 rounded-2xl bg-white dark:bg-[#0B192C] border border-slate-200 dark:border-sky-400/30 shadow-2xl p-1.5 z-50">
+                  <div className="absolute left-0 sm:left-auto sm:right-0 bottom-full mb-2 w-48 rounded-[20px] bg-white dark:bg-[#0B192C] border border-slate-200 dark:border-sky-400/30 shadow-2xl p-1.5 z-50">
                     <div className="px-2.5 py-1 text-[10px] font-bold uppercase tracking-wider text-slate-400 border-b border-slate-100 dark:border-white/10 mb-1">
                       {t.langTitle || 'Select Language'}
                     </div>
@@ -178,7 +178,7 @@ export const Footer: React.FC<FooterProps> = ({
                               setLang(langItem.code as LanguageCode);
                               setIsLangOpen(false);
                             }}
-                            className={`w-full flex items-center justify-between px-3 py-1.5 rounded-full text-xs font-medium cursor-pointer text-left ${
+                            className={`w-full flex items-center justify-between px-3 py-2 rounded-full text-xs font-medium cursor-pointer text-left ${
                               isCurrent
                                 ? 'aos-btn-soft-active font-bold'
                                 : 'aos-btn-soft-tab'
@@ -199,7 +199,7 @@ export const Footer: React.FC<FooterProps> = ({
               <button
                 type="button"
                 onClick={onOpenRequestModal}
-                className="aos-btn-soft inline-flex items-center justify-center gap-1.5 min-h-[36px] px-4 py-1.5 text-xs font-bold text-[#0284c7] dark:text-sky-300 cursor-pointer whitespace-nowrap shrink-0"
+                className="aos-btn-soft inline-flex items-center justify-center gap-1.5 min-h-[44px] sm:min-h-[40px] px-4 py-1.5 text-xs font-bold text-[#0284c7] dark:text-sky-300 cursor-pointer whitespace-nowrap shrink-0"
               >
                 <Lightbulb className="w-3.5 h-3.5 shrink-0" />
                 <span>Request a Tool</span>

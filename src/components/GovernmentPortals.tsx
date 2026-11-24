@@ -55,7 +55,7 @@ const PortalCard: React.FC<PortalCardProps> = React.memo(
     const route = resolvePortalRoute(portal, debouncedQuery);
 
     return (
-      <article className="aos-card-perf group flex flex-col justify-between p-5 rounded-2xl bg-white dark:bg-[#0B192C]/94 border border-slate-200 dark:border-sky-400/20 hover:border-[#0284c7] dark:hover:border-sky-400/60 shadow-sm hover:shadow-lg transition-colors">
+      <article className="aos-card-perf theme-card group flex flex-col justify-between p-5 rounded-[20px] bg-white dark:bg-[#0B192C]/94 transition-all">
         <div className="space-y-2.5">
           {/* Quiet Unboxed Typography Metadata (Zero-Pill Rule) */}
           <div className="flex flex-wrap items-center gap-1.5 text-[11px] font-medium text-slate-600 dark:text-sky-200/80">
@@ -311,13 +311,13 @@ export const GovernmentPortals: React.FC = () => {
       </section>
 
       {/* Interactive Search, Category Tabs & State Filter Controls */}
-      <section className="rounded-2xl bg-white dark:bg-[#0B192C]/94 md:backdrop-blur-xl border border-slate-200 dark:border-sky-400/20 p-4 sm:p-5 space-y-4 shadow-sm">
-        {/* Category Tabs Row */}
-        <div className="flex flex-wrap items-center justify-between gap-3">
+      <section className="aos-reveal rounded-[20px] liquid-glass p-4 sm:p-6 space-y-4">
+        {/* Category Tabs Row — Crisp Rounded-2xl Multi-Row Safe Track (Fixes mobile bloated oval bug) */}
+        <div className="flex flex-col lg:flex-row lg:items-center lg:justify-between gap-3.5">
           <div
             role="tablist"
             aria-label="Portal service categories"
-            className="aos-segmented-track flex flex-wrap items-center gap-1 p-1.5"
+            className="aos-segmented-track aos-track-multi rounded-2xl grid grid-cols-2 sm:flex sm:flex-wrap items-center gap-1.5 p-1.5 w-full lg:w-auto"
           >
             {CATEGORY_TABS.map((tab) => {
               const Icon = tab.icon;
@@ -329,9 +329,9 @@ export const GovernmentPortals: React.FC = () => {
                   aria-selected={isActive}
                   type="button"
                   onClick={() => setActiveCategory(tab.id)}
-                  className={`inline-flex items-center gap-1.5 px-3.5 py-2 min-h-[36px] text-xs font-bold whitespace-nowrap shrink-0 cursor-pointer ${
-                    isActive ? 'aos-btn-soft-active' : 'aos-btn-soft-tab'
-                  }`}
+                  className={`inline-flex items-center justify-center gap-1.5 px-3 sm:px-3.5 py-2 min-h-[42px] text-xs font-bold whitespace-nowrap cursor-pointer ${
+                    tab.id === 'All' ? 'col-span-2 sm:col-span-1' : ''
+                  } ${isActive ? 'aos-btn-soft-active' : 'aos-btn-soft-tab'}`}
                 >
                   <Icon className="w-3.5 h-3.5 shrink-0" />
                   <span>{tab.label}</span>
@@ -347,13 +347,13 @@ export const GovernmentPortals: React.FC = () => {
             })}
           </div>
 
-          {/* Sort & State Controls */}
-          <div className="flex flex-wrap items-center gap-2">
+          {/* Sort & State Controls — Clean balanced row on mobile & desktop */}
+          <div className="grid grid-cols-1 sm:flex sm:items-center gap-2.5 w-full lg:w-auto shrink-0">
             <select
               aria-label="Filter by state"
               value={selectedState}
               onChange={(e) => setSelectedState(e.target.value)}
-              className="px-3.5 py-2 min-h-[38px] text-xs font-semibold bg-white dark:bg-[#071322] rounded-full text-slate-900 dark:text-white border border-slate-300 dark:border-sky-500/30 cursor-pointer focus:outline-none focus:ring-2 focus:ring-[#0284c7]"
+              className="w-full sm:w-auto px-4 py-2.5 min-h-[44px] text-xs sm:text-sm font-semibold bg-white dark:bg-[#071322] rounded-full text-slate-900 dark:text-white border border-slate-300 dark:border-sky-500/30 cursor-pointer focus:outline-none focus:ring-2 focus:ring-[#2563eb]"
             >
               {availableStates.map((st) => (
                 <option key={st} value={st} className="bg-white dark:bg-[#0B192C]">
@@ -365,55 +365,58 @@ export const GovernmentPortals: React.FC = () => {
             <button
               type="button"
               onClick={() => setSortBy((s) => (s === 'featured' ? 'name' : 'featured'))}
-              className="aos-btn-soft inline-flex items-center gap-1.5 px-4 py-2 min-h-[38px] text-xs font-bold whitespace-nowrap shrink-0 cursor-pointer"
+              className="aos-btn-soft inline-flex items-center justify-center gap-1.5 px-4 py-2.5 min-h-[44px] text-xs sm:text-sm font-bold whitespace-nowrap shrink-0 cursor-pointer"
             >
-              <ArrowUpDown className="w-3.5 h-3.5 text-[#0284c7] dark:text-sky-300 shrink-0" />
+              <ArrowUpDown className="w-3.5 h-3.5 text-[#2563eb] dark:text-sky-300 shrink-0" />
               <span>{sortBy === 'featured' ? 'Sort: Featured' : 'Sort: A–Z'}</span>
             </button>
           </div>
         </div>
 
-        {/* Live Multilingual & Voice Search Input */}
+        {/* Live Multilingual & Voice Search Input — Animated Pill Bar */}
         <div className="space-y-1.5">
-          <div className="relative">
-            <Search className="absolute left-4 top-1/2 -translate-y-1/2 w-4 h-4 text-slate-400 dark:text-sky-300/75" />
-            <input
-              type="text"
-              value={query}
-              onChange={(e) => setQuery(e.target.value)}
-              placeholder="Search in English, हिंदी, தமிழ், తెలుగు, मराठी or speak (e.g., राशन, TNPDS, Smart Card, पैन, RBI)..."
-              className="w-full pl-10 pr-24 py-2.5 text-xs sm:text-sm bg-slate-50 dark:bg-[#071322] rounded-full text-slate-900 dark:text-white placeholder-slate-400 dark:placeholder-slate-400 border border-slate-300 dark:border-sky-500/30 focus:outline-none focus:ring-2 focus:ring-[#0284c7]"
-            />
-            <div className="absolute right-2 top-1/2 -translate-y-1/2 flex items-center gap-1.5">
-              {query && (
-                <button
-                  type="button"
-                  onClick={() => setQuery('')}
-                  aria-label="Clear search query"
-                  className="aos-btn-icon w-7 h-7 cursor-pointer"
-                >
-                  <X className="w-3.5 h-3.5" />
-                </button>
-              )}
-              {voiceSupported && (
-                <button
-                  type="button"
-                  onClick={startListening}
-                  aria-label={isListening ? 'Stop voice search' : 'Start voice search'}
-                  title={isListening ? 'Listening... tap to stop' : 'Voice Search (Multi-language)'}
-                  className={`w-8 h-8 rounded-full flex items-center justify-center transition-colors cursor-pointer ${
-                    isListening
-                      ? 'bg-red-500 text-white animate-pulse'
-                      : 'aos-btn-icon text-[#0284c7] dark:text-sky-300'
-                  }`}
-                >
-                  {isListening ? <MicOff className="w-3.5 h-3.5" /> : <Mic className="w-3.5 h-3.5" />}
-                </button>
-              )}
+          <div className="aos-search-pill-wrap">
+            <div className="aos-search-pill-inner">
+              <Search className="ml-4 w-4 h-4 text-[#2563eb] dark:text-sky-400 shrink-0 pointer-events-none" />
+              <input
+                type="text"
+                value={query}
+                onChange={(e) => setQuery(e.target.value)}
+                placeholder="Search in English, हिंदी, தமிழ், తెలుగు, मराठी or speak (e.g., राशन, TNPDS, Smart Card, पैन, RBI)..."
+                aria-label="Search verified government portals"
+                className="aos-search-pill-input w-full pl-3 pr-24 py-3 text-sm text-slate-900 dark:text-white placeholder-slate-400 dark:placeholder-slate-400"
+              />
+              <div className="absolute right-1.5 top-1/2 -translate-y-1/2 flex items-center gap-1.5">
+                {query && (
+                  <button
+                    type="button"
+                    onClick={() => setQuery('')}
+                    aria-label="Clear search query"
+                    className="aos-btn-icon w-9 h-9 cursor-pointer"
+                  >
+                    <X className="w-3.5 h-3.5" />
+                  </button>
+                )}
+                {voiceSupported && (
+                  <button
+                    type="button"
+                    onClick={startListening}
+                    aria-label={isListening ? 'Stop voice search' : 'Start voice search'}
+                    title={isListening ? 'Listening... tap to stop' : 'Voice Search (Multi-language)'}
+                    className={`w-9 h-9 rounded-full flex items-center justify-center transition-colors cursor-pointer ${
+                      isListening
+                        ? 'bg-red-500 text-white animate-pulse'
+                        : 'aos-btn-icon text-[#2563eb] dark:text-sky-300'
+                    }`}
+                  >
+                    {isListening ? <MicOff className="w-4 h-4" /> : <Mic className="w-4 h-4" />}
+                  </button>
+                )}
+              </div>
             </div>
           </div>
           {voiceError && (
-            <p className="text-[11px] text-amber-600 dark:text-amber-300">{voiceError}</p>
+            <p className="text-xs text-amber-600 dark:text-amber-300">{voiceError}</p>
           )}
         </div>
       </section>

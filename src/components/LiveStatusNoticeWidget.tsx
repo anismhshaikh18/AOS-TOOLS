@@ -266,12 +266,12 @@ export const LiveStatusNoticeWidget: React.FC = () => {
   return (
     <section
       aria-label="AOS Live Status and Notice Board"
-      className="rounded-3xl bg-white dark:bg-[#0B192C]/90 border border-slate-200 dark:border-sky-500/25 shadow-xl overflow-hidden"
+      className="aos-reveal rounded-[20px] bg-white dark:bg-[#0B192C]/92 shadow-[0_14px_34px_-16px_rgba(37,99,235,0.16),0_4px_12px_-4px_rgba(15,23,42,0.06)] dark:shadow-[0_18px_38px_-14px_rgba(0,0,0,0.65)] overflow-hidden"
     >
       {/* Deep Blue Operator Header */}
       <div className="guide-banner-dark bg-gradient-to-r from-[#0B192C] via-[#072642] to-[#0d4775] px-5 sm:px-6 py-4 border-b border-sky-400/20 flex flex-wrap items-center justify-between gap-3">
         <div className="flex items-center gap-3">
-          <div className="w-10 h-10 rounded-xl bg-[#0284c7] text-white flex items-center justify-center shadow-md shrink-0">
+          <div className="w-11 h-11 rounded-2xl bg-gradient-to-br from-[#0284c7] to-[#2563eb] text-white flex items-center justify-center shadow-md shadow-sky-500/30 shrink-0">
             <Megaphone className="w-5 h-5" />
           </div>
           <div>
@@ -279,12 +279,15 @@ export const LiveStatusNoticeWidget: React.FC = () => {
               <h2 className="guide-banner-title text-sm sm:text-base font-extrabold text-white">
                 AOS Live Status &amp; Notice Board
               </h2>
-              <span className="inline-flex items-center gap-1 text-[10px] font-bold text-emerald-300 uppercase tracking-wider">
-                <span className="w-2 h-2 rounded-full bg-emerald-400 animate-pulse" />
-                Live
+              <span className="inline-flex items-center gap-1.5 px-2.5 py-0.5 rounded-full bg-emerald-500/20 border border-emerald-400/40 text-[10px] font-extrabold text-emerald-300 uppercase tracking-wider">
+                <span className="relative flex h-2 w-2">
+                  <span className="animate-ping absolute inline-flex h-full w-full rounded-full bg-emerald-400 opacity-75" />
+                  <span className="relative inline-flex rounded-full h-2 w-2 bg-emerald-400" />
+                </span>
+                LIVE
               </span>
             </div>
-            <p className="text-[11px] text-sky-200/85">
+            <p className="text-xs text-sky-200/85 mt-0.5">
               Official operator desk advisories, portal status updates &amp; citizen counter notices
             </p>
           </div>
@@ -294,7 +297,7 @@ export const LiveStatusNoticeWidget: React.FC = () => {
           <button
             type="button"
             onClick={() => void handleEnablePushAlerts()}
-            className={`px-3.5 py-2 min-h-[38px] rounded-full text-[11px] font-bold inline-flex items-center gap-1.5 cursor-pointer transition-all shadow-sm whitespace-nowrap ${
+            className={`px-4 py-2 min-h-[44px] sm:min-h-[40px] rounded-full text-xs font-bold inline-flex items-center gap-1.5 cursor-pointer transition-all shadow-sm whitespace-nowrap ${
               notifPermission === 'granted'
                 ? 'bg-emerald-500/25 text-emerald-100 border border-emerald-400/50'
                 : 'bg-white/10 hover:bg-white/20 text-sky-100 border border-sky-300/35'
@@ -317,7 +320,7 @@ export const LiveStatusNoticeWidget: React.FC = () => {
             <>
               <span
                 title="Authenticated as official AOS Tools administrator"
-                className="inline-flex items-center gap-1.5 px-3 py-2 min-h-[38px] rounded-full bg-emerald-500/20 border border-emerald-400/45 text-[11px] font-bold text-emerald-100 whitespace-nowrap"
+                className="inline-flex items-center gap-1.5 px-3.5 py-2 min-h-[44px] sm:min-h-[40px] rounded-full bg-emerald-500/20 border border-emerald-400/45 text-xs font-bold text-emerald-100 whitespace-nowrap"
               >
                 <ShieldCheck className="w-3.5 h-3.5 text-emerald-300 shrink-0" />
                 <span>Admin Access</span>
@@ -326,7 +329,7 @@ export const LiveStatusNoticeWidget: React.FC = () => {
                 type="button"
                 disabled={isPublishing}
                 onClick={() => setIsComposerOpen((v) => !v)}
-                className="aos-btn-primary px-4 py-2 min-h-[38px] text-[11px] font-bold inline-flex items-center gap-1.5 cursor-pointer whitespace-nowrap disabled:opacity-60"
+                className="aos-btn-primary px-4 py-2 min-h-[44px] sm:min-h-[40px] text-xs font-bold inline-flex items-center gap-1.5 cursor-pointer whitespace-nowrap disabled:opacity-60"
               >
                 <Plus className="w-3.5 h-3.5 shrink-0" />
                 <span>Post Notice</span>
@@ -336,7 +339,7 @@ export const LiveStatusNoticeWidget: React.FC = () => {
             <span
               role="status"
               aria-label="Official Notice Board Read-Only Mode"
-              className="inline-flex items-center gap-1.5 px-3.5 py-2 min-h-[38px] rounded-full bg-[#061325]/85 border border-sky-300/30 text-[11px] font-bold text-sky-100 shadow-[inset_0_1px_0_rgba(255,255,255,0.14)] whitespace-nowrap select-none"
+              className="inline-flex items-center gap-1.5 px-3.5 py-2 min-h-[44px] sm:min-h-[40px] rounded-full bg-[#061325]/85 border border-sky-300/30 text-xs font-bold text-sky-100 shadow-[inset_0_1px_0_rgba(255,255,255,0.14)] whitespace-nowrap select-none"
             >
               <Lock className="w-3.5 h-3.5 text-sky-300 shrink-0" />
               <span>Official Board • Read-Only</span>
@@ -348,7 +351,7 @@ export const LiveStatusNoticeWidget: React.FC = () => {
       <div className="p-5 sm:p-6 space-y-4">
         {statusBanner && (
           <div
-            className={`px-3.5 py-2 rounded-xl border text-xs font-medium flex items-center gap-2 ${
+            className={`px-4 py-2.5 rounded-2xl border text-xs font-medium flex items-center gap-2 ${
               statusBanner.tone === 'warning'
                 ? 'bg-amber-50 dark:bg-amber-950/40 border-amber-200 dark:border-amber-500/30 text-amber-800 dark:text-amber-200'
                 : 'bg-sky-50 dark:bg-sky-950/50 border-sky-200 dark:border-sky-500/30 text-sky-800 dark:text-sky-200'
@@ -367,9 +370,9 @@ export const LiveStatusNoticeWidget: React.FC = () => {
         {isOfficialAdmin && isComposerOpen && (
           <form
             onSubmit={handleAddNotice}
-            className="p-4 rounded-2xl bg-slate-50 dark:bg-[#071322] border border-slate-200 dark:border-sky-500/25 space-y-3"
+            className="p-4 rounded-[20px] bg-slate-50 dark:bg-[#071322] border border-slate-200/80 dark:border-sky-500/25 space-y-3"
           >
-            <div className="grid grid-cols-1 sm:grid-cols-3 gap-2.5">
+            <div className="grid grid-cols-1 sm:grid-cols-3 gap-3">
               <input
                 type="text"
                 required
@@ -378,13 +381,13 @@ export const LiveStatusNoticeWidget: React.FC = () => {
                 value={newTitle}
                 onChange={(e) => setNewTitle(e.target.value)}
                 placeholder="Notice headline (e.g., Aadhaar Server Update)..."
-                className="sm:col-span-2 px-3 py-2 rounded-xl text-xs bg-white dark:bg-[#0B192C] border border-slate-300 dark:border-sky-500/30 text-slate-900 dark:text-white focus:outline-none focus:ring-2 focus:ring-[#0284c7]"
+                className="sm:col-span-2 px-3.5 py-2.5 min-h-[44px] rounded-xl text-sm bg-white dark:bg-[#0B192C] border border-slate-300 dark:border-sky-500/30 text-slate-900 dark:text-white focus:outline-none focus:ring-2 focus:ring-[#0284c7]"
               />
               <select
                 disabled={!isOfficialAdmin || isPublishing}
                 value={newSeverity}
                 onChange={(e) => setNewSeverity(e.target.value as 'info' | 'warning' | 'urgent')}
-                className="px-3 py-2 rounded-xl text-xs font-semibold bg-white dark:bg-[#0B192C] border border-slate-300 dark:border-sky-500/30 text-slate-900 dark:text-white"
+                className="px-3.5 py-2.5 min-h-[44px] rounded-xl text-sm font-semibold bg-white dark:bg-[#0B192C] border border-slate-300 dark:border-sky-500/30 text-slate-900 dark:text-white"
               >
                 <option value="info">Info Advisory</option>
                 <option value="warning">Portal Alert</option>
@@ -399,20 +402,20 @@ export const LiveStatusNoticeWidget: React.FC = () => {
               value={newMessage}
               onChange={(e) => setNewMessage(e.target.value)}
               placeholder="Write details for counter operators or visiting citizens..."
-              className="w-full px-3 py-2 rounded-xl text-xs bg-white dark:bg-[#0B192C] border border-slate-300 dark:border-sky-500/30 text-slate-900 dark:text-white resize-none focus:outline-none focus:ring-2 focus:ring-[#0284c7]"
+              className="w-full px-3.5 py-2.5 rounded-xl text-sm bg-white dark:bg-[#0B192C] border border-slate-300 dark:border-sky-500/30 text-slate-900 dark:text-white resize-none focus:outline-none focus:ring-2 focus:ring-[#0284c7]"
             />
-            <div className="flex items-center justify-end gap-2">
+            <div className="flex items-center justify-end gap-2.5">
               <button
                 type="button"
                 onClick={() => setIsComposerOpen(false)}
-                className="aos-btn-soft inline-flex items-center justify-center gap-1.5 px-4 py-2 min-h-[38px] text-xs font-bold cursor-pointer whitespace-nowrap"
+                className="aos-btn-soft inline-flex items-center justify-center gap-1.5 px-4 py-2 min-h-[44px] text-xs font-bold cursor-pointer whitespace-nowrap"
               >
                 Cancel
               </button>
               <button
                 type="submit"
                 disabled={!isOfficialAdmin || isPublishing}
-                className="aos-btn-primary inline-flex items-center justify-center gap-1.5 px-5 py-2 min-h-[38px] text-xs font-bold cursor-pointer whitespace-nowrap disabled:opacity-60"
+                className="aos-btn-primary inline-flex items-center justify-center gap-1.5 px-5 py-2 min-h-[44px] text-xs font-bold cursor-pointer whitespace-nowrap disabled:opacity-60"
               >
                 {isPublishing ? 'Publishing...' : 'Publish Notice'}
               </button>
@@ -422,37 +425,47 @@ export const LiveStatusNoticeWidget: React.FC = () => {
 
         {/* Notice Cards Grid */}
         {notices.length > 0 ? (
-          <div className="grid grid-cols-1 md:grid-cols-3 gap-3">
+          <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
             {notices.slice(0, 6).map((item) => {
-              const badgeStyles =
-                item.severity === 'urgent'
-                  ? 'border-red-300 dark:border-red-500/35 bg-red-50/70 dark:bg-red-950/25'
-                  : item.severity === 'warning'
-                  ? 'border-amber-300 dark:border-amber-500/35 bg-amber-50/70 dark:bg-amber-950/25'
-                  : 'border-slate-200 dark:border-sky-500/20 bg-slate-50/80 dark:bg-[#072642]/55';
+              const isAlert = item.severity === 'urgent';
+              const isPinned = !isAlert && item.pinned;
+
+              const cardSurface = isAlert
+                ? 'bg-red-50/75 dark:bg-red-950/30 shadow-[0_8px_22px_-12px_rgba(239,68,68,0.28)]'
+                : isPinned
+                ? 'bg-blue-50/70 dark:bg-[#0c2748]/80 shadow-[0_8px_22px_-12px_rgba(37,99,235,0.24)]'
+                : 'bg-amber-50/65 dark:bg-amber-950/25 shadow-[0_8px_22px_-12px_rgba(245,158,11,0.22)]';
+
+              const pillBadgeClass = isAlert
+                ? 'bg-red-500/15 text-red-700 dark:bg-red-500/20 dark:text-red-300 border border-red-200 dark:border-red-500/35'
+                : isPinned
+                ? 'bg-blue-500/15 text-blue-700 dark:bg-blue-500/20 dark:text-sky-300 border border-blue-200 dark:border-blue-400/35'
+                : 'bg-amber-500/15 text-amber-800 dark:bg-amber-500/20 dark:text-amber-300 border border-amber-200 dark:border-amber-500/35';
+
+              const badgeLabel = isAlert
+                ? 'Alert'
+                : isPinned
+                ? 'Pinned Advisory'
+                : 'Notice';
 
               return (
                 <article
                   key={item.id}
-                  className={`p-4 rounded-2xl border flex flex-col justify-between gap-2.5 transition-all ${badgeStyles}`}
+                  className={`p-4 sm:p-5 rounded-[20px] flex flex-col justify-between gap-3 transition-all duration-200 hover:-translate-y-1 ${cardSurface}`}
                 >
-                  <div className="space-y-1.5">
+                  <div className="space-y-2">
                     <div className="flex items-start justify-between gap-2">
                       <span
-                        className={`text-[10px] font-extrabold uppercase tracking-wider inline-flex items-center gap-1 ${
-                          item.severity === 'urgent'
-                            ? 'text-red-600 dark:text-red-300'
-                            : item.severity === 'warning'
-                            ? 'text-amber-700 dark:text-amber-300'
-                            : 'text-[#0284c7] dark:text-sky-300'
-                        }`}
+                        className={`px-2.5 py-1 rounded-full text-[10px] font-extrabold uppercase tracking-wider inline-flex items-center gap-1 ${pillBadgeClass}`}
                       >
-                        {item.severity === 'urgent' || item.severity === 'warning' ? (
+                        {isAlert ? (
                           <AlertTriangle className="w-3 h-3 shrink-0" />
+                        ) : isPinned ? (
+                          <Pin className="w-3 h-3 shrink-0" />
                         ) : (
                           <CheckCircle2 className="w-3 h-3 shrink-0" />
                         )}
-                        <span>{item.pinned ? 'Pinned Advisory' : 'Notice'}</span>
+                        <span>{badgeLabel}</span>
                       </span>
 
                       {/* Strict Admin-Only Pin & Delete Controls */}
@@ -464,13 +477,13 @@ export const LiveStatusNoticeWidget: React.FC = () => {
                             onClick={() => handleTogglePin(item.id)}
                             title={item.pinned ? 'Unpin notice' : 'Pin notice'}
                             aria-label={item.pinned ? 'Unpin notice' : 'Pin notice'}
-                            className={`p-1 rounded-md cursor-pointer transition-colors disabled:opacity-50 ${
+                            className={`p-1.5 rounded-lg cursor-pointer transition-colors disabled:opacity-50 ${
                               item.pinned
                                 ? 'text-[#0284c7] dark:text-sky-300 bg-[#0284c7]/15'
                                 : 'text-slate-400 hover:text-slate-700 dark:hover:text-white'
                             }`}
                           >
-                            <Pin className="w-3 h-3" />
+                            <Pin className="w-3.5 h-3.5" />
                           </button>
                           <button
                             type="button"
@@ -478,30 +491,30 @@ export const LiveStatusNoticeWidget: React.FC = () => {
                             onClick={() => handleDeleteNotice(item.id)}
                             title="Remove notice"
                             aria-label="Remove notice"
-                            className="p-1 rounded-md text-slate-400 hover:text-red-500 cursor-pointer transition-colors disabled:opacity-50"
+                            className="p-1.5 rounded-lg text-slate-400 hover:text-red-500 cursor-pointer transition-colors disabled:opacity-50"
                           >
-                            <Trash2 className="w-3 h-3" />
+                            <Trash2 className="w-3.5 h-3.5" />
                           </button>
                         </div>
                       )}
                     </div>
 
-                    <h3 className="text-xs font-extrabold text-slate-900 dark:text-white leading-snug">
+                    <h3 className="text-sm font-extrabold text-slate-900 dark:text-white leading-snug">
                       {item.title}
                     </h3>
-                    <p className="text-[11px] text-slate-600 dark:text-slate-200 leading-relaxed">
+                    <p className="text-xs sm:text-[13px] text-slate-600 dark:text-slate-200 leading-relaxed">
                       {item.message}
                     </p>
                   </div>
 
-                  <div className="flex items-center justify-between gap-2 text-[10px] font-mono text-slate-400 dark:text-sky-200/70">
+                  <div className="flex items-center justify-between gap-2 text-[11px] font-mono text-slate-500 dark:text-sky-200/70 pt-1">
                     <span>
                       {new Date(item.createdAt).toLocaleDateString('en-IN', {
                         day: '2-digit',
                         month: 'short',
                       })}
                     </span>
-                    <span className="text-[9px] font-sans font-semibold uppercase tracking-wider text-slate-400 dark:text-sky-300/60">
+                    <span className="text-[10px] font-sans font-semibold uppercase tracking-wider text-slate-500 dark:text-sky-300/65">
                       Official Advisory
                     </span>
                   </div>
@@ -510,8 +523,8 @@ export const LiveStatusNoticeWidget: React.FC = () => {
             })}
           </div>
         ) : (
-          <div className="p-6 text-center rounded-2xl bg-slate-50 dark:bg-[#071322] border border-slate-200 dark:border-sky-500/20 space-y-2">
-            <p className="text-xs text-slate-600 dark:text-slate-300">
+          <div className="p-6 text-center rounded-[20px] bg-slate-50 dark:bg-[#071322] border border-slate-200 dark:border-sky-500/20 space-y-2">
+            <p className="text-sm text-slate-600 dark:text-slate-300">
               No active advisories published right now.
             </p>
             {isOfficialAdmin && (
@@ -519,7 +532,7 @@ export const LiveStatusNoticeWidget: React.FC = () => {
                 type="button"
                 disabled={isPublishing}
                 onClick={handleResetDefaults}
-                className="aos-btn-primary inline-flex items-center gap-1.5 px-4 py-2 min-h-[40px] text-xs font-bold cursor-pointer disabled:opacity-60"
+                className="aos-btn-primary inline-flex items-center gap-1.5 px-4 py-2 min-h-[44px] text-xs font-bold cursor-pointer disabled:opacity-60"
               >
                 <RotateCcw className="w-3.5 h-3.5" />
                 <span>Restore Default Advisories</span>

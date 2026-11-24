@@ -135,7 +135,7 @@ export const QuickCalculatorSuite: React.FC = () => {
   return (
     <div className="space-y-5">
       {/* Deep Blue Soft-UI Segmented Sub-Tabs */}
-      <div className="aos-segmented-track flex flex-wrap items-center gap-1.5 p-1.5">
+      <div className="aos-segmented-track aos-track-multi rounded-2xl flex flex-wrap items-center gap-1.5 p-1.5">
         {[
           { id: 'age', label: 'Age Calculator', icon: Calendar },
           { id: 'word', label: 'Word Counter', icon: Type },
