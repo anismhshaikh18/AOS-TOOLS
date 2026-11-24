@@ -214,34 +214,40 @@ export const HomeView: React.FC<HomeViewProps> = ({
     <div className="space-y-8 w-full max-w-6xl mx-auto pb-12 animate-in fade-in duration-200">
       
       {/* =========================================================================
-          HERO SECTION (Anis Online Services Deep Navy Corporate Styling)
+          HERO SECTION (Modern Light Architectural + Deep Navy Dark Mode)
           ========================================================================= */}
-      <section className="relative z-20 rounded-3xl liquid-glass p-6 sm:p-10 shadow-xl border border-slate-200 dark:border-sky-500/20">
-        {/* Ambient atmospheric glows (desktop-only for smooth mobile GPU performance) */}
+      <section className="relative z-20 rounded-3xl liquid-glass p-6 sm:p-10 lg:p-11 border border-slate-200/80 dark:border-sky-500/20 overflow-visible">
+        {/* Subtle top rim accent & ambient light aura (desktop-only for smooth mobile GPU performance) */}
         <div className="hidden md:block absolute inset-0 rounded-3xl overflow-hidden pointer-events-none">
-          <div className="absolute top-0 right-1/4 w-96 h-96 bg-[#0284c7]/15 rounded-full blur-3xl" />
-          <div className="absolute bottom-0 left-10 w-80 h-80 bg-[#0d4775]/20 rounded-full blur-3xl" />
+          <div className="absolute inset-x-10 top-0 h-px bg-gradient-to-r from-transparent via-[#0284c7]/45 to-transparent" />
+          <div className="absolute -top-16 right-1/4 w-96 h-96 bg-[#0ea5e9]/10 dark:bg-[#0284c7]/16 rounded-full blur-3xl" />
+          <div className="absolute -bottom-16 left-8 w-80 h-80 bg-indigo-500/8 dark:bg-[#0d4775]/20 rounded-full blur-3xl" />
         </div>
 
-        <div className="grid grid-cols-1 lg:grid-cols-12 gap-8 items-stretch relative z-10">
+        <div className="grid grid-cols-1 lg:grid-cols-12 gap-8 lg:gap-10 items-stretch relative z-10">
           
-          {/* Left Column: Headline, Search, Badges & Quick Launchers */}
+          {/* Left Column: Headline, Search, Quick Launchers & Value Strip */}
           <div className="lg:col-span-6 space-y-6 flex flex-col justify-between">
             
-            {/* Top Pill */}
-            <div className="inline-flex items-center gap-2 px-3.5 py-1.5 rounded-full liquid-glass-sub text-[#0284c7] dark:text-sky-300 text-xs font-semibold tracking-wide border border-slate-200 dark:border-sky-500/30 shadow-xs w-fit">
-              <span className="w-2 h-2 rounded-full bg-[#0284c7] animate-pulse" />
-              <span>{t.heroTag || 'Free • Private • Zero Uploads Browser Suite'}</span>
+            {/* Clean Editorial Kicker (Zero Pulsing Dot / Zero Pill Clutter) */}
+            <div className="flex items-center gap-2 text-xs font-semibold text-[#0284c7] dark:text-sky-300 tracking-tight">
+              <span>{t.heroTag || 'Free · Private · Zero Uploads Browser Suite'}</span>
             </div>
 
-            <div>
-              <h1 className="text-4xl sm:text-5xl lg:text-5xl font-black text-slate-900 dark:text-white tracking-tight leading-tight">
-                AOS <span className="text-[#0284c7]">TOOLS</span>
+            <div className="space-y-3">
+              <h1 className="font-display text-4xl sm:text-5xl lg:text-[3.35rem] font-extrabold text-slate-900 dark:text-white tracking-[-0.03em] leading-[1.06]">
+                AOS{' '}
+                <span className="bg-gradient-to-r from-[#0284c7] via-[#0369a1] to-[#1d4ed8] dark:from-sky-400 dark:to-blue-400 bg-clip-text text-transparent">
+                  TOOLS
+                </span>
               </h1>
-              <div className="text-xl sm:text-2xl font-bold text-slate-800 dark:text-sky-100 mt-2 tracking-tight">
-                {t.heroTitle || 'All-in-One Digital Workstation'} <span className="text-[#0284c7]">{t.heroSubtitle || '& Citizen Utilities'}</span>
+              <div className="font-display text-xl sm:text-2xl font-bold text-slate-800 dark:text-sky-100 tracking-tight leading-snug">
+                {t.heroTitle || 'All-in-One Digital Workstation'}{' '}
+                <span className="text-[#0284c7] dark:text-sky-400">
+                  {t.heroSubtitle || '& Citizen Utilities'}
+                </span>
               </div>
-              <p className="text-xs sm:text-sm text-slate-600 dark:text-slate-300 max-w-xl leading-relaxed mt-3">
+              <p className="text-sm text-slate-600 dark:text-slate-300 max-w-xl leading-relaxed">
                 {t.heroDesc || 'Complete client-side processing for official passport photo sheets, CR80 PVC ID cards, 19 PDF utilities, image optimization, and citizen client ledgers. 100% private in your browser.'}
               </p>
             </div>
@@ -409,30 +415,42 @@ export const HomeView: React.FC<HomeViewProps> = ({
               </button>
             </div>
 
-            {/* 3 Core Trust Badges */}
-            <div className="grid grid-cols-3 gap-2 sm:gap-3 pt-2">
-              <div className="p-3 rounded-2xl liquid-glass-sub flex flex-col items-center sm:items-start text-center sm:text-left space-y-1">
-                <div className="w-7 h-7 rounded-lg bg-[#0284c7]/20 flex items-center justify-center text-[#0284c7] dark:text-sky-300">
-                  <Zap className="w-4 h-4" />
+            {/* 3 Core Trust Pillars — Clean Hairline-Divided Strip (Zero Nested Card Clutter) */}
+            <div className="grid grid-cols-3 divide-x divide-slate-200/80 dark:divide-sky-500/20 pt-4 border-t border-slate-200/80 dark:border-sky-500/20">
+              <div className="pr-2 sm:pr-4 flex flex-col items-center sm:items-start text-center sm:text-left gap-1">
+                <div className="inline-flex items-center gap-1.5 text-[#0284c7] dark:text-sky-300">
+                  <Zap className="w-3.5 h-3.5 shrink-0" />
+                  <span className="text-xs font-bold text-slate-900 dark:text-white">
+                    {t.freeBadge || '100% Free'}
+                  </span>
                 </div>
-                <span className="text-xs font-bold text-slate-900 dark:text-white">{t.freeBadge || '100% Free'}</span>
-                <span className="text-[10px] text-slate-500 dark:text-slate-400">{t.freeBadgeSub || 'Strict ₹0-cost policy'}</span>
+                <span className="text-[11px] text-slate-500 dark:text-slate-400 leading-snug">
+                  {t.freeBadgeSub || 'Strict ₹0-cost policy'}
+                </span>
               </div>
 
-              <div className="p-3 rounded-2xl liquid-glass-sub flex flex-col items-center sm:items-start text-center sm:text-left space-y-1">
-                <div className="w-7 h-7 rounded-lg bg-emerald-500/20 flex items-center justify-center text-emerald-600 dark:text-emerald-400">
-                  <Lock className="w-4 h-4" />
+              <div className="px-2 sm:px-4 flex flex-col items-center sm:items-start text-center sm:text-left gap-1">
+                <div className="inline-flex items-center gap-1.5 text-emerald-600 dark:text-emerald-400">
+                  <Lock className="w-3.5 h-3.5 shrink-0" />
+                  <span className="text-xs font-bold text-slate-900 dark:text-white">
+                    {t.secureBadge || 'Private & Local'}
+                  </span>
                 </div>
-                <span className="text-xs font-bold text-slate-900 dark:text-white">{t.secureBadge || 'Private & Local'}</span>
-                <span className="text-[10px] text-slate-500 dark:text-slate-400">{t.secureBadgeSub || 'Zero files uploaded'}</span>
+                <span className="text-[11px] text-slate-500 dark:text-slate-400 leading-snug">
+                  {t.secureBadgeSub || 'Zero files uploaded'}
+                </span>
               </div>
 
-              <div className="p-3 rounded-2xl liquid-glass-sub flex flex-col items-center sm:items-start text-center sm:text-left space-y-1">
-                <div className="w-7 h-7 rounded-lg bg-indigo-500/20 flex items-center justify-center text-indigo-600 dark:text-indigo-400">
-                  <Smartphone className="w-4 h-4" />
+              <div className="pl-2 sm:pl-4 flex flex-col items-center sm:items-start text-center sm:text-left gap-1">
+                <div className="inline-flex items-center gap-1.5 text-indigo-600 dark:text-indigo-400">
+                  <Smartphone className="w-3.5 h-3.5 shrink-0" />
+                  <span className="text-xs font-bold text-slate-900 dark:text-white">
+                    {t.mobileBadge || 'Mobile Ready'}
+                  </span>
                 </div>
-                <span className="text-xs font-bold text-slate-900 dark:text-white">{t.mobileBadge || 'Mobile Ready'}</span>
-                <span className="text-[10px] text-slate-500 dark:text-slate-400">{t.mobileBadgeSub || 'Works on all browsers'}</span>
+                <span className="text-[11px] text-slate-500 dark:text-slate-400 leading-snug">
+                  {t.mobileBadgeSub || 'Works on all browsers'}
+                </span>
               </div>
             </div>
 
@@ -457,13 +475,13 @@ export const HomeView: React.FC<HomeViewProps> = ({
       {/* =========================================================================
           PRODUCTIVITY & SECURITY UTILITIES (Zero External APIs · Category Showcase)
           ========================================================================= */}
-      <section className="rounded-3xl liquid-glass p-5 sm:p-7 border border-slate-200 dark:border-sky-500/20 shadow-xl space-y-6">
+      <section className="rounded-3xl liquid-glass p-6 sm:p-8 border border-slate-200/80 dark:border-sky-500/20 space-y-6">
         <div className="flex flex-col sm:flex-row sm:items-end justify-between gap-3 pb-4 border-b border-slate-200/80 dark:border-sky-500/20">
           <div>
             <p className="text-xs font-semibold text-[#0284c7] dark:text-sky-300">
               Instant Browser Utilities · Zero External APIs
             </p>
-            <h2 className="text-xl sm:text-2xl font-black text-slate-900 dark:text-white tracking-tight mt-0.5">
+            <h2 className="font-display text-2xl sm:text-[1.75rem] font-extrabold text-slate-900 dark:text-white tracking-tight mt-0.5">
               Productivity &amp; Security Toolkit
             </h2>
           </div>
@@ -477,18 +495,18 @@ export const HomeView: React.FC<HomeViewProps> = ({
           </button>
         </div>
 
-        <div className="grid grid-cols-1 lg:grid-cols-12 gap-6">
+        <div className="grid grid-cols-1 lg:grid-cols-12 gap-6 lg:gap-8">
           {/* Category 1: Productivity Utilities */}
-          <div className="lg:col-span-7 space-y-3">
-            <div className="flex items-center justify-between">
-              <h3 className="text-xs font-bold text-slate-600 dark:text-sky-200 tracking-wide">
+          <div className="lg:col-span-7 space-y-3.5">
+            <div className="flex items-center justify-between text-xs">
+              <h3 className="font-bold text-slate-700 dark:text-sky-200 tracking-tight">
                 Productivity Utilities
               </h3>
               <span className="text-[11px] text-slate-500 dark:text-slate-400">
-                Local Storage &amp; 60fps
+                Local Storage · 60fps
               </span>
             </div>
-            <div className="grid grid-cols-1 sm:grid-cols-2 gap-3">
+            <div className="grid grid-cols-1 sm:grid-cols-2 gap-3.5">
               {['typing-test', 'todo-list', 'notes-app', 'stopwatch'].map((id) => {
                 const raw = SPECIAL_TOOLS.find((tool) => tool.id === id);
                 if (!raw) return null;
@@ -498,19 +516,19 @@ export const HomeView: React.FC<HomeViewProps> = ({
                     key={id}
                     type="button"
                     onClick={() => onSelectTool(localized)}
-                    className="p-4 rounded-2xl liquid-glass-sub hover:border-[#0284c7]/60 text-left transition-all cursor-pointer group flex items-start gap-3 min-h-[82px]"
+                    className="p-4 rounded-2xl liquid-glass-sub hover:border-[#0284c7]/50 hover:-translate-y-0.5 hover:shadow-md text-left transition-all cursor-pointer group flex items-start gap-3.5 min-h-[86px]"
                   >
-                    <div className="w-10 h-10 rounded-xl bg-[#0284c7]/15 dark:bg-[#0d4775]/50 text-[#0284c7] dark:text-sky-300 flex items-center justify-center shrink-0">
+                    <div className="w-10 h-10 rounded-xl bg-gradient-to-br from-sky-50 to-blue-100/80 dark:from-[#0d4775]/65 dark:to-[#072642] border border-sky-200/80 dark:border-sky-400/25 text-[#0284c7] dark:text-sky-300 flex items-center justify-center shrink-0 group-hover:scale-105 transition-transform">
                       <DynamicIcon name={localized.iconName} className="w-5 h-5" />
                     </div>
                     <div className="min-w-0 flex-1">
                       <div className="flex items-center justify-between gap-2">
-                        <span className="text-sm font-bold text-slate-900 dark:text-white group-hover:text-[#0284c7] dark:group-hover:text-sky-300 truncate">
+                        <span className="text-sm font-bold text-slate-900 dark:text-white group-hover:text-[#0284c7] dark:group-hover:text-sky-300 truncate transition-colors">
                           {localized.name}
                         </span>
                         <ArrowRight className="w-3.5 h-3.5 text-slate-400 group-hover:text-[#0284c7] group-hover:translate-x-0.5 transition-all shrink-0" />
                       </div>
-                      <p className="text-[11px] text-slate-600 dark:text-slate-300 line-clamp-2 mt-1 leading-relaxed">
+                      <p className="text-xs text-slate-600 dark:text-slate-300 line-clamp-2 mt-1 leading-relaxed">
                         {localized.shortDesc}
                       </p>
                     </div>
@@ -521,9 +539,9 @@ export const HomeView: React.FC<HomeViewProps> = ({
           </div>
 
           {/* Category 2: Security & Web Utilities */}
-          <div className="lg:col-span-5 space-y-3">
-            <div className="flex items-center justify-between">
-              <h3 className="text-xs font-bold text-slate-600 dark:text-sky-200 tracking-wide">
+          <div className="lg:col-span-5 space-y-3.5 lg:pl-6 lg:border-l lg:border-slate-200/75 dark:lg:border-sky-500/20">
+            <div className="flex items-center justify-between text-xs">
+              <h3 className="font-bold text-slate-700 dark:text-sky-200 tracking-tight">
                 Security &amp; Web Utilities
               </h3>
               <span className="inline-flex items-center gap-1 text-[11px] text-emerald-600 dark:text-emerald-400 font-semibold">
@@ -531,7 +549,7 @@ export const HomeView: React.FC<HomeViewProps> = ({
                 <span>On-Device Crypto</span>
               </span>
             </div>
-            <div className="grid grid-cols-1 gap-3">
+            <div className="grid grid-cols-1 gap-3.5">
               {['password-generator', 'url-encoder-decoder'].map((id) => {
                 const raw = SPECIAL_TOOLS.find((tool) => tool.id === id);
                 if (!raw) return null;
@@ -541,19 +559,19 @@ export const HomeView: React.FC<HomeViewProps> = ({
                     key={id}
                     type="button"
                     onClick={() => onSelectTool(localized)}
-                    className="p-4 rounded-2xl liquid-glass-sub hover:border-[#0284c7]/60 text-left transition-all cursor-pointer group flex items-start gap-3 min-h-[82px]"
+                    className="p-4 rounded-2xl liquid-glass-sub hover:border-[#0284c7]/50 hover:-translate-y-0.5 hover:shadow-md text-left transition-all cursor-pointer group flex items-start gap-3.5 min-h-[86px]"
                   >
-                    <div className="w-10 h-10 rounded-xl bg-gradient-to-br from-[#0284c7] to-[#0B192C] text-white flex items-center justify-center shrink-0 shadow-sm">
+                    <div className="w-10 h-10 rounded-xl bg-gradient-to-br from-[#0284c7] to-[#1d4ed8] text-white flex items-center justify-center shrink-0 shadow-sm shadow-sky-500/25 group-hover:scale-105 transition-transform">
                       <DynamicIcon name={localized.iconName} className="w-5 h-5" />
                     </div>
                     <div className="min-w-0 flex-1">
                       <div className="flex items-center justify-between gap-2">
-                        <span className="text-sm font-bold text-slate-900 dark:text-white group-hover:text-[#0284c7] dark:group-hover:text-sky-300 truncate">
+                        <span className="text-sm font-bold text-slate-900 dark:text-white group-hover:text-[#0284c7] dark:group-hover:text-sky-300 truncate transition-colors">
                           {localized.name}
                         </span>
                         <ArrowRight className="w-3.5 h-3.5 text-slate-400 group-hover:text-[#0284c7] group-hover:translate-x-0.5 transition-all shrink-0" />
                       </div>
-                      <p className="text-[11px] text-slate-600 dark:text-slate-300 line-clamp-2 mt-1 leading-relaxed">
+                      <p className="text-xs text-slate-600 dark:text-slate-300 line-clamp-2 mt-1 leading-relaxed">
                         {localized.shortDesc}
                       </p>
                     </div>

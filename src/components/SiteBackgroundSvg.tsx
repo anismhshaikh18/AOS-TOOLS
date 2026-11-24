@@ -21,7 +21,7 @@ export const SiteBackgroundSvg: React.FC<SiteBackgroundSvgProps> = React.memo(({
       style={{
         contain: 'strict',
         transform: 'translateZ(0)',
-        backgroundColor: isDark ? '#03182b' : '#f4f8fc',
+        backgroundColor: isDark ? '#03182b' : '#f4f7fb',
         backgroundImage: isDark
           ? [
               'radial-gradient(60% 45% at 20% 15%, rgba(13, 71, 117, 0.42), transparent 70%)',
@@ -31,13 +31,16 @@ export const SiteBackgroundSvg: React.FC<SiteBackgroundSvgProps> = React.memo(({
               'linear-gradient(135deg, #03182b 0%, #0B192C 45%, #072642 82%, #020e1a 100%)',
             ].join(', ')
           : [
-              'radial-gradient(50% 40% at 15% 15%, rgba(186, 230, 253, 0.55), transparent 70%)',
-              'radial-gradient(50% 40% at 85% 25%, rgba(191, 219, 254, 0.45), transparent 70%)',
-              'linear-gradient(to right, rgba(14, 116, 144, 0.05) 1px, transparent 1px)',
-              'linear-gradient(to bottom, rgba(14, 116, 144, 0.05) 1px, transparent 1px)',
-              'linear-gradient(135deg, #f4f8fc 0%, #ebf3fa 50%, #e2eef8 100%)',
+              'radial-gradient(52% 40% at 12% 8%, rgba(186, 230, 253, 0.52), transparent 68%)',
+              'radial-gradient(48% 38% at 88% 18%, rgba(199, 210, 254, 0.4), transparent 68%)',
+              'radial-gradient(44% 34% at 50% 92%, rgba(224, 242, 254, 0.45), transparent 70%)',
+              'linear-gradient(to right, rgba(15, 23, 42, 0.028) 1px, transparent 1px)',
+              'linear-gradient(to bottom, rgba(15, 23, 42, 0.028) 1px, transparent 1px)',
+              'linear-gradient(180deg, #f8fbff 0%, #f3f7fc 52%, #edf3fa 100%)',
             ].join(', '),
-        backgroundSize: '100% 100%, 100% 100%, 48px 48px, 48px 48px, 100% 100%',
+        backgroundSize: isDark
+          ? '100% 100%, 100% 100%, 48px 48px, 48px 48px, 100% 100%'
+          : '100% 100%, 100% 100%, 100% 100%, 56px 56px, 56px 56px, 100% 100%',
       }}
     />
   );

@@ -178,21 +178,21 @@ export const AosPromoBanner: React.FC<AosPromoBannerProps> = ({
           </div>
 
           <div className="space-y-2 min-w-0">
-            <div className="flex flex-wrap items-center gap-2 text-[11px] font-bold tracking-[0.14em] uppercase text-sky-300">
+            <div className="flex flex-wrap items-center gap-2 text-xs font-semibold text-sky-300">
               <span>Official Digital Citizen Suite</span>
-              <span aria-hidden="true" className="text-indigo-300/70">
-                •
+              <span aria-hidden="true" className="text-indigo-300/60">
+                ·
               </span>
               <span className="text-indigo-200">Desktop &amp; Mobile Optimized</span>
             </div>
 
-            <h2 className="guide-banner-title text-xl sm:text-3xl lg:text-[2rem] font-black tracking-tight leading-tight text-white text-balance">
-              AOS TOOLS: YOUR DIGITAL DOCUMENTATION ECOSYSTEM
+            <h2 className="guide-banner-title font-display text-2xl sm:text-3xl lg:text-[2.1rem] font-extrabold tracking-tight leading-tight text-white text-balance">
+              AOS Tools: Your Digital Documentation Ecosystem
             </h2>
 
-            <p className="text-xs sm:text-sm font-semibold text-sky-100/90">
-              Powered by Anis Online Services <span className="text-sky-400 mx-1">|</span> Secure.
-              Fast. Free.
+            <p className="text-xs sm:text-sm font-medium text-sky-100/90">
+              Powered by Anis Online Services <span className="text-sky-400 mx-1">·</span> Secure,
+              Fast, and Free.
             </p>
           </div>
         </div>

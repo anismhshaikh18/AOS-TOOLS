@@ -297,17 +297,20 @@ export const ToolsDirectoryView: React.FC<ToolsDirectoryViewProps> = ({
 
   return (
     <div className="space-y-10 w-full max-w-6xl mx-auto pb-16 animate-in fade-in duration-200">
-      {/* Top Hero Banner matching Anis Online Services corporate styling */}
-      <div className="text-center space-y-4 pt-4">
-        <div className="inline-flex items-center gap-2 px-3.5 py-1.5 rounded-full liquid-glass-sub text-[#0284c7] dark:text-sky-300 border border-slate-200 dark:border-sky-500/30 text-[11px] font-bold tracking-wider uppercase shadow-xs">
-          <span>{t.realProcessingTag || '100% REAL PROCESSING • ZERO FAKE TOOLS • ZERO RUPEE POLICY'}</span>
-        </div>
+      {/* Top Hero Banner */}
+      <div className="text-center space-y-3.5 pt-4">
+        <p className="text-xs font-semibold text-[#0284c7] dark:text-sky-300 tracking-tight">
+          {t.realProcessingTag || '100% Client-Side Processing · Zero Uploads · Strict ₹0 Policy'}
+        </p>
 
-        <h1 className="text-3xl sm:text-5xl font-black text-slate-900 dark:text-white tracking-tight">
-          AOS TOOLS <span className="text-[#0284c7]">{t.directoryTitle || 'Working Tools'}</span>
+        <h1 className="font-display text-3xl sm:text-5xl font-extrabold text-slate-900 dark:text-white tracking-[-0.03em]">
+          AOS Tools{' '}
+          <span className="bg-gradient-to-r from-[#0284c7] to-[#1d4ed8] dark:from-sky-400 dark:to-blue-400 bg-clip-text text-transparent">
+            {t.directoryTitle || 'Working Tools'}
+          </span>
         </h1>
 
-        <p className="text-xs sm:text-sm text-slate-600 dark:text-slate-300 max-w-2xl mx-auto leading-relaxed">
+        <p className="text-sm text-slate-600 dark:text-slate-300 max-w-2xl mx-auto leading-relaxed">
           {t.directoryDesc || 'Every tool below contains actual client-side processing code. No fake buttons, no subscriptions, and your files stay private in your browser.'}
         </p>
 
@@ -410,12 +413,12 @@ export const ToolsDirectoryView: React.FC<ToolsDirectoryViewProps> = ({
       {/* Available Tools Section */}
       <div className="space-y-5">
         <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-4">
-          <div className="flex items-center gap-2">
-            <h2 className="text-lg font-bold text-slate-900 dark:text-white tracking-tight">
+          <div className="flex items-baseline gap-2">
+            <h2 className="font-display text-xl font-extrabold text-slate-900 dark:text-white tracking-tight">
               {t.availableTools || 'Available Tools'}
             </h2>
-            <span className="px-2.5 py-0.5 rounded-full bg-[#0284c7]/15 border border-[#0284c7]/30 text-xs font-bold text-[#0284c7] dark:text-sky-300">
-              ({filteredTools.length})
+            <span className="text-xs font-mono tabular-nums font-semibold text-slate-500 dark:text-sky-300/80">
+              · {filteredTools.length} tools
             </span>
           </div>
 
@@ -450,12 +453,12 @@ export const ToolsDirectoryView: React.FC<ToolsDirectoryViewProps> = ({
                 className="aos-card-perf p-5 rounded-2xl liquid-glass liquid-glass-hover transition-all cursor-pointer text-left flex flex-col justify-between group border border-slate-200 dark:border-sky-500/20"
               >
                 <div>
-                  <div className="flex items-center justify-between mb-3">
-                    <div className="w-10 h-10 rounded-xl bg-[#0284c7]/15 dark:bg-[#0d4775]/40 text-[#0284c7] dark:text-sky-300 flex items-center justify-center shrink-0 shadow-xs">
+                  <div className="flex items-center justify-between mb-3.5">
+                    <div className="w-10 h-10 rounded-xl bg-gradient-to-br from-sky-50 to-blue-100/80 dark:from-[#0d4775]/65 dark:to-[#072642] border border-sky-200/80 dark:border-sky-400/25 text-[#0284c7] dark:text-sky-300 flex items-center justify-center shrink-0 group-hover:scale-105 transition-transform">
                       <DynamicIcon name={tool.iconName} className="w-5 h-5" />
                     </div>
                     {tool.badge && (
-                      <span className="px-2 py-0.5 rounded-md bg-[#0284c7]/15 text-[#0284c7] dark:text-sky-300 border border-[#0284c7]/30 text-[10px] font-bold font-mono uppercase whitespace-nowrap shrink-0 inline-flex items-center">
+                      <span className="text-[10px] font-mono font-bold text-[#0284c7] dark:text-sky-300 tracking-tight whitespace-nowrap shrink-0">
                         {tool.badge}
                       </span>
                     )}

@@ -52,8 +52,8 @@ export const ToolCard: React.FC<ToolCardProps> = React.memo(({ tool, onSelect })
       }}
       className="aos-card-perf theme-card group relative flex flex-col justify-between p-5 rounded-2xl cursor-pointer text-left focus:outline-none focus-visible:ring-2 active:scale-[0.99] text-slate-900 dark:text-white"
     >
-      <div>
-        <div className="flex items-center justify-between text-xs text-slate-500 dark:text-sky-200/70 mb-3.5 gap-2">
+      <div className="space-y-3">
+        <div className="flex items-center justify-between text-xs text-slate-500 dark:text-sky-200/70 gap-2">
           <div className="flex items-center gap-1.5 font-medium text-[11px] min-w-0">
             <span className="font-semibold text-slate-700 dark:text-sky-200 whitespace-nowrap">
               {getCategoryLabel(tool.category)}
@@ -62,11 +62,11 @@ export const ToolCard: React.FC<ToolCardProps> = React.memo(({ tool, onSelect })
               ·
             </span>
             <span className="text-emerald-600 dark:text-emerald-400 font-medium whitespace-nowrap">
-              100% Client-Side
+              Client-Side
             </span>
           </div>
           {tool.badge && (
-            <span className="px-2 py-0.5 rounded-md bg-[#0284c7]/15 text-[#0284c7] dark:text-sky-300 border border-[#0284c7]/30 text-[10px] font-bold font-mono uppercase whitespace-nowrap shrink-0 inline-flex items-center">
+            <span className="text-[10px] font-mono font-bold text-[#0284c7] dark:text-sky-300 tracking-tight whitespace-nowrap shrink-0">
               {tool.badge}
             </span>
           )}
@@ -77,39 +77,39 @@ export const ToolCard: React.FC<ToolCardProps> = React.memo(({ tool, onSelect })
           )}
         </div>
 
-        <div className="flex items-start gap-3.5 mb-2.5">
+        <div className="flex items-start gap-3.5">
           <div
-            className={`w-10 h-10 rounded-xl bg-gradient-to-tr ${getGradientClass(
+            className={`w-11 h-11 rounded-xl bg-gradient-to-tr ${getGradientClass(
               tool.category
-            )} p-0.5 shadow-md shadow-sky-500/20 group-hover:scale-105 group-hover:rotate-[-2deg] transition-transform shrink-0`}
+            )} p-[1.5px] shadow-sm shadow-sky-500/15 group-hover:scale-105 transition-transform shrink-0`}
           >
-            <div className="w-full h-full bg-white dark:bg-[#072642] rounded-[10px] flex items-center justify-center">
+            <div className="w-full h-full bg-white dark:bg-[#072642] rounded-[10.5px] flex items-center justify-center">
               <DynamicIcon name={tool.iconName} className="w-5 h-5 text-[#0284c7] dark:text-sky-300" />
             </div>
           </div>
           <div className="min-w-0 flex-1">
-            <h3 className="text-base font-bold text-slate-900 dark:text-white group-hover:text-[#0284c7] dark:group-hover:text-sky-300 transition-colors tracking-tight leading-snug break-words line-clamp-2">
+            <h3 className="text-[15px] font-bold text-slate-900 dark:text-white group-hover:text-[#0284c7] dark:group-hover:text-sky-300 transition-colors tracking-tight leading-snug break-words line-clamp-2">
               {tool.name}
             </h3>
             {tool.acceptedFormats && (
-              <span className="text-[11px] text-slate-400 dark:text-sky-300/60 font-mono block truncate">
+              <span className="text-[11px] text-slate-400 dark:text-sky-300/60 font-mono block truncate mt-0.5">
                 {tool.acceptedFormats}
               </span>
             )}
           </div>
         </div>
 
-        <p className="text-xs text-slate-600 dark:text-slate-300 leading-relaxed mb-4 line-clamp-2">
+        <p className="text-xs text-slate-600 dark:text-slate-300 leading-relaxed line-clamp-2 pb-1">
           {tool.shortDesc}
         </p>
       </div>
 
-      <div className="pt-3.5 border-t border-slate-100 dark:border-white/10 flex items-center justify-between gap-2">
+      <div className="pt-3.5 mt-3 border-t border-slate-100 dark:border-white/10 flex items-center justify-between gap-2">
         <span
           className={`px-3.5 py-1.5 text-[11px] font-bold flex items-center gap-1.5 ${
             isLocked
               ? 'aos-btn-soft text-amber-600 dark:text-amber-300'
-              : 'aos-btn-soft text-[#0284c7] dark:text-sky-300 group-hover:translate-x-0.5'
+              : 'aos-btn-soft text-[#0284c7] dark:text-sky-300'
           }`}
         >
           {isLocked ? (
@@ -124,7 +124,7 @@ export const ToolCard: React.FC<ToolCardProps> = React.memo(({ tool, onSelect })
             </>
           )}
         </span>
-        <span className="text-[11px] font-mono font-semibold text-slate-500 dark:text-sky-300/80">
+        <span className="text-[11px] font-mono tabular-nums font-semibold text-slate-500 dark:text-sky-300/80">
           {isLocked ? 'Protected' : '₹0 Free'}
         </span>
       </div>

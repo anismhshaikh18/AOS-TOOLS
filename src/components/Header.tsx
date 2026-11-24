@@ -226,7 +226,7 @@ export const Header: React.FC<HeaderProps> = ({
 
   return (
     <>
-      <header className="sticky top-0 z-40 w-full md:backdrop-blur-xl bg-white/95 dark:bg-[#0B192C]/96 border-b border-slate-200 dark:border-sky-500/20 transition-colors shadow-sm dark:shadow-lg dark:shadow-black/30">
+      <header className="sticky top-0 z-40 w-full md:backdrop-blur-2xl bg-white/88 dark:bg-[#0B192C]/90 border-b border-slate-200/80 dark:border-sky-400/15 transition-colors shadow-[0_1px_0_rgba(15,23,42,0.04),0_8px_24px_-16px_rgba(15,23,42,0.14)] dark:shadow-lg dark:shadow-black/30">
         <div className="max-w-7xl mx-auto px-3 sm:px-5 lg:px-6">
           <div className="flex items-center justify-between gap-3 lg:gap-4 h-16 min-w-0">
             {/* Left: Official AOS TOOLS Brand Mark */}
@@ -244,16 +244,16 @@ export const Header: React.FC<HeaderProps> = ({
                   setIsMobileMenuOpen(false);
                 }
               }}
-              className="flex items-center gap-2 sm:gap-2.5 cursor-pointer group select-none shrink-0"
+              className="flex items-center gap-2.5 cursor-pointer group select-none shrink-0"
             >
-              <div className="w-9 h-9 sm:w-10 sm:h-10 rounded-full overflow-hidden bg-white ring-2 ring-[#0284c7] group-hover:ring-sky-400 flex items-center justify-center shadow-md dark:shadow-black/40 group-hover:scale-105 transition-all p-0.5 shrink-0 aspect-square">
+              <div className="w-9 h-9 sm:w-10 sm:h-10 rounded-full overflow-hidden bg-white ring-1 ring-slate-200/90 dark:ring-sky-400/40 group-hover:ring-[#0284c7] flex items-center justify-center shadow-sm dark:shadow-black/40 group-hover:scale-105 transition-all p-0.5 shrink-0 aspect-square">
                 <AosLogoSvg className="w-full h-full aspect-square object-contain shrink-0" />
               </div>
-              <div className="flex items-baseline tracking-tight whitespace-nowrap">
-                <span className="text-[16px] sm:text-xl font-black text-slate-900 dark:text-white">
+              <div className="font-display flex items-baseline tracking-tight whitespace-nowrap">
+                <span className="text-[17px] sm:text-[21px] font-extrabold text-slate-900 dark:text-white">
                   AOS
                 </span>
-                <span className="text-[16px] sm:text-xl font-black text-[#0284c7] ml-1">
+                <span className="text-[17px] sm:text-[21px] font-extrabold bg-gradient-to-r from-[#0284c7] to-[#1d4ed8] dark:from-sky-400 dark:to-blue-400 bg-clip-text text-transparent ml-1">
                   TOOLS
                 </span>
               </div>

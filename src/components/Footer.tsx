@@ -45,7 +45,7 @@ export const Footer: React.FC<FooterProps> = ({
   }, [isLangOpen]);
 
   return (
-    <footer className="mt-20 border-t border-slate-200 dark:border-sky-500/20 bg-white dark:bg-[#03182b]/90 py-8 text-slate-600 dark:text-slate-300 transition-colors shadow-inner">
+    <footer className="mt-20 border-t border-slate-200/80 dark:border-sky-500/20 bg-white/90 dark:bg-[#03182b]/92 md:backdrop-blur-xl py-10 text-slate-600 dark:text-slate-300 transition-colors">
       <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 space-y-6">
         <div className="flex flex-col sm:flex-row items-center justify-between gap-4">
           {/* Logo */}
@@ -53,20 +53,22 @@ export const Footer: React.FC<FooterProps> = ({
             onClick={() => setActiveTab('home')}
             role="button"
             tabIndex={0}
-            className="flex items-center gap-2 cursor-pointer select-none group"
+            className="flex items-center gap-2.5 cursor-pointer select-none group"
           >
-            <div className="w-8 h-8 rounded-full overflow-hidden bg-white ring-2 ring-[#0284c7] flex items-center justify-center shadow-md shrink-0 p-0.5 group-hover:scale-105 transition-transform aspect-square">
+            <div className="w-8 h-8 rounded-full overflow-hidden bg-white ring-1 ring-slate-200/90 dark:ring-sky-400/40 group-hover:ring-[#0284c7] flex items-center justify-center shadow-sm shrink-0 p-0.5 group-hover:scale-105 transition-all aspect-square">
               <AosLogoSvg className="w-full h-full aspect-square object-contain shrink-0" />
             </div>
-            <div className="flex items-baseline font-black tracking-tight text-sm">
+            <div className="font-display flex items-baseline font-extrabold tracking-tight text-base">
               <span className="text-slate-900 dark:text-white">AOS</span>
-              <span className="text-[#0284c7] ml-1">TOOLS</span>
+              <span className="bg-gradient-to-r from-[#0284c7] to-[#1d4ed8] dark:from-sky-400 dark:to-blue-400 bg-clip-text text-transparent ml-1">
+                TOOLS
+              </span>
             </div>
           </div>
 
           {/* Copyright text */}
           <p className="text-xs text-slate-500 dark:text-slate-400 text-center">
-            © {new Date().getFullYear()} AOS TOOLS • Anis Online Services Ecosystem. All rights reserved.
+            © {new Date().getFullYear()} AOS Tools · Anis Online Services Ecosystem. All rights reserved.
           </p>
 
           <a

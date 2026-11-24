@@ -30,15 +30,22 @@
 
   /* Base Body Styles (Light Theme Default) */
   body {
-    background-color: #f0f5fa;
+    background-color: #f4f7fb;
     color: #0f172a;
     font-family: 'Plus Jakarta Sans', system-ui, -apple-system, sans-serif;
-    transition: background-color 0.25s ease, color 0.25s ease;
+    -webkit-font-smoothing: antialiased;
+    -moz-osx-font-smoothing: grayscale;
+    transition: background-color 0.22s ease, color 0.22s ease;
   }
 
   html.dark body {
     background-color: #03182b;
     color: #f8fafc;
+  }
+
+  h1, h2, .font-display {
+    font-family: 'Outfit', 'Plus Jakarta Sans', system-ui, -apple-system, sans-serif;
+    text-wrap: balance;
   }
 
   code, kbd, samp, pre {
@@ -134,38 +141,45 @@
 }
 
 /* =========================================================================
-   LIGHT THEME CRISP SOLID CONTRAST FIX
-   Ensures card backgrounds in light mode have clean solid contrast against
-   text-slate-900 so content never washes out or blends.
+   LIGHT THEME MODERN ARCHITECTURAL SURFACE SYSTEM
+   Crisp elevated white surfaces, soft studio shadows & hairline borders
    ========================================================================= */
 
 html:not(.dark) .theme-card,
 html:not(.dark) .liquid-glass {
-  background: #ffffff !important;
+  background: rgba(255, 255, 255, 0.96) !important;
   backdrop-filter: none !important;
   -webkit-backdrop-filter: none !important;
-  border: 1px solid #cbd5e1 !important;
-  box-shadow: 0 4px 16px -2px rgba(7, 38, 66, 0.08), 0 1px 3px 0 rgba(0, 0, 0, 0.05) !important;
+  border: 1px solid rgba(148, 163, 184, 0.28) !important;
+  box-shadow:
+    0 1px 2px rgba(15, 23, 42, 0.04),
+    0 10px 28px -12px rgba(15, 23, 42, 0.09),
+    inset 0 1px 0 rgba(255, 255, 255, 0.95) !important;
   color: #0f172a !important;
+  transition: transform 0.2s cubic-bezier(0.16, 1, 0.3, 1), border-color 0.2s ease, box-shadow 0.2s ease;
 }
 
 @media (hover: hover) and (pointer: fine) {
   html:not(.dark) .theme-card:hover,
   html:not(.dark) .liquid-glass:hover,
   html:not(.dark) .liquid-glass-hover:hover {
-    border-color: #0284c7 !important;
-    box-shadow: 0 12px 26px -4px rgba(2, 132, 199, 0.18), 0 4px 8px -2px rgba(0, 0, 0, 0.06) !important;
+    border-color: rgba(2, 132, 199, 0.42) !important;
+    box-shadow:
+      0 2px 6px rgba(2, 132, 199, 0.08),
+      0 18px 34px -12px rgba(2, 132, 199, 0.16),
+      inset 0 1px 0 rgba(255, 255, 255, 1) !important;
     transform: translateY(-2px);
   }
 }
 
 html:not(.dark) .liquid-glass-sub {
-  background: #f8fafc !important;
+  background: linear-gradient(180deg, #ffffff 0%, #f8fbff 100%) !important;
   backdrop-filter: none !important;
   -webkit-backdrop-filter: none !important;
-  border: 1px solid #e2e8f0 !important;
-  box-shadow: 0 1px 3px 0 rgba(0, 0, 0, 0.04) !important;
+  border: 1px solid rgba(203, 213, 225, 0.65) !important;
+  box-shadow: 0 1px 3px rgba(15, 23, 42, 0.04) !important;
   color: #1e293b !important;
+  transition: border-color 0.18s ease, box-shadow 0.18s ease, transform 0.18s cubic-bezier(0.16, 1, 0.3, 1);
 }
 
 /* High contrast text overrides for light mode */
@@ -312,13 +326,12 @@ html:not(.dark) table tbody tr:hover {
 .theme-btn-primary,
 .aos-btn-primary {
   color: #ffffff !important;
-  background: linear-gradient(135deg, #0ea5e9 0%, #0284c7 46%, #1d4ed8 84%, #0B192C 100%) !important;
-  border: 1px solid rgba(147, 197, 253, 0.42) !important;
+  background: linear-gradient(135deg, #0ea5e9 0%, #0284c7 48%, #1d4ed8 92%) !important;
+  border: 1px solid rgba(186, 230, 253, 0.36) !important;
   box-shadow:
-    0 8px 20px -5px rgba(2, 132, 199, 0.46),
-    0 4px 10px -3px rgba(67, 56, 202, 0.32),
-    inset 0 1px 0 rgba(255, 255, 255, 0.34),
-    inset 0 -2px 4px rgba(11, 25, 44, 0.35) !important;
+    0 6px 16px -4px rgba(2, 132, 199, 0.42),
+    0 2px 6px -2px rgba(29, 78, 216, 0.25),
+    inset 0 1px 0 rgba(255, 255, 255, 0.28) !important;
   transition: transform 0.16s cubic-bezier(0.16, 1, 0.3, 1), box-shadow 0.18s ease, filter 0.18s ease;
 }
 
@@ -326,95 +339,86 @@ html:not(.dark) table tbody tr:hover {
 .aos-btn-primary:active {
   transform: translateY(0.5px) scale(0.98);
   box-shadow:
-    0 3px 10px -3px rgba(2, 132, 199, 0.42),
-    inset 0 2px 5px rgba(11, 25, 44, 0.45) !important;
+    0 2px 8px -2px rgba(2, 132, 199, 0.38),
+    inset 0 1px 4px rgba(11, 25, 44, 0.32) !important;
 }
 
 @media (hover: hover) and (pointer: fine) {
   .theme-btn-primary:hover,
   .aos-btn-primary:hover {
-    background: linear-gradient(135deg, #38bdf8 0%, #0284c7 50%, #2563eb 88%, #0B192C 100%) !important;
+    background: linear-gradient(135deg, #38bdf8 0%, #0284c7 48%, #2563eb 94%) !important;
     box-shadow:
-      0 12px 26px -4px rgba(2, 132, 199, 0.55),
-      0 6px 14px -2px rgba(99, 102, 241, 0.36),
-      inset 0 1px 0 rgba(255, 255, 255, 0.45) !important;
-    transform: translateY(-1.5px);
+      0 10px 22px -4px rgba(2, 132, 199, 0.5),
+      0 4px 10px -2px rgba(37, 99, 235, 0.3),
+      inset 0 1px 0 rgba(255, 255, 255, 0.38) !important;
+    transform: translateY(-1px);
   }
 }
 
-/* Soft-UI Neumorphic / Glassmorphic Recessed Track (Tabs & Toggle Groups) */
+/* Modern Recessed Segmented Track (Tabs & Toggle Groups) */
 .aos-segmented-track {
-  background: #edf3fa;
-  border: 1px solid rgba(203, 213, 225, 0.88);
+  background: rgba(241, 245, 251, 0.92);
+  border: 1px solid rgba(203, 213, 225, 0.65);
   box-shadow:
-    inset 0 2px 5px rgba(15, 23, 42, 0.08),
-    inset 0 -1px 0 rgba(255, 255, 255, 0.95),
-    0 1px 2px rgba(15, 23, 42, 0.04);
+    inset 0 1px 3px rgba(15, 23, 42, 0.06),
+    0 1px 0 rgba(255, 255, 255, 0.9);
 }
 
 .dark .aos-segmented-track {
-  background: rgba(6, 17, 32, 0.92);
-  border: 1px solid rgba(56, 189, 248, 0.2);
+  background: rgba(6, 17, 32, 0.9);
+  border: 1px solid rgba(56, 189, 248, 0.18);
   box-shadow:
-    inset 0 2px 7px rgba(0, 0, 0, 0.6),
-    inset 0 -1px 0 rgba(129, 140, 248, 0.14);
+    inset 0 2px 6px rgba(0, 0, 0, 0.55),
+    inset 0 -1px 0 rgba(129, 140, 248, 0.12);
 }
 
-/* Soft-UI Neumorphic Secondary Pill Button */
+/* Crisp Modern Secondary Pill Button */
 .aos-btn-soft {
-  background: linear-gradient(145deg, #ffffff 0%, #f1f6fd 100%);
-  border: 1px solid rgba(203, 213, 225, 0.92);
+  background: linear-gradient(180deg, #ffffff 0%, #f8fbff 100%);
+  border: 1px solid rgba(203, 213, 225, 0.78);
   color: #0f172a;
   box-shadow:
-    0 5px 14px -4px rgba(15, 23, 42, 0.1),
-    0 2px 4px -1px rgba(2, 132, 199, 0.07),
-    inset 0 1.5px 1px rgba(255, 255, 255, 0.98),
-    inset 0 -1px 2px rgba(148, 163, 184, 0.14);
+    0 1px 2px rgba(15, 23, 42, 0.05),
+    0 4px 10px -4px rgba(15, 23, 42, 0.07),
+    inset 0 1px 0 rgba(255, 255, 255, 0.98);
   transition: transform 0.16s cubic-bezier(0.16, 1, 0.3, 1), box-shadow 0.18s ease, border-color 0.18s ease, color 0.18s ease;
 }
 
 .dark .aos-btn-soft {
-  background: linear-gradient(145deg, rgba(16, 40, 70, 0.94) 0%, rgba(11, 25, 44, 0.98) 100%);
-  border: 1px solid rgba(99, 179, 237, 0.25);
+  background: linear-gradient(145deg, rgba(16, 40, 70, 0.92) 0%, rgba(11, 25, 44, 0.96) 100%);
+  border: 1px solid rgba(99, 179, 237, 0.24);
   color: #e2e8f0;
   box-shadow:
-    0 7px 18px -6px rgba(2, 6, 23, 0.72),
-    0 2px 6px -1px rgba(67, 56, 202, 0.16),
-    inset 0 1px 0 rgba(255, 255, 255, 0.13),
-    inset 0 -1.5px 3px rgba(0, 0, 0, 0.38);
+    0 6px 16px -6px rgba(2, 6, 23, 0.68),
+    inset 0 1px 0 rgba(255, 255, 255, 0.12);
 }
 
 .aos-btn-soft:active {
   transform: scale(0.98) translateY(0.5px);
-  box-shadow:
-    inset 0 2px 5px rgba(15, 23, 42, 0.14),
-    0 1px 2px rgba(15, 23, 42, 0.05);
+  box-shadow: inset 0 1px 4px rgba(15, 23, 42, 0.1);
 }
 
 .dark .aos-btn-soft:active {
-  box-shadow:
-    inset 0 2px 6px rgba(0, 0, 0, 0.55),
-    0 1px 3px rgba(2, 132, 199, 0.15);
+  box-shadow: inset 0 2px 5px rgba(0, 0, 0, 0.5);
 }
 
 @media (hover: hover) and (pointer: fine) {
   .aos-btn-soft:hover {
-    border-color: rgba(2, 132, 199, 0.55);
+    border-color: rgba(2, 132, 199, 0.48);
     color: #0369a1;
     box-shadow:
-      0 8px 18px -4px rgba(2, 132, 199, 0.18),
-      0 3px 8px -2px rgba(99, 102, 241, 0.12),
-      inset 0 1.5px 1px rgba(255, 255, 255, 1);
+      0 6px 16px -4px rgba(2, 132, 199, 0.15),
+      0 2px 5px -1px rgba(15, 23, 42, 0.05),
+      inset 0 1px 0 rgba(255, 255, 255, 1);
     transform: translateY(-1px);
   }
 
   .dark .aos-btn-soft:hover {
-    border-color: rgba(56, 189, 248, 0.55);
+    border-color: rgba(56, 189, 248, 0.52);
     color: #ffffff;
     box-shadow:
-      0 10px 22px -6px rgba(2, 132, 199, 0.35),
-      0 4px 12px -2px rgba(99, 102, 241, 0.24),
-      inset 0 1px 0 rgba(255, 255, 255, 0.22);
+      0 8px 20px -6px rgba(2, 132, 199, 0.34),
+      inset 0 1px 0 rgba(255, 255, 255, 0.2);
     transform: translateY(-1px);
   }
 }
