@@ -266,6 +266,89 @@ service cloud.firestore {
         data.updatedAt is timestamp;
     }
 
+    function isValidUserNote(data, userId, noteId) {
+      return data.keys().hasAll([
+          'id',
+          'ownerId',
+          'title',
+          'body',
+          'noteType',
+          'checklist',
+          'color',
+          'labels',
+          'pinned',
+          'archived',
+          'trashed',
+          'clientCreatedAt',
+          'clientUpdatedAt',
+          'createdAt',
+          'updatedAt'
+        ]) &&
+        data.keys().hasOnly([
+          'id',
+          'ownerId',
+          'title',
+          'body',
+          'noteType',
+          'checklist',
+          'color',
+          'labels',
+          'pinned',
+          'archived',
+          'trashed',
+          'clientCreatedAt',
+          'clientUpdatedAt',
+          'createdAt',
+          'updatedAt'
+        ]) &&
+        data.id is string &&
+        isValidId(data.id) &&
+        data.id == noteId &&
+        data.ownerId is string &&
+        isValidId(data.ownerId) &&
+        data.ownerId == userId &&
+        data.ownerId == request.auth.uid &&
+        data.title is string &&
+        data.title.size() <= 200 &&
+        data.body is string &&
+        data.body.size() <= 15000 &&
+        data.noteType is string &&
+        (data.noteType in ['text', 'checklist']) &&
+        data.checklist is list &&
+        data.checklist.size() <= 100 &&
+        (
+          data.checklist.size() == 0 ||
+          (
+            data.checklist[0] is map &&
+            data.checklist[0].keys().hasAll(['id', 'text', 'done']) &&
+            data.checklist[0].keys().hasOnly(['id', 'text', 'done']) &&
+            data.checklist[0].id is string &&
+            data.checklist[0].id.size() >= 1 &&
+            data.checklist[0].id.size() <= 64 &&
+            data.checklist[0].text is string &&
+            data.checklist[0].text.size() <= 300 &&
+            data.checklist[0].done is bool
+          )
+        ) &&
+        data.color is string &&
+        (data.color in ['default', 'yellow', 'blue', 'green', 'rose', 'purple', 'teal', 'orange']) &&
+        data.labels is list &&
+        data.labels.size() <= 10 &&
+        (
+          data.labels.size() == 0 ||
+          (data.labels[0] is string && data.labels[0].size() >= 1 && data.labels[0].size() <= 32)
+        ) &&
+        data.pinned is bool &&
+        data.archived is bool &&
+        data.trashed is bool &&
+        data.clientCreatedAt is number &&
+        data.clientCreatedAt >= 0 &&
+        data.clientUpdatedAt is number &&
+        data.clientUpdatedAt >= 0 &&
+        data.createdAt is timestamp &&
+        data.updatedAt is timestamp;
+    }
+
     function isValidPublicNoticeBoard(data, boardId) {
       return data.keys().hasAll(['boardId', 'notices', 'updatedByUid', 'updatedAt']) &&
         data.keys().hasOnly(['boardId', 'notices', 'updatedByUid', 'updatedAt']) &&
@@ -539,6 +622,60 @@ service cloud.firestore {
           isValidId(userId) &&
           isValidId(backupId) &&
           backupId == 'default' &&
+          isOwner(userId) &&
+          existing().ownerId == request.auth.uid;
+      }
+
+      // =======================================================================
+      // 10. USER GOOGLE CLOUD NOTES (/users/{userId}/notes/{noteId})
+      // =======================================================================
+      match /notes/{noteId} {
+        allow get: if isSignedIn() &&
+          isValidId(userId) &&
+          isValidId(noteId) &&
+          isOwner(userId) &&
+          existing().ownerId == request.auth.uid;
+
+        allow list: if isSignedIn() &&
+          isValidId(userId) &&
+          isOwner(userId) &&
+          resource.data.ownerId == request.auth.uid;
+
+        allow create: if isVerifiedUser() &&
+          isValidId(userId) &&
+          isValidId(noteId) &&
+          isOwner(userId) &&
+          isValidUserNote(incoming(), userId, noteId) &&
+          incoming().createdAt == request.time &&
+          incoming().updatedAt == request.time;
+
+        allow update: if isVerifiedUser() &&
+          isValidId(userId) &&
+          isValidId(noteId) &&
+          isOwner(userId) &&
+          isValidUserNote(incoming(), userId, noteId) &&
+          incoming().ownerId == existing().ownerId &&
+          incoming().id == existing().id &&
+          incoming().createdAt == existing().createdAt &&
+          incoming().clientCreatedAt == existing().clientCreatedAt &&
+          incoming().updatedAt == request.time &&
+          incoming().diff(existing()).affectedKeys().hasOnly([
+            'title',
+            'body',
+            'noteType',
+            'checklist',
+            'color',
+            'labels',
+            'pinned',
+            'archived',
+            'trashed',
+            'clientUpdatedAt',
+            'updatedAt'
+          ]);
+
+        allow delete: if isVerifiedUser() &&
+          isValidId(userId) &&
+          isValidId(noteId) &&
           isOwner(userId) &&
           existing().ownerId == request.auth.uid;
       }

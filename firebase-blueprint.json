@@ -328,6 +328,102 @@
         }
       },
       "required": ["boardId", "notices", "updatedByUid", "updatedAt"]
+    },
+    "UserNote": {
+      "title": "UserNote",
+      "description": "Per-user Google Keep-style synced note supporting rich text, checklists, color themes, labels, pinning, archive, and trash states.",
+      "type": "object",
+      "properties": {
+        "id": {
+          "type": "string",
+          "description": "Unique note identifier matching document ID.",
+          "minLength": 1,
+          "maxLength": 128,
+          "pattern": "^[a-zA-Z0-9_\\-]+$"
+        },
+        "ownerId": {
+          "type": "string",
+          "description": "Owner Firebase Auth UID.",
+          "minLength": 1,
+          "maxLength": 128,
+          "pattern": "^[a-zA-Z0-9_\\-]+$"
+        },
+        "title": {
+          "type": "string",
+          "description": "Note heading or title.",
+          "maxLength": 200
+        },
+        "body": {
+          "type": "string",
+          "description": "Plain text note body content.",
+          "maxLength": 15000
+        },
+        "noteType": {
+          "type": "string",
+          "enum": ["text", "checklist"],
+          "description": "Whether the note renders as plain text or an interactive checklist."
+        },
+        "checklist": {
+          "type": "array",
+          "description": "Bounded list of up to 100 checklist items ({ id, text, done })."
+        },
+        "color": {
+          "type": "string",
+          "enum": ["default", "yellow", "blue", "green", "rose", "purple", "teal", "orange"],
+          "description": "Google Keep-inspired color swatch identifier."
+        },
+        "labels": {
+          "type": "array",
+          "description": "Bounded list of up to 10 string category labels (1-32 chars each)."
+        },
+        "pinned": {
+          "type": "boolean",
+          "description": "Whether the note is pinned to the top of the board."
+        },
+        "archived": {
+          "type": "boolean",
+          "description": "Whether the note is archived."
+        },
+        "trashed": {
+          "type": "boolean",
+          "description": "Whether the note is in the trash bin."
+        },
+        "clientCreatedAt": {
+          "type": "number",
+          "description": "Client creation epoch milliseconds."
+        },
+        "clientUpdatedAt": {
+          "type": "number",
+          "description": "Client last-modified epoch milliseconds."
+        },
+        "createdAt": {
+          "type": "string",
+          "format": "date-time",
+          "description": "Server creation timestamp."
+        },
+        "updatedAt": {
+          "type": "string",
+          "format": "date-time",
+          "description": "Server last update timestamp."
+        }
+      },
+      "required": [
+        "id",
+        "ownerId",
+        "title",
+        "body",
+        "noteType",
+        "checklist",
+        "color",
+        "labels",
+        "pinned",
+        "archived",
+        "trashed",
+        "clientCreatedAt",
+        "clientUpdatedAt",
+        "createdAt",
+        "updatedAt"
+      ]
     }
   },
   "firestore": {
@@ -360,6 +456,12 @@
         "$ref": "#/entities/UserCloudBackup"
       },
       "description": "Cross-device encrypted/structured cloud backup of AOS user preferences, lock preferences, live notices, and Client Diary records."
+    },
+    "/users/{userId}/notes/{noteId}": {
+      "schema": {
+        "$ref": "#/entities/UserNote"
+      },
+      "description": "Per-user Google Keep-style notes synced in real time strictly under the signed-in Google user's UID."
     },
     "/publicNotices/{boardId}": {
       "schema": {
