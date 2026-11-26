@@ -57,7 +57,12 @@
     --color-brand-hover: #38bdf8;
   }
 
-  html.dark {
+  html.dark,
+  :root.dark,
+  :root.dark[data-template="template-1"],
+  :root.dark[data-template="template-2"],
+  :root.dark[data-template="template-3"],
+  :root.dark[data-template="template-4"] {
     --aos-primary: #38bdf8;
     --aos-primary-hover: #7dd3fc;
     --aos-primary-soft: rgba(56, 189, 248, 0.16);
@@ -74,10 +79,10 @@
 
     --aos-bg-canvas: #03182b;
     --aos-bg-section-alt: #071e36;
-    --aos-card-bg: rgba(11, 25, 44, 0.92);
-    --aos-card-sub-bg: rgba(7, 38, 66, 0.72);
-    --aos-card-shadow: 0 12px 32px -10px rgba(0, 0, 0, 0.58), 0 0 0 1px rgba(56, 189, 248, 0.12);
-    --aos-card-shadow-hover: 0 20px 42px -10px rgba(2, 132, 199, 0.34), 0 0 0 1px rgba(124, 58, 237, 0.28);
+    --aos-card-bg: rgba(11, 25, 44, 0.94);
+    --aos-card-sub-bg: linear-gradient(180deg, rgba(16, 42, 74, 0.92) 0%, rgba(11, 28, 52, 0.96) 100%);
+    --aos-card-shadow: 0 12px 32px -10px rgba(0, 0, 0, 0.62), 0 0 0 1px rgba(56, 189, 248, 0.14);
+    --aos-card-shadow-hover: 0 20px 42px -10px rgba(2, 132, 199, 0.36), 0 0 0 1px rgba(124, 58, 237, 0.32);
     --aos-border-subtle: rgba(56, 189, 248, 0.18);
     --aos-text-primary: #f8fafc;
     --aos-text-secondary: #cbd5e1;
@@ -331,9 +336,9 @@ textarea:focus {
   outline: none;
 }
 
-html:not(.dark) input,
-html:not(.dark) select,
-html:not(.dark) textarea {
+html:not(.dark) input:not([type="checkbox"]):not([type="radio"]):not([type="range"]):not([type="color"]):not(.aos-search-pill-input):not(.bg-transparent),
+html:not(.dark) select:not(.bg-transparent),
+html:not(.dark) textarea:not(.bg-transparent) {
   background-color: #ffffff !important;
   border-color: #cbd5e1 !important;
   color: #0f172a !important;
@@ -342,6 +347,19 @@ html:not(.dark) textarea {
 html:not(.dark) input::placeholder,
 html:not(.dark) textarea::placeholder {
   color: #94a3b8 !important;
+}
+
+.dark input:not([type="checkbox"]):not([type="radio"]):not([type="range"]):not([type="color"]):not(.aos-search-pill-input):not(.bg-transparent),
+.dark select:not(.bg-transparent),
+.dark textarea:not(.bg-transparent) {
+  background-color: rgba(7, 24, 44, 0.92);
+  border-color: rgba(56, 189, 248, 0.26);
+  color: #f8fafc;
+}
+
+.dark input::placeholder,
+.dark textarea::placeholder {
+  color: #94a3b8;
 }
 
 /* Modern Range Sliders (Passport Photo Studio, Smart ID Studio, Password Generator, Image Resizer) */

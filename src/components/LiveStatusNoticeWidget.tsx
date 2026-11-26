@@ -266,7 +266,7 @@ export const LiveStatusNoticeWidget: React.FC = () => {
   return (
     <section
       aria-label="AOS Live Status and Notice Board"
-      className="aos-reveal rounded-[20px] bg-white dark:bg-[#0B192C]/92 shadow-[0_14px_34px_-16px_rgba(37,99,235,0.16),0_4px_12px_-4px_rgba(15,23,42,0.06)] dark:shadow-[0_18px_38px_-14px_rgba(0,0,0,0.65)] overflow-hidden"
+      className="rounded-[20px] bg-white dark:bg-[#0B192C]/92 shadow-[0_14px_34px_-16px_rgba(37,99,235,0.16),0_4px_12px_-4px_rgba(15,23,42,0.06)] dark:shadow-[0_18px_38px_-14px_rgba(0,0,0,0.65)] overflow-hidden"
     >
       {/* Deep Blue Operator Header */}
       <div className="guide-banner-dark bg-gradient-to-r from-[#0B192C] via-[#072642] to-[#0d4775] px-5 sm:px-6 py-4 border-b border-sky-400/20 flex flex-wrap items-center justify-between gap-3">

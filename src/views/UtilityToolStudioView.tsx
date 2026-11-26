@@ -15,9 +15,7 @@ import {
   Check,
   Plus,
   Trash2,
-  Pin,
-  Download,
-  Search,
+  Cloud,
   RefreshCw,
   ArrowUpDown,
   ShieldCheck,
@@ -28,6 +26,7 @@ import {
 } from 'lucide-react';
 import { ToolItem } from '../types';
 import { StarRatingWidget } from '../components/StarRatingWidget';
+import { GoogleNotesApp } from '../components/GoogleNotesApp';
 import { readSessionDraft, writeSessionDraft } from '../utils/sessionDraftStorage';
 
 interface UtilityToolStudioViewProps {
@@ -573,282 +572,8 @@ const TodoListTool: React.FC = () => {
 };
 
 /* ============================================================================
-   3. NOTES APP (Local Storage Auto-Save, Pinning, Search, Export .txt)
+   3. NOTES APP — Powered by GoogleNotesApp (Google Keep-style + Cloud Sync)
    ============================================================================ */
-interface QuickNote {
-  id: string;
-  title: string;
-  body: string;
-  pinned: boolean;
-  updatedAt: number;
-}
-
-const NOTES_STORAGE_KEY = 'aos_utility_notes_v1';
-
-const NotesAppTool: React.FC = () => {
-  const [notes, setNotes] = useState<QuickNote[]>(() => {
-    try {
-      const raw = localStorage.getItem(NOTES_STORAGE_KEY);
-      if (raw) {
-        const parsed = JSON.parse(raw);
-        if (Array.isArray(parsed) && parsed.length > 0) return parsed;
-      }
-    } catch {
-      // Fallback
-    }
-    return [
-      {
-        id: 'welcome-note',
-        title: 'Daily Counter Scratchpad',
-        body: 'Keep quick reference details, fee notes, or reminders here. All notes are stored locally on your device with zero uploads.',
-        pinned: true,
-        updatedAt: Date.now(),
-      },
-    ];
-  });
-
-  const [activeNoteId, setActiveNoteId] = useState<string>(() => notes[0]?.id || '');
-  const [searchTerm, setSearchTerm] = useState('');
-  const [copiedNote, setCopiedNote] = useState(false);
-
-  useEffect(() => {
-    try {
-      localStorage.setItem(NOTES_STORAGE_KEY, JSON.stringify(notes));
-    } catch {
-      // Ignore quota
-    }
-  }, [notes]);
-
-  const sortedFilteredNotes = useMemo(() => {
-    const q = searchTerm.trim().toLowerCase();
-    return [...notes]
-      .filter(
-        (n) =>
-          !q ||
-          n.title.toLowerCase().includes(q) ||
-          n.body.toLowerCase().includes(q)
-      )
-      .sort((a, b) => Number(b.pinned) - Number(a.pinned) || b.updatedAt - a.updatedAt);
-  }, [notes, searchTerm]);
-
-  const activeNote =
-    notes.find((n) => n.id === activeNoteId) || sortedFilteredNotes[0] || null;
-
-  const createNote = () => {
-    const fresh: QuickNote = {
-      id: `note-${Date.now()}-${Math.random().toString(36).slice(2, 6)}`,
-      title: 'Untitled Note',
-      body: '',
-      pinned: false,
-      updatedAt: Date.now(),
-    };
-    setNotes((prev) => [fresh, ...prev]);
-    setActiveNoteId(fresh.id);
-  };
-
-  const updateActiveNote = (patch: Partial<Pick<QuickNote, 'title' | 'body' | 'pinned'>>) => {
-    if (!activeNote) return;
-    setNotes((prev) =>
-      prev.map((n) =>
-        n.id === activeNote.id ? { ...n, ...patch, updatedAt: Date.now() } : n
-      )
-    );
-  };
-
-  const deleteNote = (id: string) => {
-    setNotes((prev) => {
-      const next = prev.filter((n) => n.id !== id);
-      if (activeNoteId === id) {
-        setActiveNoteId(next[0]?.id || '');
-      }
-      return next;
-    });
-  };
-
-  const handleCopyNote = async () => {
-    if (!activeNote) return;
-    try {
-      await navigator.clipboard.writeText(`${activeNote.title}\n\n${activeNote.body}`);
-      setCopiedNote(true);
-      window.setTimeout(() => setCopiedNote(false), 1800);
-    } catch {
-      // Ignored
-    }
-  };
-
-  const handleDownloadTxt = () => {
-    if (!activeNote) return;
-    const blob = new Blob([`${activeNote.title}\n\n${activeNote.body}`], {
-      type: 'text/plain;charset=utf-8',
-    });
-    const url = URL.createObjectURL(blob);
-    const link = document.createElement('a');
-    link.href = url;
-    const slug = (activeNote.title || 'aos-note')
-      .toLowerCase()
-      .replace(/[^a-z0-9]+/g, '-')
-      .slice(0, 32);
-    link.download = `${slug || 'aos-note'}.txt`;
-    link.click();
-    window.setTimeout(() => URL.revokeObjectURL(url), 1000);
-  };
-
-  const wordCount = activeNote?.body.trim()
-    ? activeNote.body.trim().split(/\s+/).length
-    : 0;
-
-  return (
-    <div className="grid grid-cols-1 lg:grid-cols-12 gap-4">
-      {/* Left Sidebar: Notes List */}
-      <div className="lg:col-span-4 space-y-3">
-        <div className="flex items-center gap-2">
-          <div className="relative flex-1">
-            <Search className="w-3.5 h-3.5 text-slate-400 absolute left-3 top-1/2 -translate-y-1/2 pointer-events-none" />
-            <input
-              type="text"
-              value={searchTerm}
-              onChange={(e) => setSearchTerm(e.target.value)}
-              placeholder="Filter notes..."
-              className="w-full min-h-[40px] pl-9 pr-3 rounded-full liquid-glass-sub text-xs text-slate-900 dark:text-white placeholder-slate-400 focus:outline-none focus:ring-2 focus:ring-[#0284c7]/40"
-            />
-          </div>
-          <button
-            type="button"
-            onClick={createNote}
-            className="aos-btn-primary px-3.5 min-h-[40px] text-xs font-bold inline-flex items-center gap-1 cursor-pointer shrink-0"
-          >
-            <Plus className="w-4 h-4" />
-            <span>New</span>
-          </button>
-        </div>
-
-        <div className="space-y-2 max-h-[340px] overflow-y-auto pr-0.5">
-          {sortedFilteredNotes.length === 0 ? (
-            <div className="p-4 rounded-2xl liquid-glass-sub text-xs text-slate-500 dark:text-slate-400 text-center">
-              No matching notes.
-            </div>
-          ) : (
-            sortedFilteredNotes.map((note) => {
-              const isSelected = activeNote?.id === note.id;
-              return (
-                <button
-                  key={note.id}
-                  type="button"
-                  onClick={() => setActiveNoteId(note.id)}
-                  className={`w-full text-left p-3 rounded-2xl transition-all cursor-pointer border ${
-                    isSelected
-                      ? 'bg-[#0284c7]/15 dark:bg-[#0284c7]/25 border-[#0284c7]'
-                      : 'liquid-glass-sub border-transparent hover:border-[#0284c7]/40'
-                  }`}
-                >
-                  <div className="flex items-center justify-between gap-2">
-                    <span className="text-xs font-bold text-slate-900 dark:text-white truncate">
-                      {note.title || 'Untitled Note'}
-                    </span>
-                    {note.pinned && (
-                      <Pin className="w-3.5 h-3.5 text-[#0284c7] dark:text-sky-300 shrink-0" />
-                    )}
-                  </div>
-                  <p className="text-[11px] text-slate-500 dark:text-slate-400 line-clamp-2 mt-1">
-                    {note.body || 'Empty note...'}
-                  </p>
-                </button>
-              );
-            })
-          )}
-        </div>
-      </div>
-
-      {/* Right Pane: Active Note Editor */}
-      <div className="lg:col-span-8">
-        {activeNote ? (
-          <div className="p-4 rounded-2xl liquid-glass-sub space-y-3">
-            <div className="flex flex-wrap items-center justify-between gap-2">
-              <input
-                type="text"
-                value={activeNote.title}
-                onChange={(e) => updateActiveNote({ title: e.target.value })}
-                placeholder="Note title..."
-                className="flex-1 min-w-[180px] text-base font-bold bg-transparent text-slate-900 dark:text-white focus:outline-none border-b border-transparent focus:border-[#0284c7] py-1"
-              />
-              <div className="flex items-center gap-1.5">
-                <button
-                  type="button"
-                  onClick={() => updateActiveNote({ pinned: !activeNote.pinned })}
-                  title={activeNote.pinned ? 'Unpin note' : 'Pin note'}
-                  className={`w-9 h-9 cursor-pointer ${
-                    activeNote.pinned ? 'aos-btn-soft-active rounded-full inline-flex items-center justify-center' : 'aos-btn-icon'
-                  }`}
-                >
-                  <Pin className="w-4 h-4" />
-                </button>
-                <button
-                  type="button"
-                  onClick={handleCopyNote}
-                  title="Copy note"
-                  className="aos-btn-icon w-9 h-9 cursor-pointer"
-                >
-                  {copiedNote ? (
-                    <Check className="w-4 h-4 text-emerald-500" />
-                  ) : (
-                    <Copy className="w-4 h-4" />
-                  )}
-                </button>
-                <button
-                  type="button"
-                  onClick={handleDownloadTxt}
-                  title="Export as .txt"
-                  className="aos-btn-icon w-9 h-9 cursor-pointer"
-                >
-                  <Download className="w-4 h-4" />
-                </button>
-                <button
-                  type="button"
-                  onClick={() => deleteNote(activeNote.id)}
-                  title="Delete note"
-                  className="aos-btn-icon w-9 h-9 text-rose-500 cursor-pointer"
-                >
-                  <Trash2 className="w-4 h-4" />
-                </button>
-              </div>
-            </div>
-
-            <textarea
-              rows={10}
-              value={activeNote.body}
-              onChange={(e) => updateActiveNote({ body: e.target.value })}
-              placeholder="Write your note here... Changes auto-save locally in your browser."
-              className="w-full p-3.5 rounded-xl bg-white dark:bg-[#061426] border border-slate-200 dark:border-sky-500/25 text-sm text-slate-900 dark:text-white placeholder-slate-400 focus:outline-none focus:ring-2 focus:ring-[#0284c7]/40 leading-relaxed"
-            />
-
-            <div className="flex flex-wrap items-center justify-between gap-2 text-[11px] text-slate-500 dark:text-sky-200/75 font-mono tabular-nums">
-              <span>
-                {wordCount} words · {activeNote.body.length} chars · Auto-saved locally
-              </span>
-              <span>
-                Updated {new Date(activeNote.updatedAt).toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' })}
-              </span>
-            </div>
-          </div>
-        ) : (
-          <div className="p-10 rounded-2xl liquid-glass-sub text-center space-y-3">
-            <p className="text-sm text-slate-500 dark:text-slate-400">
-              No notes yet. Create your first local note.
-            </p>
-            <button
-              type="button"
-              onClick={createNote}
-              className="aos-btn-primary px-4 py-2 min-h-[42px] text-xs font-bold inline-flex items-center gap-1.5 cursor-pointer"
-            >
-              <Plus className="w-4 h-4" />
-              <span>Create Note</span>
-            </button>
-          </div>
-        )}
-      </div>
-    </div>
-  );
-};
 
 /* ============================================================================
    4. PRECISION STOPWATCH & LAP TIMER (requestAnimationFrame 60fps)
@@ -1620,8 +1345,8 @@ export const UtilityToolStudioView: React.FC<UtilityToolStudioViewProps> = ({ to
       case 'notes-app':
         return {
           Icon: StickyNote,
-          section: 'Productivity Utility · Offline Local Storage',
-          desc: 'Fast multi-note scratchpad with pinning, instant search, auto-save, and .txt export.',
+          section: 'Google Cloud Synced · Google Keep-Style Notes',
+          desc: 'Color-coded notes, interactive checklists, labels, Archive & Trash synced live to your Google Account with offline backup.',
         };
       case 'stopwatch':
         return {
@@ -1646,9 +1371,14 @@ export const UtilityToolStudioView: React.FC<UtilityToolStudioViewProps> = ({ to
   }, [tool.id]);
 
   const Icon = meta.Icon;
+  const isGoogleNotes = tool.id === 'notes-app';
 
   return (
-    <div className="w-full max-w-4xl mx-auto space-y-5 pb-12 animate-in fade-in duration-200">
+    <div
+      className={`w-full ${
+        isGoogleNotes ? 'max-w-5xl' : 'max-w-4xl'
+      } mx-auto space-y-5 pb-12 animate-in fade-in duration-200`}
+    >
       {/* Top Bar */}
       <div className="flex items-center justify-between gap-3">
         <button
@@ -1660,10 +1390,17 @@ export const UtilityToolStudioView: React.FC<UtilityToolStudioViewProps> = ({ to
           <span>Back to Tools</span>
         </button>
 
-        <div className="inline-flex items-center gap-1.5 text-xs font-semibold text-emerald-600 dark:text-emerald-400">
-          <ShieldCheck className="w-4 h-4 shrink-0" />
-          <span>Zero External APIs</span>
-        </div>
+        {isGoogleNotes ? (
+          <div className="inline-flex items-center gap-1.5 text-xs font-semibold text-[#2563eb] dark:text-sky-300">
+            <Cloud className="w-4 h-4 shrink-0" />
+            <span>Google Cloud Sync</span>
+          </div>
+        ) : (
+          <div className="inline-flex items-center gap-1.5 text-xs font-semibold text-emerald-600 dark:text-emerald-400">
+            <ShieldCheck className="w-4 h-4 shrink-0" />
+            <span>Zero External APIs</span>
+          </div>
+        )}
       </div>
 
       {/* Main Tool Workspace Card */}
@@ -1689,7 +1426,7 @@ export const UtilityToolStudioView: React.FC<UtilityToolStudioViewProps> = ({ to
         {/* Active Utility Engine */}
         {tool.id === 'typing-test' && <TypingTestTool />}
         {tool.id === 'todo-list' && <TodoListTool />}
-        {tool.id === 'notes-app' && <NotesAppTool />}
+        {tool.id === 'notes-app' && <GoogleNotesApp />}
         {tool.id === 'stopwatch' && <StopwatchTool />}
         {tool.id === 'password-generator' && <PasswordGeneratorTool />}
         {tool.id === 'url-encoder-decoder' && <UrlEncoderDecoderTool />}

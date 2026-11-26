@@ -74,12 +74,12 @@ export const SPECIAL_TOOLS: ToolItem[] = [
   {
     id: 'notes-app',
     name: 'Notes App',
-    shortDesc: 'Auto-saving local storage multi-note scratchpad with note pinning, live search, word count, and .txt export.',
+    shortDesc: 'Google Keep-style cloud notes synced to your Google Account with checklists, 8 colors, labels, Archive, Trash & offline fallback.',
     category: 'special',
     utilityGroup: 'productivity',
     iconName: 'StickyNote',
     status: 'fully-supported',
-    badge: 'OFFLINE',
+    badge: 'GOOGLE SYNC',
     isPopular: true,
   },
   {

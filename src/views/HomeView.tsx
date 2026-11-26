@@ -618,8 +618,22 @@ export const HomeView: React.FC<HomeViewProps> = ({
       {/* =========================================================================
           AOS LIVE STATUS & NOTICE BOARD WIDGET (Lazy-loaded below fold)
           ========================================================================= */}
-      <div className="aos-reveal">
-        <Suspense fallback={null}>
+      <div>
+        <Suspense
+          fallback={
+            <div
+              aria-busy="true"
+              className="rounded-[20px] liquid-glass p-6 space-y-4 animate-pulse"
+            >
+              <div className="h-6 w-56 rounded-lg bg-slate-200 dark:bg-sky-900/50" />
+              <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
+                <div className="h-32 rounded-[20px] bg-slate-100 dark:bg-sky-950/60" />
+                <div className="h-32 rounded-[20px] bg-slate-100 dark:bg-sky-950/60" />
+                <div className="h-32 rounded-[20px] bg-slate-100 dark:bg-sky-950/60" />
+              </div>
+            </div>
+          }
+        >
           <LiveStatusNoticeWidget />
         </Suspense>
       </div>

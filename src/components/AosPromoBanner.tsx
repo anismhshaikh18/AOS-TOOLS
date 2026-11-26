@@ -144,7 +144,7 @@ export const AosPromoBanner: React.FC<AosPromoBannerProps> = ({
   return (
     <section
       aria-label="AOS Tools Digital Documentation Ecosystem"
-      className="aos-reveal guide-banner-dark relative overflow-hidden rounded-[20px] border border-indigo-400/30 bg-[linear-gradient(135deg,#071326_0%,#0f2347_42%,#1e1b52_76%,#091830_100%)] shadow-[0_26px_54px_-18px_rgba(7,16,32,0.82),0_0_48px_-12px_rgba(99,102,241,0.38)]"
+      className="guide-banner-dark relative overflow-hidden rounded-[20px] border border-indigo-400/30 bg-[linear-gradient(135deg,#071326_0%,#0f2347_42%,#1e1b52_76%,#091830_100%)] shadow-[0_26px_54px_-18px_rgba(7,16,32,0.82),0_0_48px_-12px_rgba(99,102,241,0.38)]"
     >
       {/* Clean SVG Tech Grid Overlay */}
       <svg
