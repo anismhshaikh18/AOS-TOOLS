@@ -12,7 +12,9 @@ import {
   Clock,
   SlidersHorizontal,
   BookOpen,
+  FileDown,
 } from 'lucide-react';
+import { OfficialFormsPdfSection } from '../components/OfficialFormsPdfSection';
 import {
   CHECKLIST_CATEGORIES,
   ChecklistCategoryId,
@@ -269,31 +271,41 @@ export const DocumentChecklistHubView: React.FC<DocumentChecklistHubViewProps> =
           </div>
         </div>
 
-        {/* Service Category Filter Pills */}
-        <div className="overflow-x-auto pb-1 -mx-1 px-1">
-          <div
-            role="tablist"
-            aria-label="Service categories"
-            className="aos-segmented-track inline-flex items-center gap-1 p-1 min-w-max"
-          >
-            {CHECKLIST_CATEGORIES.map((cat) => {
-              const isSelected = selectedCategory === cat.id;
-              return (
-                <button
-                  key={cat.id}
-                  type="button"
-                  role="tab"
-                  aria-selected={isSelected}
-                  onClick={() => setSelectedCategory(cat.id)}
-                  className={`px-3.5 py-2 min-h-[38px] text-xs font-bold whitespace-nowrap shrink-0 cursor-pointer ${
-                    isSelected ? 'aos-btn-soft-active' : 'aos-btn-soft-tab'
-                  }`}
-                >
-                  {cat.label}
-                </button>
-              );
-            })}
+        {/* Service Category Filter Pills & Quick Jump to Official PDFs */}
+        <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-3">
+          <div className="overflow-x-auto pb-1 -mx-1 px-1">
+            <div
+              role="tablist"
+              aria-label="Service categories"
+              className="aos-segmented-track inline-flex items-center gap-1 p-1 min-w-max"
+            >
+              {CHECKLIST_CATEGORIES.map((cat) => {
+                const isSelected = selectedCategory === cat.id;
+                return (
+                  <button
+                    key={cat.id}
+                    type="button"
+                    role="tab"
+                    aria-selected={isSelected}
+                    onClick={() => setSelectedCategory(cat.id)}
+                    className={`px-3.5 py-2 min-h-[38px] text-xs font-bold whitespace-nowrap shrink-0 cursor-pointer ${
+                      isSelected ? 'aos-btn-soft-active' : 'aos-btn-soft-tab'
+                    }`}
+                  >
+                    {cat.label}
+                  </button>
+                );
+              })}
+            </div>
           </div>
+
+          <a
+            href="#official-forms-pdfs"
+            className="aos-btn-soft px-3.5 py-2 min-h-[38px] text-xs font-bold inline-flex items-center justify-center gap-1.5 whitespace-nowrap shrink-0 self-start sm:self-auto"
+          >
+            <FileDown className="w-3.5 h-3.5 text-[#0284c7] dark:text-sky-300 shrink-0" />
+            <span>Official Forms &amp; Proof PDFs</span>
+          </a>
         </div>
       </section>
 
@@ -609,6 +621,9 @@ export const DocumentChecklistHubView: React.FC<DocumentChecklistHubViewProps> =
           </section>
         </div>
       )}
+
+      {/* OFFICIAL FORMS & PROOF PDFS (COMPACT DOWNLOAD CARDS) */}
+      <OfficialFormsPdfSection />
     </div>
   );
 };

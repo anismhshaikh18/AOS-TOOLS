@@ -70,7 +70,7 @@ export default defineConfig(({ command }) => {
               maximumFileSizeToCacheInBytes: 6 * 1024 * 1024,
               cleanupOutdatedCaches: true,
               navigateFallback: '/index.html',
-              navigateFallbackDenylist: [/^\/api\//, /^\/robots\.txt$/, /^\/sitemap\.xml$/],
+              navigateFallbackDenylist: [/^\/api\//, /^\/robots\.txt$/, /^\/sitemap\.xml$/, /\.pdf$/i],
               runtimeCaching: [
                 {
                   urlPattern: ({ request }) => request.destination === 'document',
