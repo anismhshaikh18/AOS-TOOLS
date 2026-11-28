@@ -113,7 +113,7 @@ export const PRO_TIER_TOOL_IDS = [
   'unlock-pdf',
 ] as const;
 
-const BOOTSTRAP_ADMIN_EMAIL = 'anismhshaikh18@gmail.com';
+const BOOTSTRAP_ADMIN_EMAIL = 'anis.onlineservices@gmail.com';
 const LOCAL_SECURITY_STORAGE_KEY = 'aos_security_prefs_v1';
 const LOCAL_SESSION_STORAGE_KEY = 'aos_session_meta_v1';
 const LAST_ACTIVITY_STORAGE_KEY = 'aos_last_activity_ts';

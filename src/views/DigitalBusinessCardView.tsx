@@ -26,7 +26,7 @@ const BUSINESS_NAME = 'Anis Online Services';
 const BRAND_SUBTITLE = 'AOS Tools · Digital Citizen Services & CSC Solutions';
 const PHONE_DISPLAY = '+91 93423 37626';
 const PHONE_E164 = '+919342337626';
-const EMAIL = 'anismhshaikh18@gmail.com';
+const EMAIL = 'anis.onlineservices@gmail.com';
 const PORTAL_URL = 'https://anis-online-services.pages.dev/';
 const CARD_CANONICAL_URL = 'https://aos-tools.anismhshaikh18.workers.dev/card';
 

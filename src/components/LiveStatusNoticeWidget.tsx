@@ -28,7 +28,7 @@ import {
 } from '../services/cloudBackupService';
 import { useAuthSecurity } from '../context/AuthSecurityContext';
 
-const OFFICIAL_NOTICE_ADMIN_EMAIL = 'anismhshaikh18@gmail.com';
+const OFFICIAL_NOTICE_ADMIN_EMAIL = 'anis.onlineservices@gmail.com';
 const PUBLIC_NOTICES_COLLECTION = 'publicNotices';
 const PUBLIC_NOTICES_DOC_ID = 'board';
 

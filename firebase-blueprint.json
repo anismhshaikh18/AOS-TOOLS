@@ -300,7 +300,7 @@
     },
     "PublicNoticeBoard": {
       "title": "PublicNoticeBoard",
-      "description": "Public read-only live status and advisories board editable exclusively by the verified official AOS Tools admin (anismhshaikh18@gmail.com).",
+      "description": "Public read-only live status and advisories board editable exclusively by the verified official AOS Tools admin (anis.onlineservices@gmail.com).",
       "type": "object",
       "properties": {
         "boardId": {
@@ -467,7 +467,7 @@
       "schema": {
         "$ref": "#/entities/PublicNoticeBoard"
       },
-      "description": "Public read-only AOS Live Status & Notice Board document ('board') writable exclusively by verified official admin anismhshaikh18@gmail.com."
+      "description": "Public read-only AOS Live Status & Notice Board document ('board') writable exclusively by verified official admin anis.onlineservices@gmail.com."
     }
   }
 }
