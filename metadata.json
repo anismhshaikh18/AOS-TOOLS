@@ -1,6 +1,6 @@
 {
   "name": "AOS Tools - Free, Secure & Mobile-Friendly Online Tools",
-  "description": "Browser-side PDF tools, image processing utilities, Client Diary ledger, PAN Master Hub, and 50 verified Indian government portal directory.",
+  "description": "Free browser-side AOS Tools: PAN Master Hub, Client Diary, Passport Photo Studio, QR Code Generator, PDF tools, and verified citizen utilities.",
   "permissions": [],
   "capabilities": [
     "MAJOR_CAPABILITY_SERVER_SIDE_GEMINI_API"

@@ -1,0 +1,6 @@
+User-agent: *
+Allow: /
+Disallow: /api/
+Disallow: /standalone-index.html
+
+Sitemap: https://aos-tools.anismhshaikh18.workers.dev/sitemap.xml

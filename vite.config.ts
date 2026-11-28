@@ -66,11 +66,11 @@ export default defineConfig(({ command }) => {
             ],
             workbox: {
               globPatterns: ['**/*.{js,css,html,ico,png,svg,woff,woff2,json}'],
-              globIgnores: ['**/standalone-index.html'],
+              globIgnores: ['**/standalone-index.html', '**/robots.txt', '**/sitemap.xml'],
               maximumFileSizeToCacheInBytes: 6 * 1024 * 1024,
               cleanupOutdatedCaches: true,
               navigateFallback: '/index.html',
-              navigateFallbackDenylist: [/^\/api\//],
+              navigateFallbackDenylist: [/^\/api\//, /^\/robots\.txt$/, /^\/sitemap\.xml$/],
               runtimeCaching: [
                 {
                   urlPattern: ({ request }) => request.destination === 'document',

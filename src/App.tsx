@@ -18,6 +18,7 @@ import {
 } from './services/cloudBackupService';
 import { readSessionDraft, writeSessionDraft } from './utils/sessionDraftStorage';
 import { useScrollReveal } from './hooks/useScrollReveal';
+import { useRouteSeo } from './hooks/useRouteSeo';
 
 // Code-split secondary views, studios, protected hubs, and heavy modals
 const ToolsDirectoryView = lazy(() =>
@@ -330,6 +331,9 @@ export default function App() {
 
   // Lightweight CSS-only scroll reveal observer across views
   useScrollReveal(`${activeTab}-${selectedTool?.id || ''}`);
+
+  // Keep page <title>, meta description, canonical URL & social tags synced per route
+  useRouteSeo(activeTab, selectedTool);
 
   // Stable refs for single-mount popstate listener (never churns on lang/auth updates)
   const langRef = useRef<LanguageCode>(lang);
